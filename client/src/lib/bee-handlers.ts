@@ -123,6 +123,234 @@ export class DirectionHandler {
 }
 
 // ============================================
+// HEAD AIM HANDLER - Independent head tracking
+// ============================================
+export interface HeadAimState {
+  rotation: number;      // Head rotation angle (-45 to +45 degrees)
+  tiltX: number;         // Head tilt left/right
+  tiltY: number;         // Head tilt up/down
+  blinkPhase: number;    // Blink animation phase
+  lookIntensity: number; // How intently looking (0-1)
+}
+
+export class HeadAimHandler {
+  private targetRotation = 0;
+  private currentRotation = 0;
+  private targetTiltX = 0;
+  private targetTiltY = 0;
+  private currentTiltX = 0;
+  private currentTiltY = 0;
+  private blinkTimer = 0;
+  private blinkPhase = 0;
+  private lookIntensity = 0;
+  private lastCursorX = 0;
+  private lastCursorY = 0;
+  
+  private readonly smoothing = 0.08;           // Head movement smoothing
+  private readonly maxRotation = 45;           // Max head rotation degrees
+  private readonly maxTilt = 0.3;              // Max tilt amount
+  private readonly blinkInterval = 3000;       // Average blink interval ms
+  private readonly cursorDeadzone = 50;        // Cursor distance deadzone
+
+  update(
+    deltaTime: number,
+    queenX: number,
+    queenY: number,
+    cursorX: number,
+    cursorY: number,
+    velocityX: number,
+    velocityY: number,
+    isEmoting: boolean
+  ): HeadAimState {
+    // Calculate direction to cursor
+    const dx = cursorX - queenX;
+    const dy = cursorY - queenY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    
+    // Determine look intensity based on cursor proximity
+    const proximityFactor = Math.max(0, 1 - dist / 400);
+    this.lookIntensity += (proximityFactor - this.lookIntensity) * 0.05;
+    
+    // Track cursor movement for micro-adjustments
+    const cursorMoving = Math.abs(cursorX - this.lastCursorX) > 2 || 
+                         Math.abs(cursorY - this.lastCursorY) > 2;
+    this.lastCursorX = cursorX;
+    this.lastCursorY = cursorY;
+    
+    // Calculate target head rotation
+    if (dist > this.cursorDeadzone && !isEmoting) {
+      // Head follows cursor within ±45° cone
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      this.targetRotation = Math.max(-this.maxRotation, Math.min(this.maxRotation, angle * 0.5));
+      
+      // Vertical tilt based on cursor Y relative to queen
+      this.targetTiltY = Math.max(-this.maxTilt, Math.min(this.maxTilt, dy / 200));
+      
+      // Horizontal tilt based on cursor X
+      this.targetTiltX = Math.max(-this.maxTilt, Math.min(this.maxTilt, dx / 300));
+    } else if (!isEmoting) {
+      // Slight head movement following velocity when no cursor target
+      const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+      if (speed > 2) {
+        this.targetRotation = Math.atan2(velocityY, velocityX) * (180 / Math.PI) * 0.3;
+        this.targetTiltX = velocityX * 0.02;
+        this.targetTiltY = velocityY * 0.01;
+      } else {
+        // Idle micro-movements
+        const microNoise = Math.sin(Date.now() * 0.001) * 3;
+        this.targetRotation = microNoise;
+        this.targetTiltX = Math.sin(Date.now() * 0.0008) * 0.05;
+        this.targetTiltY = Math.cos(Date.now() * 0.0012) * 0.03;
+      }
+    }
+    
+    // Smooth interpolation toward targets
+    const smoothFactor = cursorMoving ? this.smoothing * 1.5 : this.smoothing;
+    this.currentRotation += (this.targetRotation - this.currentRotation) * smoothFactor;
+    this.currentTiltX += (this.targetTiltX - this.currentTiltX) * smoothFactor;
+    this.currentTiltY += (this.targetTiltY - this.currentTiltY) * smoothFactor;
+    
+    // Blink animation
+    this.blinkTimer += deltaTime;
+    if (this.blinkTimer > this.blinkInterval + Math.random() * 2000) {
+      this.blinkTimer = 0;
+      this.blinkPhase = 1; // Start blink
+    }
+    if (this.blinkPhase > 0) {
+      this.blinkPhase = Math.max(0, this.blinkPhase - deltaTime * 0.008);
+    }
+    
+    return {
+      rotation: this.currentRotation,
+      tiltX: this.currentTiltX,
+      tiltY: this.currentTiltY,
+      blinkPhase: this.blinkPhase,
+      lookIntensity: this.lookIntensity,
+    };
+  }
+  
+  // Lock head to specific position during emotes
+  lockToEmote(rotation: number, tiltX: number, tiltY: number): void {
+    this.targetRotation = rotation;
+    this.targetTiltX = tiltX;
+    this.targetTiltY = tiltY;
+  }
+  
+  // Get current state without update
+  getState(): HeadAimState {
+    return {
+      rotation: this.currentRotation,
+      tiltX: this.currentTiltX,
+      tiltY: this.currentTiltY,
+      blinkPhase: this.blinkPhase,
+      lookIntensity: this.lookIntensity,
+    };
+  }
+}
+
+// ============================================
+// BODY DYNAMICS HANDLER - Natural body physics
+// ============================================
+export interface BodyDynamicsState {
+  lean: number;          // Body lean angle
+  stretch: number;       // Body stretch factor (1 = normal)
+  bank: number;          // Banking on curves
+  wobble: number;        // Micro-wobble for organic feel
+  breathe: number;       // Subtle breathing animation
+}
+
+export class BodyDynamicsHandler {
+  private lean = 0;
+  private targetLean = 0;
+  private stretch = 1;
+  private targetStretch = 1;
+  private bank = 0;
+  private targetBank = 0;
+  private wobblePhase = 0;
+  private breathePhase = 0;
+  private prevVelocityX = 0;
+  private prevVelocityY = 0;
+  
+  private readonly leanSmoothing = 0.06;
+  private readonly stretchSmoothing = 0.1;
+  private readonly maxLean = 25;           // Max lean degrees
+  private readonly maxStretch = 1.15;      // Max stretch factor
+  private readonly maxBank = 15;           // Max bank degrees
+
+  update(
+    deltaTime: number,
+    velocityX: number,
+    velocityY: number,
+    isEvading: boolean
+  ): BodyDynamicsState {
+    const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+    
+    // Calculate acceleration for reactive lean
+    const accelX = velocityX - this.prevVelocityX;
+    const accelY = velocityY - this.prevVelocityY;
+    this.prevVelocityX = velocityX;
+    this.prevVelocityY = velocityY;
+    
+    // Lean into movement direction
+    if (speed > 1) {
+      const moveAngle = Math.atan2(velocityY, velocityX) * (180 / Math.PI);
+      this.targetLean = Math.max(-this.maxLean, Math.min(this.maxLean, moveAngle * 0.3));
+    } else {
+      this.targetLean = 0;
+    }
+    
+    // Stretch based on speed (faster = more stretched)
+    const speedFactor = Math.min(speed / 15, 1);
+    this.targetStretch = 1 + (this.maxStretch - 1) * speedFactor * (isEvading ? 1.2 : 0.8);
+    
+    // Bank on acceleration (turning)
+    const turnRate = accelX * velocityY - accelY * velocityX;
+    this.targetBank = Math.max(-this.maxBank, Math.min(this.maxBank, turnRate * 0.5));
+    
+    // Smooth interpolation
+    this.lean += (this.targetLean - this.lean) * this.leanSmoothing;
+    this.stretch += (this.targetStretch - this.stretch) * this.stretchSmoothing;
+    this.bank += (this.targetBank - this.bank) * this.leanSmoothing;
+    
+    // Organic micro-movements
+    this.wobblePhase += deltaTime * 0.003;
+    this.breathePhase += deltaTime * 0.001;
+    
+    const wobbleAmount = speed < 2 ? 0.8 : 0.3; // More wobble when slow
+    const wobble = Math.sin(this.wobblePhase) * wobbleAmount;
+    const breathe = Math.sin(this.breathePhase) * 0.02 + 1;
+    
+    return {
+      lean: this.lean,
+      stretch: this.stretch,
+      bank: this.bank,
+      wobble: wobble,
+      breathe: breathe,
+    };
+  }
+  
+  // Reset dynamics (e.g., when mode changes)
+  reset(): void {
+    this.lean = 0;
+    this.targetLean = 0;
+    this.stretch = 1;
+    this.targetStretch = 1;
+    this.bank = 0;
+    this.targetBank = 0;
+  }
+  
+  getState(): BodyDynamicsState {
+    return {
+      lean: this.lean,
+      stretch: this.stretch,
+      bank: this.bank,
+      wobble: Math.sin(this.wobblePhase) * (this.stretch < 1.05 ? 0.8 : 0.3),
+      breathe: Math.sin(this.breathePhase) * 0.02 + 1,
+    };
+  }
+}
+
+// ============================================
 // ANIMATION HANDLER
 // ============================================
 export class AnimationHandler {
@@ -1143,6 +1371,9 @@ export class WorkerSwarmController {
 // ============================================
 export type WorkerBehavior = 'ORBIT' | 'IDLE_WANDER' | 'ATTACK' | 'FORMATION' | 'RETURN' | 'SLEEP';
 
+// Attack phase types for visual effects
+export type AttackPhase = 'IDLE' | 'WINDUP' | 'STRIKE' | 'RETURN' | 'COOLDOWN';
+
 export interface IndependentWorkerState {
   id: number;
   // Position-based physics
@@ -1161,6 +1392,12 @@ export interface IndependentWorkerState {
   attackTarget: { x: number; y: number } | null;
   attackCooldown: number;
   isAttacking: boolean;
+  // Attack phase for animations
+  attackPhase: AttackPhase;
+  attackPhaseTimer: number;
+  // Return path for swoosh animation
+  returnPath: { startX: number; startY: number; controlX: number; controlY: number } | null;
+  returnProgress: number;
   // Formation slot
   formationSlot: { x: number; y: number } | null;
   // Animation
@@ -1168,6 +1405,8 @@ export interface IndependentWorkerState {
   wingPhase: number;
   energyLevel: number;
   phase: number; // Noise offset
+  // Trail effect for attack
+  trailPositions: Array<{ x: number; y: number; age: number }>;
 }
 
 // Formation patterns relative to queen center
@@ -1238,11 +1477,16 @@ export class IndependentWorkerHandler {
       attackTarget: null,
       attackCooldown: 0,
       isAttacking: false,
+      attackPhase: 'IDLE',
+      attackPhaseTimer: 0,
+      returnPath: null,
+      returnProgress: 0,
       formationSlot: null,
       size: 0.85 + Math.random() * 0.25,  // 85-110% size (larger, visible bees)
       wingPhase: Math.random() * Math.PI * 2,
       energyLevel: 0.5 + Math.random() * 0.5,
       phase: Math.random() * Math.PI * 2,
+      trailPositions: [],
     };
   }
   
@@ -1731,6 +1975,10 @@ export class IndependentWorkerHandler {
     isAttacking: boolean;
     targetX: number;
     targetY: number;
+    attackPhase: AttackPhase;
+    attackPhaseProgress: number;
+    trailPositions: Array<{ x: number; y: number; age: number }>;
+    velocity: { x: number; y: number };
   }> {
     return this.workers.map(w => {
       // Calculate rotation from velocity
@@ -1743,6 +1991,11 @@ export class IndependentWorkerHandler {
         rotation = (w.orbitAngle + Math.PI / 2) * (180 / Math.PI);
       }
       
+      // Calculate attack phase progress (0-1 within current phase)
+      const phaseDurations = { IDLE: 0, WINDUP: 120, STRIKE: 250, RETURN: 500, COOLDOWN: 1000 };
+      const phaseDuration = phaseDurations[w.attackPhase] || 1;
+      const attackPhaseProgress = Math.min(1, w.attackPhaseTimer / phaseDuration);
+      
       return {
         id: w.id,
         x: w.x,
@@ -1754,6 +2007,10 @@ export class IndependentWorkerHandler {
         isAttacking: w.isAttacking,
         targetX: w.attackTarget?.x || 0,
         targetY: w.attackTarget?.y || 0,
+        attackPhase: w.attackPhase,
+        attackPhaseProgress,
+        trailPositions: w.trailPositions,
+        velocity: { x: w.vx, y: w.vy },
       };
     });
   }
@@ -2324,6 +2581,8 @@ export class BeeController {
   public movement: MovementController;
   public season: SeasonEventHandler;
   public unity: SwarmUnityController;
+  public headAim: HeadAimHandler;
+  public bodyDynamics: BodyDynamicsHandler;
 
   constructor() {
     this.direction = new DirectionHandler();
@@ -2335,6 +2594,8 @@ export class BeeController {
     this.movement = new MovementController();
     this.season = new SeasonEventHandler();
     this.unity = new SwarmUnityController(8);
+    this.headAim = new HeadAimHandler();
+    this.bodyDynamics = new BodyDynamicsHandler();
   }
 
   // Initialize movement controller with viewport and starting position
@@ -2345,11 +2606,13 @@ export class BeeController {
   }
 
   // Main update loop - returns new position from movement controller
-  updateAutonomous(deltaTime: number, cursorX: number, cursorY: number, cursorVelX: number, cursorVelY: number): {
+  updateAutonomous(deltaTime: number, cursorX: number, cursorY: number, cursorVelX: number, cursorVelY: number, isEmoting: boolean = false): {
     position: Vector2;
     velocity: Vector2;
     state: MovementState;
     speed: number;
+    headAim: HeadAimState;
+    bodyDynamics: BodyDynamicsState;
   } {
     // Update cursor tracking
     this.movement.updateCursor(cursorX, cursorY, cursorVelX, cursorVelY);
@@ -2361,7 +2624,34 @@ export class BeeController {
     this.direction.update(result.velocity.x, result.velocity.y);
     this.animation.update(deltaTime, result.velocity.x, result.velocity.y);
     
-    return result;
+    // Update head aim - tracks cursor independently of body
+    const queenCenterX = result.position.x;
+    const queenCenterY = result.position.y;
+    const headAim = this.headAim.update(
+      deltaTime,
+      queenCenterX,
+      queenCenterY,
+      cursorX,
+      cursorY,
+      result.velocity.x,
+      result.velocity.y,
+      isEmoting
+    );
+    
+    // Update body dynamics - natural lean/stretch/bank based on movement
+    const isEvading = result.state === 'EVADING';
+    const bodyDynamics = this.bodyDynamics.update(
+      deltaTime,
+      result.velocity.x,
+      result.velocity.y,
+      isEvading
+    );
+    
+    return {
+      ...result,
+      headAim,
+      bodyDynamics,
+    };
   }
 
   update(deltaTime: number, velocityX: number, velocityY: number): void {

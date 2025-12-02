@@ -11,6 +11,9 @@
 import { motion } from 'framer-motion';
 import type { QueenBeeMode } from '@/contexts/queen-bee-context';
 
+// Attack phase types for visual effects
+type AttackPhase = 'IDLE' | 'WINDUP' | 'STRIKE' | 'RETURN' | 'COOLDOWN';
+
 export interface OrbitingWorkerBeeProps {
   id: number;
   x: number;                    // X position
@@ -34,6 +37,10 @@ export interface OrbitingWorkerBeeProps {
   formationAngle?: number;      // Override rotation for formation
   emotePhase?: number;          // Synchronized emote animation phase (0-1)
   transitionProgress?: number;  // Transition progress for smooth unity/disperse (0-1)
+  attackPhase?: AttackPhase;    // Current attack phase for animations
+  attackPhaseProgress?: number; // Progress within current attack phase (0-1)
+  trailPositions?: Array<{ x: number; y: number; age: number }>; // Speed trail positions
+  velocity?: { x: number; y: number }; // Current velocity for trail direction
 }
 
 // Mode colors matching the original canvas design
@@ -84,6 +91,10 @@ export function OrbitingWorkerBee({
   transitionProgress = 0,
   lightIntensity = 0.8,
   lightGlowRadius = 10,
+  attackPhase = 'IDLE',
+  attackPhaseProgress = 0,
+  trailPositions = [],
+  velocity = { x: 0, y: 0 },
 }: OrbitingWorkerBeeProps) {
   // Worker bees should be ~45% the size of the queen bee (queen is ~80-100px)
   // Base size 20px makes workers appropriately smaller than queen
@@ -102,6 +113,33 @@ export function OrbitingWorkerBee({
   const bodyColor = isAngry ? (isAttacking ? '#FF3333' : '#eab308') : isHappy ? '#FFD700' : '#eab308';
   const wingOpacity = 0.2 + wingFlutter * 0.3 + (isAttacking ? 0.15 : 0);
   const glowIntensity = (energyLevel * 0.6 + (isAttacking ? 0.4 : 0));
+  
+  // Attack phase visual effects
+  const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2);
+  const isStriking = attackPhase === 'STRIKE';
+  const isWindup = attackPhase === 'WINDUP';
+  const isReturning = attackPhase === 'RETURN';
+  
+  // Scale effects based on attack phase
+  const attackScale = isWindup 
+    ? 1.1 + attackPhaseProgress * 0.1  // Windup: grow slightly
+    : isStriking 
+      ? 1.2 - attackPhaseProgress * 0.1  // Strike: shrink as rushing forward
+      : isReturning 
+        ? 1.0 + (1 - attackPhaseProgress) * 0.1  // Return: shrinking back to normal
+        : 1.0;
+  
+  // Glow intensity during attack
+  const attackGlow = isStriking 
+    ? 15 + speed * 0.5  // Intense glow while striking
+    : isReturning 
+      ? 10 * (1 - attackPhaseProgress)  // Fade glow on return
+      : isWindup 
+        ? 8 * attackPhaseProgress  // Build glow during windup
+        : 0;
+  
+  // Trail opacity based on speed and phase
+  const showTrail = (isStriking || isReturning) && speed > 3;
 
   // Wing flutter animation
   const wingAngle = wingFlutter * 0.5;
@@ -145,39 +183,103 @@ export function OrbitingWorkerBee({
     ? (isHappy ? 1.5 : isAngry ? 1.3 : isSleepy ? 0.5 : 1) 
     : 1;
 
+  // Attack trail color - matches mode but more saturated
+  const trailColor = isAttacking ? '#FF4444' : modeColor;
+  
   return (
-    <motion.div
-      className="fixed pointer-events-none z-[99]"
-      style={{
-        left: displayX - baseSize / 2,
-        top: displayY - baseSize / 2,
-        width: baseSize,
-        height: baseSize,
-      }}
-      initial={{ opacity: 0, scale: 0 }}
-      animate={{
-        opacity: formationOpacity,
-        scale: isAttacking ? 1.15 : formationScale,
-        rotate: isAttacking ? displayRotation + 180 : displayRotation,
-      }}
-      exit={{ opacity: 0, scale: 0 }}
-      transition={{
-        opacity: { duration: useFormation ? 0.15 : 0.3 },
-        scale: { 
-          duration: useFormation ? 0.12 : isAttacking ? 0.2 : 0.3,
-          type: useFormation ? 'spring' : 'tween',
-          stiffness: 300,
-          damping: 20,
-        },
-        rotate: {
-          type: 'spring',
-          stiffness: useFormation ? 250 : isAttacking ? 200 : 100,
-          damping: useFormation ? 18 : isAttacking ? 10 : 15,
-        },
-      }}
-      data-testid={`orbiting-worker-bee-${id}`}
-    >
-      <svg
+    <>
+      {/* ATTACK SPEED TRAIL - rendered behind the bee */}
+      {showTrail && (
+        <svg
+          className="fixed pointer-events-none z-[98]"
+          style={{
+            left: displayX - 30,
+            top: displayY - 30,
+            width: 60,
+            height: 60,
+            overflow: 'visible',
+          }}
+        >
+          <defs>
+            <linearGradient id={`trail-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor={trailColor} stopOpacity="0" />
+              <stop offset="100%" stopColor={trailColor} stopOpacity={0.6 * Math.min(1, speed / 10)} />
+            </linearGradient>
+          </defs>
+          {/* Speed lines trailing behind */}
+          {[...Array(3)].map((_, i) => {
+            const trailOffset = (i + 1) * 8;
+            const trailLength = 15 + speed * 2;
+            const angle = Math.atan2(-velocity.y, -velocity.x);
+            const startX = 30 + Math.cos(angle) * trailOffset;
+            const startY = 30 + Math.sin(angle) * trailOffset;
+            const endX = startX + Math.cos(angle) * trailLength;
+            const endY = startY + Math.sin(angle) * trailLength;
+            return (
+              <line
+                key={i}
+                x1={startX}
+                y1={startY}
+                x2={endX}
+                y2={endY}
+                stroke={`url(#trail-${id})`}
+                strokeWidth={3 - i * 0.5}
+                strokeLinecap="round"
+                opacity={0.8 - i * 0.2}
+              />
+            );
+          })}
+        </svg>
+      )}
+      
+      {/* ATTACK GLOW AURA - rendered behind bee during attack */}
+      {attackGlow > 0 && (
+        <div
+          className="fixed pointer-events-none z-[98] rounded-full"
+          style={{
+            left: displayX - baseSize,
+            top: displayY - baseSize,
+            width: baseSize * 2,
+            height: baseSize * 2,
+            background: `radial-gradient(circle, ${trailColor}40 0%, transparent 70%)`,
+            filter: `blur(${attackGlow / 2}px)`,
+            opacity: Math.min(1, attackGlow / 15),
+          }}
+        />
+      )}
+      
+      <motion.div
+        className="fixed pointer-events-none z-[99]"
+        style={{
+          left: displayX - baseSize / 2,
+          top: displayY - baseSize / 2,
+          width: baseSize,
+          height: baseSize,
+        }}
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{
+          opacity: formationOpacity,
+          scale: isAttacking ? 1.15 * attackScale : formationScale,
+          rotate: isAttacking ? displayRotation + 180 : displayRotation,
+        }}
+        exit={{ opacity: 0, scale: 0 }}
+        transition={{
+          opacity: { duration: useFormation ? 0.15 : 0.3 },
+          scale: { 
+            duration: useFormation ? 0.12 : isAttacking ? 0.1 : 0.3,
+            type: isAttacking ? 'spring' : useFormation ? 'spring' : 'tween',
+            stiffness: isAttacking ? 400 : 300,
+            damping: isAttacking ? 15 : 20,
+          },
+          rotate: {
+            type: 'spring',
+            stiffness: useFormation ? 250 : isAttacking ? 200 : 100,
+            damping: useFormation ? 18 : isAttacking ? 10 : 15,
+          },
+        }}
+        data-testid={`orbiting-worker-bee-${id}`}
+      >
+        <svg
         width={baseSize}
         height={baseSize}
         viewBox="0 0 40 48"
@@ -390,6 +492,7 @@ export function OrbitingWorkerBee({
         )}
       </svg>
     </motion.div>
+    </>
   );
 }
 

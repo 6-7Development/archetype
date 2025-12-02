@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChristmasDecorations, type DecorationObstacle } from './christmas-decorations';
 import { OrbitingWorkerBee, type OrbitingWorkerBeeProps } from './orbiting-worker-bee';
-import { BeeController, type FacingState, type TouchReaction, type WorkerBeeState, type MovementState, type Vector2 } from '@/lib/bee-handlers';
+import { BeeController, type FacingState, type TouchReaction, type WorkerBeeState, type MovementState, type Vector2, type HeadAimState, type BodyDynamicsState } from '@/lib/bee-handlers';
 
 // Seasonal Detection - Check if it's Christmas season (Nov 15 - Jan 5)
 function isChristmasSeason(): boolean {
@@ -309,6 +309,20 @@ export function FloatingQueenBee() {
   const [showThought, setShowThought] = useState(false);
   const [facing, setFacing] = useState<FacingState>('FRONT');
   const [touchReaction, setTouchReaction] = useState<TouchReaction | null>(null);
+  const [headAim, setHeadAim] = useState<HeadAimState>({
+    rotation: 0,
+    tilt: 0,
+    lookIntensity: 0,
+    isBlinking: false,
+    blinkProgress: 0,
+  });
+  const [bodyDynamics, setBodyDynamics] = useState<BodyDynamicsState>({
+    lean: 0,
+    stretch: 1,
+    bank: 0,
+    wobble: 0,
+    breathPhase: 0,
+  });
   const [orbitingWorkers, setOrbitingWorkers] = useState<Array<{
     id: number;
     x: number;
@@ -793,6 +807,10 @@ export function FloatingQueenBee() {
       const newFacing = beeController.direction.getFacing();
       setFacing(newFacing);
       
+      // Update head aim and body dynamics from movement controller
+      setHeadAim(result.headAim);
+      setBodyDynamics(result.bodyDynamics);
+      
       // Update emotional state based on movement state
       const newEmotionalState = mapMovementToEmotional(result.state);
       if (newEmotionalState !== emotionalState && emotionalState !== 'FRENZY') {
@@ -1086,6 +1104,7 @@ export function FloatingQueenBee() {
           Workers are persistent (not "summoned") - they orbit queen constantly 
           Each worker has individual Christmas light colors during the holiday season
           CHRISTMAS LIGHTS: Orchestrated patterns (chase, wave, twinkle) with bright glowing bulbs
+          ATTACK ANIMATIONS: Speed trails, glow effects, and phase-based scaling during attacks
           UNITY MODE: Workers unite with queen during emotes and disperse during idle */}
       <AnimatePresence mode="sync">
         {orbitingWorkers.map((worker) => {
@@ -1122,6 +1141,10 @@ export function FloatingQueenBee() {
               formationAngle={formationTarget?.angle}
               emotePhase={emotePhase}
               transitionProgress={transitionProgress}
+              attackPhase={worker.attackPhase}
+              attackPhaseProgress={worker.attackPhaseProgress}
+              trailPositions={worker.trailPositions}
+              velocity={worker.velocity}
             />
           );
         })}
@@ -1200,6 +1223,8 @@ export function FloatingQueenBee() {
               velocity={beeVelocity}
               isChristmas={isChristmas}
               facing={facing}
+              headAim={headAim}
+              bodyDynamics={bodyDynamics}
             />
           </div>
 

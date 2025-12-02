@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, forwardRef } from "react";
 import { cn } from "@/lib/utils";
-import type { FacingState } from "@/lib/bee-handlers";
+import type { FacingState, HeadAimState, BodyDynamicsState } from "@/lib/bee-handlers";
 
 export type BeeMode = "IDLE" | "LISTENING" | "TYPING" | "THINKING" | "CODING" | "BUILDING" | "SUCCESS" | "ERROR" | "SWARM" | "FRENZY";
 
@@ -17,6 +17,8 @@ interface QueenBeeCanvasProps {
   velocity?: { x: number; y: number };
   isChristmas?: boolean;
   facing?: FacingState;
+  headAim?: HeadAimState;       // Independent head tracking state
+  bodyDynamics?: BodyDynamicsState;  // Natural body physics state
 }
 
 class AgentBeeAnimation {
@@ -67,6 +69,22 @@ class AgentBeeAnimation {
       facingRotation: 0,
       facingScaleX: 1,
       facingTiltY: 0,
+      // Independent head tracking state
+      headAim: {
+        rotation: 0,      // Head rotation in radians (left/right)
+        tilt: 0,          // Head tilt (up/down)
+        lookIntensity: 0, // How intently looking at target (0-1)
+        isBlinking: false,
+        blinkProgress: 0,
+      } as HeadAimState,
+      // Natural body dynamics state
+      bodyDynamics: {
+        lean: 0,       // Forward lean angle (-1 to 1)
+        stretch: 1,    // Body stretch factor (0.95 to 1.08)
+        bank: 0,       // Tilt on turns (-1 to 1)
+        wobble: 0,     // Micro-wobble phase (0 to 1)
+        breathPhase: 0,// Breathing animation phase
+      } as BodyDynamicsState,
     };
 
     this.workers = [];
@@ -142,6 +160,14 @@ class AgentBeeAnimation {
 
   setFacing(facing: FacingState) {
     this.state.targetFacing = facing;
+  }
+
+  setHeadAim(headAim: HeadAimState) {
+    this.state.headAim = { ...headAim };
+  }
+
+  setBodyDynamics(bodyDynamics: BodyDynamicsState) {
+    this.state.bodyDynamics = { ...bodyDynamics };
   }
 
   updateFacingAnimation() {
@@ -434,19 +460,29 @@ class AgentBeeAnimation {
     const ctx = this.ctx;
     ctx.save();
     
-    const { bodyBend, bodyStretch, smoothVelocity, facingRotation, facingScaleX, facingTiltY } = this.state;
+    const { bodyBend, bodyStretch, smoothVelocity, facingRotation, facingScaleX, facingTiltY, headAim, bodyDynamics } = this.state;
     const speed = Math.sqrt(smoothVelocity.x ** 2 + smoothVelocity.y ** 2);
     
-    // Smooth bobbing hover animation
+    // Apply bodyDynamics: breathing + micro-wobble
+    const breathScale = 1 + Math.sin(bodyDynamics.breathPhase * Math.PI * 2) * 0.02;
+    const microWobble = Math.sin(bodyDynamics.wobble * Math.PI * 2) * 0.008;
+    
+    // Smooth bobbing hover animation with body dynamics
     const hover = Math.sin(this.state.time * 0.05) * (size * 0.1);
-    const facingHover = facingTiltY * size * 0.3; // Extra vertical offset when looking up/down
-    ctx.translate(x, y + hover + facingHover);
+    const facingHover = facingTiltY * size * 0.3;
+    const leanOffset = bodyDynamics.lean * size * 0.2; // Lean into movement
+    ctx.translate(x + leanOffset, y + hover + facingHover);
     
-    // Apply facing rotation (smooth transition when turning)
-    ctx.rotate(bodyBend + facingRotation);
+    // Apply body dynamics: bank (tilt on turns) + lean rotation
+    const bankAngle = bodyDynamics.bank * 0.15; // Tilt on curves
+    const leanAngle = bodyDynamics.lean * 0.1;  // Slight rotation when leaning
     
-    // Apply horizontal flip when facing left (smooth scale transition)
-    ctx.scale(facingScaleX / bodyStretch, bodyStretch);
+    // Apply facing rotation with body dynamics overlay
+    ctx.rotate(bodyBend + facingRotation + bankAngle + leanAngle + microWobble);
+    
+    // Apply horizontal flip + body dynamics stretch
+    const dynamicStretch = bodyStretch * bodyDynamics.stretch * breathScale;
+    ctx.scale(facingScaleX / dynamicStretch, dynamicStretch);
     
     const dragTilt = Math.atan2(smoothVelocity.y, smoothVelocity.x) * 0.15;
     const wobble = speed > 2 ? Math.sin(this.state.time * 0.3) * speed * 0.02 : 0;
@@ -540,29 +576,64 @@ class AgentBeeAnimation {
     ctx.fill();
     ctx.globalAlpha = 1.0;
 
+    // === HEAD SECTION with independent headAim transforms ===
+    ctx.save();
     ctx.translate(0, -size * 0.5);
+    
+    // Apply headAim: rotation (left/right look) and tilt (up/down look)
+    const headRotation = headAim.rotation * 0.5; // Scale down for subtle effect
+    const headTilt = headAim.tilt * 0.3;
+    ctx.rotate(headRotation);
+    
+    // Head base
     ctx.fillStyle = "#0a0a0a";
     ctx.beginPath();
-    ctx.ellipse(0, 0, size * 0.35, size * 0.3, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, headTilt * size * 0.1, size * 0.35, size * 0.3, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.shadowBlur = 5;
+    // Eyes with look direction and blink animation
+    ctx.shadowBlur = 5 + headAim.lookIntensity * 5; // More intense glow when focused
     ctx.shadowColor = modeColor;
     ctx.fillStyle = "#fff";
+    
+    // Eye positions shift based on headAim rotation for "looking at" effect
+    const eyeShift = headAim.rotation * size * 0.08;
+    const eyeVertShift = headAim.tilt * size * 0.05;
+    
+    // Blink animation - squash eyes vertically during blink
+    const blinkScale = headAim.isBlinking ? Math.max(0.1, 1 - headAim.blinkProgress * 0.9) : 1;
+    
+    // Left eye
     ctx.beginPath();
-    ctx.ellipse(-size * 0.2, -size * 0.1, size * 0.1, size * 0.15, -0.2, 0, Math.PI * 2);
+    ctx.ellipse(
+      -size * 0.2 + eyeShift, 
+      -size * 0.1 + headTilt * size * 0.1 + eyeVertShift, 
+      size * 0.1, 
+      size * 0.15 * blinkScale, 
+      -0.2, 0, Math.PI * 2
+    );
     ctx.fill();
+    
+    // Right eye
     ctx.beginPath();
-    ctx.ellipse(size * 0.2, -size * 0.1, size * 0.1, size * 0.15, 0.2, 0, Math.PI * 2);
+    ctx.ellipse(
+      size * 0.2 + eyeShift, 
+      -size * 0.1 + headTilt * size * 0.1 + eyeVertShift, 
+      size * 0.1, 
+      size * 0.15 * blinkScale, 
+      0.2, 0, Math.PI * 2
+    );
     ctx.fill();
     ctx.shadowBlur = 0;
 
     ctx.strokeStyle = modeColor;
     ctx.lineWidth = 1;
-    // Hat INSIDE bee coordinate system (moves WITH bee)
+    
+    // Santa Hat - also affected by head transforms
     if (this.isChristmas) {
       ctx.save();
-      ctx.translate(0, -size * 0.65);
+      ctx.translate(0, -size * 0.65 + headTilt * size * 0.1);
+      ctx.rotate(-headRotation * 0.3); // Hat sways opposite to head rotation
       ctx.fillStyle = '#DC2626';
       ctx.beginPath();
       ctx.moveTo(-size * 0.35, 0);
@@ -588,8 +659,10 @@ class AgentBeeAnimation {
       ctx.fill();
       ctx.restore();
     }
+    
+    ctx.restore(); // End head section
 
-    ctx.restore();
+    ctx.restore(); // End main bee transform
   }
 
   drawRealWorker(
@@ -737,7 +810,7 @@ export interface QueenBeeCanvasHandle {
 }
 
 const QueenBeeCanvasComponent = forwardRef<QueenBeeCanvasHandle, QueenBeeCanvasProps>(
-  ({ mode = "IDLE", width = 100, height = 100, className, velocity = { x: 0, y: 0 }, isChristmas = false, facing = 'FRONT' }, ref) => {
+  ({ mode = "IDLE", width = 100, height = 100, className, velocity = { x: 0, y: 0 }, isChristmas = false, facing = 'FRONT', headAim, bodyDynamics }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animationRef = useRef<AgentBeeAnimation | null>(null);
@@ -781,6 +854,20 @@ const QueenBeeCanvasComponent = forwardRef<QueenBeeCanvasHandle, QueenBeeCanvasP
         animationRef.current.isChristmas = isChristmas;
       }
     }, [isChristmas]);
+
+    // Update head aim state for independent head tracking
+    useEffect(() => {
+      if (animationRef.current && headAim) {
+        animationRef.current.setHeadAim(headAim);
+      }
+    }, [headAim]);
+
+    // Update body dynamics for natural movement physics
+    useEffect(() => {
+      if (animationRef.current && bodyDynamics) {
+        animationRef.current.setBodyDynamics(bodyDynamics);
+      }
+    }, [bodyDynamics]);
 
     // Expose resetRagdoll via ref
     useEffect(() => {
