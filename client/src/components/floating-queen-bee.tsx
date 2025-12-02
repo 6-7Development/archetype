@@ -12,7 +12,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { QueenBeeCanvas, BeeMode } from './queen-bee-canvas';
 import { useQueenBee, SIZE_DIMENSIONS, QueenBeeMode } from '@/contexts/queen-bee-context';
-import { X, GripVertical, RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText } from 'lucide-react';
+import { GripVertical, RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -955,21 +955,6 @@ export function FloatingQueenBee() {
           <div className="absolute top-1 left-1/2 -translate-x-1/2 opacity-30 hover:opacity-60 transition-opacity">
             <GripVertical className="w-3 h-3 text-foreground/50" />
           </div>
-
-          {/* Close button */}
-          <Button
-            size="icon"
-            variant="ghost"
-            className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-background/90 border border-border/50 
-              hover:bg-destructive hover:text-destructive-foreground p-0"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleVisibility();
-            }}
-            data-testid="button-hide-queen-bee"
-          >
-            <X className="w-3 h-3" />
-          </Button>
 
           {/* Mode Indicator Dot */}
           <div
