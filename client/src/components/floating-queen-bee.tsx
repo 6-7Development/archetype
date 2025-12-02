@@ -240,10 +240,10 @@ interface WorkerBeeProps {
 }
 
 function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: WorkerBeeProps) {
-  // FIX: Initialize position near queen with small offset based on ID for visual spread
+  // FIX: Initialize position near queen with offset based on ID for visual spread - increased distance for visibility
   const initialOffset = useMemo(() => ({
-    x: Math.cos(id * (Math.PI / 4)) * 15,
-    y: Math.sin(id * (Math.PI / 4)) * 15,
+    x: Math.cos(id * (Math.PI / 4)) * 35,
+    y: Math.sin(id * (Math.PI / 4)) * 35,
   }), [id]);
   
   const [pos, setPos] = useState({ x: queenX + initialOffset.x, y: queenY + initialOffset.y });
@@ -276,9 +276,9 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
   // Update bee physics and behavior
   useEffect(() => {
     if (!isChasing) {
-      // FIX: Return to near queen position (not random spots) - use consistent offset based on bee ID
-      const returnX = queenX + Math.cos(id * (Math.PI / 4)) * 20;
-      const returnY = queenY + Math.sin(id * (Math.PI / 4)) * 20;
+      // FIX: Return to near queen position (not random spots) - use consistent offset based on bee ID - increased distance
+      const returnX = queenX + Math.cos(id * (Math.PI / 4)) * 40;
+      const returnY = queenY + Math.sin(id * (Math.PI / 4)) * 40;
       
       // Smoothly move back to queen instead of teleporting
       const dx = returnX - posRef.current.x;
@@ -431,7 +431,7 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
   
   return (
     <motion.div
-      className="fixed pointer-events-none z-[99]"
+      className="fixed pointer-events-none z-[101]"
       style={{
         left: pos.x,
         top: pos.y,

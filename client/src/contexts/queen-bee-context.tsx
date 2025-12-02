@@ -90,11 +90,11 @@ export interface QueenBeeConfig {
   isVisible: boolean;
 }
 
-// Size dimensions
+// Size dimensions - Increased for better visuals
 export const SIZE_DIMENSIONS = {
-  sm: 48,
-  md: 64,
-  lg: 80,
+  sm: 56,
+  md: 80,
+  lg: 100,
 };
 
 // Error state tracking
