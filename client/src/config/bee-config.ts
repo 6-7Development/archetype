@@ -7,10 +7,11 @@
 
 export const BeeConfig = {
   // ====== SIZES (in pixels) ======
+  // Optimized to match typical website mascots (Google, Slack, Intercom, Zendesk)
   sizes: {
-    mobile: 160,      // Small screens - balanced visibility
-    desktop: 200,     // Standard desktop - clear animations
-    large: 240,       // Large displays - maximum clarity
+    mobile: 100,      // Small screens - like Slack/Zendesk mascots
+    desktop: 120,     // Standard desktop - noticeable but not intrusive
+    large: 150,       // Large displays - still balanced, not dominating
   },
 
   // ====== COLORS & GLOWS (for different emotional states) ======
@@ -85,6 +86,40 @@ export const BeeConfig = {
     backgroundColor: 'rgba(0,0,0,0.8)',  // Dark background
     textColor: 'rgba(255,255,255,0.95)', // Light text
     showDuration: 3000,      // ms to show thought before fading
+    offsetY: -60,            // pixels above the bee to display thought
+  },
+
+  // ====== HOLIDAY CONFIG ======
+  holiday: {
+    enabled: true,           // Enable/disable all holiday effects
+    season: 'christmas',     // 'christmas', 'halloween', 'easter', 'thanksgiving'
+    
+    // Christmas-specific config
+    christmas: {
+      snowHatStyle: 'classic',  // 'classic' (fluffy), 'stocking' (festive), 'elf' (pointy)
+      snowHatColor: '#FFFFFF',
+      snowHatTrim: '#FF0000',
+      
+      // Snow effects on page elements
+      snowOnLetters: true,     // Add snow accumulation to text
+      snowOnBorders: true,     // Add snow on element borders
+      snowOnHeroImages: true,  // Add snow effect overlay on hero sections
+      
+      // Decorative elements
+      ornamentCount: 12,       // Number of ornaments to render
+      wreathCount: 4,          // Wreaths in corners
+      garlandEnabled: true,    // Garland across top/bottom
+      
+      // Holiday thoughts (random mascot messages)
+      thoughts: [
+        "The snow is falling... so peaceful! ❄️",
+        "I love the holiday season! 🎄",
+        "Time for some festive coding! 🎅",
+        "Spreading holiday cheer to all developers! 🎁",
+        "Winter code is the best code! ⛄",
+        "Let's build something magical this season! ✨",
+      ],
+    },
   },
 };
 
