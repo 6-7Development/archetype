@@ -118,16 +118,162 @@ class ScoutToolRegistry {
   validateToolCall(toolId: string, params: Record<string, any>): {
     valid: boolean;
     errors: string[];
+    warnings: string[];
   } {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+    
+    // Check tool availability
     const capability = this.checkToolCapability(toolId);
     if (!capability.isAvailable) {
       return {
         valid: false,
         errors: [`Tool not available: ${capability.reason}`],
+        warnings: [],
       };
     }
 
-    return validateToolCall(toolId, params);
+    // Get tool definition for schema validation
+    const tool = getToolById(toolId);
+    if (!tool) {
+      return {
+        valid: false,
+        errors: [`Tool definition not found: ${toolId}`],
+        warnings: [],
+      };
+    }
+
+    // Runtime parameter validation
+    if (tool.inputSchema) {
+      const schema = tool.inputSchema;
+      
+      // Check required parameters
+      if (schema.required && Array.isArray(schema.required)) {
+        for (const requiredParam of schema.required) {
+          if (params[requiredParam] === undefined || params[requiredParam] === null) {
+            errors.push(`Missing required parameter: ${requiredParam}`);
+          }
+        }
+      }
+
+      // Validate parameter types
+      if (schema.properties) {
+        for (const [paramName, paramValue] of Object.entries(params)) {
+          const propSchema = schema.properties[paramName];
+          
+          if (!propSchema) {
+            warnings.push(`Unknown parameter: ${paramName}`);
+            continue;
+          }
+
+          // Type validation
+          const expectedType = propSchema.type;
+          const actualType = Array.isArray(paramValue) ? 'array' : typeof paramValue;
+          
+          if (expectedType && expectedType !== actualType) {
+            // Allow null for optional params
+            if (paramValue !== null || schema.required?.includes(paramName)) {
+              errors.push(`Parameter '${paramName}' has wrong type: expected ${expectedType}, got ${actualType}`);
+            }
+          }
+
+          // String length validation
+          if (expectedType === 'string' && typeof paramValue === 'string') {
+            if (propSchema.maxLength && paramValue.length > propSchema.maxLength) {
+              errors.push(`Parameter '${paramName}' exceeds max length: ${paramValue.length} > ${propSchema.maxLength}`);
+            }
+            if (propSchema.minLength && paramValue.length < propSchema.minLength) {
+              errors.push(`Parameter '${paramName}' below min length: ${paramValue.length} < ${propSchema.minLength}`);
+            }
+          }
+
+          // Number range validation
+          if (expectedType === 'number' && typeof paramValue === 'number') {
+            if (propSchema.maximum !== undefined && paramValue > propSchema.maximum) {
+              errors.push(`Parameter '${paramName}' exceeds maximum: ${paramValue} > ${propSchema.maximum}`);
+            }
+            if (propSchema.minimum !== undefined && paramValue < propSchema.minimum) {
+              errors.push(`Parameter '${paramName}' below minimum: ${paramValue} < ${propSchema.minimum}`);
+            }
+          }
+
+          // Enum validation
+          if (propSchema.enum && !propSchema.enum.includes(paramValue)) {
+            errors.push(`Parameter '${paramName}' must be one of: ${propSchema.enum.join(', ')}`);
+          }
+        }
+      }
+    }
+
+    // Also call the original validation from config
+    const configValidation = validateToolCall(toolId, params);
+    if (!configValidation.valid) {
+      errors.push(...configValidation.errors);
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings,
+    };
+  }
+
+  /**
+   * Validate and execute tool with proper error handling
+   */
+  async validateAndExecute<T>(
+    toolId: string,
+    params: Record<string, any>,
+    executor: (params: Record<string, any>) => Promise<T>
+  ): Promise<{
+    success: boolean;
+    result?: T;
+    error?: string;
+    validationErrors?: string[];
+    executionTimeMs: number;
+  }> {
+    const startTime = Date.now();
+    
+    // Validate parameters first
+    const validation = this.validateToolCall(toolId, params);
+    if (!validation.valid) {
+      this.recordToolCall(toolId, params, 'failed', validation.errors.join('; '));
+      return {
+        success: false,
+        error: 'Validation failed',
+        validationErrors: validation.errors,
+        executionTimeMs: Date.now() - startTime,
+      };
+    }
+
+    // Log warnings but continue
+    if (validation.warnings.length > 0) {
+      console.warn(`[SCOUT-TOOLS] Warnings for ${toolId}:`, validation.warnings);
+    }
+
+    try {
+      const result = await executor(params);
+      const executionTimeMs = Date.now() - startTime;
+      
+      this.recordToolCall(toolId, params, 'success', undefined, result, executionTimeMs);
+      
+      return {
+        success: true,
+        result,
+        executionTimeMs,
+      };
+    } catch (error: any) {
+      const executionTimeMs = Date.now() - startTime;
+      const errorMessage = error.message || 'Unknown execution error';
+      
+      this.recordToolCall(toolId, params, 'failed', errorMessage, undefined, executionTimeMs);
+      
+      return {
+        success: false,
+        error: errorMessage,
+        executionTimeMs,
+      };
+    }
   }
 
   recordToolCall(
