@@ -523,38 +523,49 @@ interface OrbitingWorkerBeeProps {
   energyLevel: number;
   mode: QueenBeeMode;
   isChristmas?: boolean;
+  isAttacking?: boolean;
+  targetX?: number;
+  targetY?: number;
 }
 
-function OrbitingWorkerBee({ id, x, y, size, wingFlutter, rotation, energyLevel, mode, isChristmas }: OrbitingWorkerBeeProps) {
+function OrbitingWorkerBee({ id, x, y, size, wingFlutter, rotation, energyLevel, mode, isChristmas, isAttacking = false, targetX = 0, targetY = 0 }: OrbitingWorkerBeeProps) {
   const baseSize = 18 * size;
-  const isAngry = mode === 'ERROR' || mode === 'CONFUSED';
+  const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || isAttacking;
   const isHappy = mode === 'EXCITED' || mode === 'HELPFUL' || mode === 'CELEBRATING';
   
+  // Attack mode increases brightness and adds red tint
+  const attackIntensity = isAttacking ? 1.5 : 1;
   // Dynamic colors based on energy and mode
-  const bodyColor = isAngry ? '#E6A300' : isHappy ? '#FFD700' : '#F7B500';
-  const wingOpacity = 0.3 + wingFlutter * 0.4;
-  const glowIntensity = energyLevel * 0.6;
+  const bodyColor = isAngry ? (isAttacking ? '#FF3333' : '#E6A300') : isHappy ? '#FFD700' : '#F7B500';
+  const wingOpacity = 0.3 + wingFlutter * 0.4 + (isAttacking ? 0.2 : 0);
+  const glowIntensity = (energyLevel * 0.6 + (isAttacking ? 0.4 : 0)) * attackIntensity;
   
+  // During attacks, bee flies toward cursor instead of orbiting
+  const attackOffsetX = isAttacking && targetX ? (targetX - x) * 0.02 : 0;
+  const attackOffsetY = isAttacking && targetY ? (targetY - y) * 0.02 : 0;
+  const beeX = isAttacking ? x + attackOffsetX : x;
+  const beeY = isAttacking ? y + attackOffsetY : y;
+
   return (
     <motion.div
       className="fixed pointer-events-none z-[99]"
       style={{
-        left: x - baseSize / 2,
-        top: y - baseSize / 2,
+        left: beeX - baseSize / 2,
+        top: beeY - baseSize / 2,
         width: baseSize,
         height: baseSize,
       }}
       initial={{ opacity: 0, scale: 0 }}
       animate={{ 
         opacity: 1, 
-        scale: 1,
-        rotate: rotation,
+        scale: isAttacking ? 1.15 : 1,
+        rotate: isAttacking ? rotation + 180 : rotation,
       }}
       exit={{ opacity: 0, scale: 0 }}
       transition={{
         opacity: { duration: 0.3 },
-        scale: { duration: 0.3 },
-        rotate: { type: 'spring', stiffness: 100, damping: 15 },
+        scale: { duration: isAttacking ? 0.2 : 0.3 },
+        rotate: { type: 'spring', stiffness: isAttacking ? 200 : 100, damping: isAttacking ? 10 : 15 },
       }}
     >
       <svg 
@@ -1442,7 +1453,7 @@ export function FloatingQueenBee() {
         <FallingSnowflake key={flake.id} {...flake} windowHeight={windowDimensions.height} />
       ))}
 
-      {/* Orbiting Worker Bees - Smooth polar orbit around queen */}
+      {/* Orbiting Worker Bees - Smooth polar orbit around queen, attack on FRENZY/HUNTING */}
       <AnimatePresence mode="sync">
         {orbitingWorkers.map((worker) => (
           <OrbitingWorkerBee
@@ -1456,6 +1467,9 @@ export function FloatingQueenBee() {
             energyLevel={worker.energyLevel}
             mode={mode}
             isChristmas={isChristmas}
+            isAttacking={swarmState.isFrenzy || mode === 'HUNTING' || emotionalState === 'FRENZY'}
+            targetX={mousePos.x}
+            targetY={mousePos.y}
           />
         ))}
       </AnimatePresence>
