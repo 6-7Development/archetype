@@ -1,19 +1,20 @@
 /**
- * Floating Queen Bee - Full Emotional AI Companion
- * =================================================
- * A draggable, persistent queen bee with complete emotional range.
- * - 18 different emotional states
- * - Interactive hints when hovering UI elements
- * - Worker bees that follow mouse (spawn near queen)
- * - Woosh trail effects when dragging
- * - Contextual messages and suggestions
+ * Floating Queen Bee - Autonomous AI Companion with Predictive Evasion
+ * =====================================================================
+ * An autonomous queen bee that intelligently evades the user's cursor.
+ * - No longer draggable - moves on its own using steering behaviors
+ * - Predictive evasion: tracks cursor velocity to anticipate user movement
+ * - Emotional state machine: IDLE, CURIOUS, ALERT, EVADING, FRENZY, CELEBRATING, RESTING
+ * - Worker bees that chase cursor during swarm attacks
+ * - Woosh trail effects during fast movement
+ * - Triggers FRENZY mode when user gets too close (<50px)
  * - Seasonal themes (Christmas decorations!)
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { QueenBeeCanvas, BeeMode } from './queen-bee-canvas';
-import { useQueenBee, SIZE_DIMENSIONS, QueenBeeMode } from '@/contexts/queen-bee-context';
-import { GripVertical, RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText, Snowflake, Gift, Star, TreePine, Candy } from 'lucide-react';
+import { useQueenBee, SIZE_DIMENSIONS, QueenBeeMode, AutonomousVelocity } from '@/contexts/queen-bee-context';
+import { RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText, Snowflake, Gift, Star, TreePine, Candy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -570,9 +571,13 @@ interface WooshParticle {
   timestamp: number;
 }
 
+// Emotional state for autonomous movement
+type EmotionalState = 'IDLE' | 'CURIOUS' | 'ALERT' | 'EVADING' | 'FRENZY' | 'CELEBRATING' | 'RESTING';
+
 export function FloatingQueenBee() {
   const { 
     mode, 
+    setMode,
     config, 
     updatePosition, 
     toggleVisibility, 
@@ -588,22 +593,28 @@ export function FloatingQueenBee() {
     triggerSwarm,
     endSwarm,
     triggerFrenzy,
+    autonomousVelocity,
+    updateAutonomousVelocity,
   } = useQueenBee();
   
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [showTooltip, setShowTooltip] = useState(false);
   const [isHoveringBee, setIsHoveringBee] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 });
   const [isMouseNearBee, setIsMouseNearBee] = useState(false);
   const [wooshTrail, setWooshTrail] = useState<WooshParticle[]>([]);
-  const [dragVelocity, setDragVelocity] = useState({ x: 0, y: 0 });
-  const [lastDragPos, setLastDragPos] = useState({ x: 0, y: 0 });
-  const [workersVisible, setWorkersVisible] = useState(false); // Worker bee visibility state
+  const [beeVelocity, setBeeVelocity] = useState({ x: 0, y: 0 });
+  const [workersVisible, setWorkersVisible] = useState(false);
+  const [emotionalState, setEmotionalState] = useState<EmotionalState>('IDLE');
+  const [lastFrenzyTime, setLastFrenzyTime] = useState(0);
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const wooshIdRef = useRef(0);
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const workerFadeTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Worker bee fade timeout
+  const workerFadeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const lastMousePosRef = useRef({ x: 0, y: 0, timestamp: Date.now() });
+  const wanderAngleRef = useRef(Math.random() * Math.PI * 2);
   
   const NUM_WORKERS = swarmState.workerCount || 8;
   
@@ -670,44 +681,57 @@ export function FloatingQueenBee() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Track mouse/touch position for worker bee targeting
+  // Track mouse/touch position AND velocity for predictive evasion
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+    const updatePointerInfo = (clientX: number, clientY: number) => {
+      const now = Date.now();
+      const dt = Math.max(1, now - lastMousePosRef.current.timestamp);
+      
+      const vx = (clientX - lastMousePosRef.current.x) / dt * 16;
+      const vy = (clientY - lastMousePosRef.current.y) / dt * 16;
+      
+      setMousePos({ x: clientX, y: clientY });
+      setMouseVelocity({ x: vx, y: vy });
+      
+      lastMousePosRef.current = { x: clientX, y: clientY, timestamp: now };
       
       const beeCenter = {
         x: config.position.x + dimension / 2,
         y: config.position.y + dimension / 2,
       };
       const distance = Math.sqrt(
-        Math.pow(e.clientX - beeCenter.x, 2) + 
-        Math.pow(e.clientY - beeCenter.y, 2)
+        Math.pow(clientX - beeCenter.x, 2) + 
+        Math.pow(clientY - beeCenter.y, 2)
       );
       setIsMouseNearBee(distance < 120);
+    };
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      updatePointerInfo(e.clientX, e.clientY);
     };
     
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) {
         const touch = e.touches[0];
+        updatePointerInfo(touch.clientX, touch.clientY);
+      }
+    };
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        lastMousePosRef.current = { x: touch.clientX, y: touch.clientY, timestamp: Date.now() };
         setMousePos({ x: touch.clientX, y: touch.clientY });
-        
-        const beeCenter = {
-          x: config.position.x + dimension / 2,
-          y: config.position.y + dimension / 2,
-        };
-        const distance = Math.sqrt(
-          Math.pow(touch.clientX - beeCenter.x, 2) + 
-          Math.pow(touch.clientY - beeCenter.y, 2)
-        );
-        setIsMouseNearBee(distance < 120);
       }
     };
     
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchstart', handleTouchStart);
     };
   }, [config.position, dimension]);
 
@@ -715,60 +739,166 @@ export function FloatingQueenBee() {
   const modeText = getModeLabel(mode);
   const modeIcon = getModeIcon(mode);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (!containerRef.current) return;
+  // AUTONOMOUS MOVEMENT ENGINE
+  useEffect(() => {
+    const FLEE_THRESHOLD = 200;
+    const FRENZY_THRESHOLD = 50;
+    const PREDICT_FACTOR = 0.5;
+    const MAX_SPEED = 8;
+    const WANDER_SPEED = 1.5;
+    const FLEE_SPEED = 6;
+    const FRICTION = 0.92;
+    const WANDER_CHANGE_RATE = 0.03;
     
-    e.preventDefault();
-    e.stopPropagation();
+    let velocity = { x: beeVelocity.x, y: beeVelocity.y };
+    let lastTime = performance.now();
     
-    const rect = containerRef.current.getBoundingClientRect();
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-    setIsDragging(true);
-    setLastDragPos({ x: e.clientX, y: e.clientY });
+    const animate = (currentTime: number) => {
+      const dt = Math.min((currentTime - lastTime) / 16.67, 3);
+      lastTime = currentTime;
+      
+      const beeCenterX = config.position.x + dimension / 2;
+      const beeCenterY = config.position.y + dimension / 2;
+      
+      const predictedMouseX = mousePos.x + mouseVelocity.x * PREDICT_FACTOR * 10;
+      const predictedMouseY = mousePos.y + mouseVelocity.y * PREDICT_FACTOR * 10;
+      
+      const dx = predictedMouseX - beeCenterX;
+      const dy = predictedMouseY - beeCenterY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      const cursorSpeed = Math.sqrt(mouseVelocity.x ** 2 + mouseVelocity.y ** 2);
+      const cursorMovingTowardBee = (dx * mouseVelocity.x + dy * mouseVelocity.y) > 0;
+      
+      let newEmotionalState: EmotionalState = emotionalState;
+      const now = Date.now();
+      
+      if (distance < FRENZY_THRESHOLD && now - lastFrenzyTime > 6000) {
+        newEmotionalState = 'FRENZY';
+        setLastFrenzyTime(now);
+        triggerFrenzy();
+        triggerSwarm({ frenzy: true, workerCount: 10, duration: 4000 });
+        setMode('FRENZY');
+      } else if (distance < FLEE_THRESHOLD) {
+        if (cursorMovingTowardBee && cursorSpeed > 0.5) {
+          newEmotionalState = 'EVADING';
+        } else if (distance < FLEE_THRESHOLD / 2) {
+          newEmotionalState = 'ALERT';
+        } else {
+          newEmotionalState = 'CURIOUS';
+        }
+      } else if (emotionalState === 'EVADING' || emotionalState === 'ALERT') {
+        newEmotionalState = 'CELEBRATING';
+        setTimeout(() => setEmotionalState('RESTING'), 2000);
+        setTimeout(() => setEmotionalState('IDLE'), 4000);
+      } else if (emotionalState === 'FRENZY' && now - lastFrenzyTime > 4000) {
+        newEmotionalState = 'RESTING';
+      } else if (emotionalState !== 'CELEBRATING' && emotionalState !== 'RESTING') {
+        newEmotionalState = 'IDLE';
+      }
+      
+      if (newEmotionalState !== emotionalState) {
+        setEmotionalState(newEmotionalState);
+      }
+      
+      let accelX = 0;
+      let accelY = 0;
+      
+      switch (newEmotionalState) {
+        case 'IDLE': {
+          wanderAngleRef.current += (Math.random() - 0.5) * WANDER_CHANGE_RATE * dt;
+          accelX = Math.cos(wanderAngleRef.current) * WANDER_SPEED * 0.1 * dt;
+          accelY = Math.sin(wanderAngleRef.current) * WANDER_SPEED * 0.1 * dt;
+          break;
+        }
+        case 'CURIOUS': {
+          wanderAngleRef.current += (Math.random() - 0.5) * WANDER_CHANGE_RATE * dt * 2;
+          accelX = Math.cos(wanderAngleRef.current) * WANDER_SPEED * 0.15 * dt;
+          accelY = Math.sin(wanderAngleRef.current) * WANDER_SPEED * 0.15 * dt;
+          break;
+        }
+        case 'ALERT':
+        case 'EVADING': {
+          const fleeDistance = Math.max(distance, 1);
+          const fleeDirX = -dx / fleeDistance;
+          const fleeDirY = -dy / fleeDistance;
+          
+          const perpX = -fleeDirY;
+          const perpY = fleeDirX;
+          const jitter = (Math.random() - 0.5) * 0.5;
+          
+          const fleeStrength = Math.min(1, (FLEE_THRESHOLD - distance) / FLEE_THRESHOLD + 0.3);
+          const speedMultiplier = newEmotionalState === 'EVADING' ? FLEE_SPEED : FLEE_SPEED * 0.7;
+          
+          accelX = (fleeDirX + perpX * jitter) * speedMultiplier * fleeStrength * 0.3 * dt;
+          accelY = (fleeDirY + perpY * jitter) * speedMultiplier * fleeStrength * 0.3 * dt;
+          break;
+        }
+        case 'FRENZY': {
+          const fleeDistance = Math.max(distance, 1);
+          accelX = (-dx / fleeDistance) * MAX_SPEED * 0.4 * dt;
+          accelY = (-dy / fleeDistance) * MAX_SPEED * 0.4 * dt;
+          break;
+        }
+        case 'CELEBRATING': {
+          const celebrationAngle = currentTime * 0.01;
+          accelX = Math.cos(celebrationAngle) * WANDER_SPEED * 0.3 * dt;
+          accelY = Math.sin(celebrationAngle) * WANDER_SPEED * 0.3 * dt;
+          break;
+        }
+        case 'RESTING': {
+          break;
+        }
+      }
+      
+      velocity.x = velocity.x * FRICTION + accelX;
+      velocity.y = velocity.y * FRICTION + accelY;
+      
+      const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2);
+      if (speed > MAX_SPEED) {
+        velocity.x = (velocity.x / speed) * MAX_SPEED;
+        velocity.y = (velocity.y / speed) * MAX_SPEED;
+      }
+      
+      let newX = config.position.x + velocity.x * dt;
+      let newY = config.position.y + velocity.y * dt;
+      
+      const clamped = clampPosition(newX, newY);
+      
+      if (clamped.x !== newX) {
+        velocity.x *= -0.5;
+        wanderAngleRef.current = Math.PI - wanderAngleRef.current;
+      }
+      if (clamped.y !== newY) {
+        velocity.y *= -0.5;
+        wanderAngleRef.current = -wanderAngleRef.current;
+      }
+      
+      updatePosition(clamped.x, clamped.y);
+      setBeeVelocity({ x: velocity.x, y: velocity.y });
+      updateAutonomousVelocity({ x: velocity.x, y: velocity.y });
+      
+      if (speed > 3) {
+        const newParticle: WooshParticle = {
+          id: wooshIdRef.current++,
+          x: clamped.x + dimension / 2,
+          y: clamped.y + dimension / 2,
+          timestamp: Date.now(),
+        };
+        setWooshTrail(prev => [...prev.slice(-15), newParticle]);
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
     
-    containerRef.current.setPointerCapture(e.pointerId);
-  }, []);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging) return;
+    animationFrameRef.current = requestAnimationFrame(animate);
     
-    e.preventDefault();
-    const newX = e.clientX - dragOffset.x;
-    const newY = e.clientY - dragOffset.y;
-    
-    const vx = e.clientX - lastDragPos.x;
-    const vy = e.clientY - lastDragPos.y;
-    setDragVelocity({ x: vx, y: vy });
-    setLastDragPos({ x: e.clientX, y: e.clientY });
-    
-    const speed = Math.sqrt(vx * vx + vy * vy);
-    if (speed > 4) {
-      const newParticle: WooshParticle = {
-        id: wooshIdRef.current++,
-        x: config.position.x + dimension / 2,
-        y: config.position.y + dimension / 2,
-        timestamp: Date.now(),
-      };
-      setWooshTrail(prev => [...prev.slice(-20), newParticle]);
-    }
-    
-    const clamped = clampPosition(newX, newY);
-    updatePosition(clamped.x, clamped.y);
-  }, [isDragging, dragOffset, clampPosition, updatePosition, lastDragPos, config.position, dimension]);
-
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (!isDragging) return;
-    
-    setIsDragging(false);
-    setDragVelocity({ x: 0, y: 0 });
-    
-    if (containerRef.current) {
-      containerRef.current.releasePointerCapture(e.pointerId);
-    }
-  }, [isDragging]);
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [config.position, dimension, mousePos, mouseVelocity, emotionalState, lastFrenzyTime, beeVelocity, clampPosition, updatePosition, updateAutonomousVelocity, triggerFrenzy, triggerSwarm, setMode]);
 
   // Clean up old woosh particles
   useEffect(() => {
@@ -845,29 +975,27 @@ export function FloatingQueenBee() {
   }, [currentHint]);
 
   // WORKER BEE LIFECYCLE: Smooth summon → chase → disappear
-  // Show workers when swarm is active OR when user is near queen OR when dragging
+  // Show workers when swarm is active OR when user is near queen OR bee is evading
   useEffect(() => {
     if (workerFadeTimeoutRef.current) {
       clearTimeout(workerFadeTimeoutRef.current);
       workerFadeTimeoutRef.current = null;
     }
     
-    const shouldShowWorkers = swarmState.isActive || isMouseNearBee || isDragging || 
+    const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT' || emotionalState === 'FRENZY';
+    const shouldShowWorkers = swarmState.isActive || isMouseNearBee || isEvading || 
       mode === 'SWARM' || mode === 'FRENZY' || mode === 'HUNTING' || mode === 'EXCITED';
     
     if (shouldShowWorkers) {
-      // Summon workers immediately
       setWorkersVisible(true);
       
-      // If frenzy mode, trigger it when bees are attacking
       if (swarmState.isFrenzy && !swarmState.isActive) {
         triggerFrenzy();
       }
     } else {
-      // Fade out workers after a delay when no longer needed
       workerFadeTimeoutRef.current = setTimeout(() => {
         setWorkersVisible(false);
-      }, 2000); // 2 second delay before workers disappear
+      }, 2000);
     }
     
     return () => {
@@ -875,22 +1003,14 @@ export function FloatingQueenBee() {
         clearTimeout(workerFadeTimeoutRef.current);
       }
     };
-  }, [swarmState.isActive, swarmState.isFrenzy, isMouseNearBee, isDragging, mode, triggerFrenzy]);
+  }, [swarmState.isActive, swarmState.isFrenzy, isMouseNearBee, emotionalState, mode, triggerFrenzy]);
 
   // Auto-trigger hunting/swarm when user moves near queen
   useEffect(() => {
     if (isMouseNearBee && !swarmState.isActive && mode !== 'SLEEPY' && mode !== 'RESTING') {
-      // Start hunting mode when user approaches
       triggerSwarm({ frenzy: false, workerCount: 6, duration: 4000 });
     }
   }, [isMouseNearBee, swarmState.isActive, mode, triggerSwarm]);
-
-  // End swarm when user stops interacting
-  useEffect(() => {
-    if (!isMouseNearBee && !isDragging && swarmState.isActive) {
-      // User left - let swarm timeout naturally (handled by context)
-    }
-  }, [isMouseNearBee, isDragging, swarmState.isActive]);
 
   if (!config.isVisible) {
     return (
@@ -909,12 +1029,14 @@ export function FloatingQueenBee() {
   const queenCenterX = config.position.x + dimension / 2;
   const queenCenterY = config.position.y + dimension / 2;
 
-  // Determine if workers should chase based on swarm state and user interaction
-  const shouldWorkersChase = swarmState.isActive || isDragging || isMouseNearBee || 
+  const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT' || emotionalState === 'FRENZY';
+  
+  // Determine if workers should chase based on swarm state and emotional state
+  const shouldWorkersChase = swarmState.isActive || isEvading || isMouseNearBee || 
     mode === 'EXCITED' || mode === 'SWARM' || mode === 'FRENZY' || mode === 'HUNTING';
   
   // Determine frenzy styling for queen container
-  const isFrenzyMode = mode === 'FRENZY' || swarmState.isFrenzy;
+  const isFrenzyMode = mode === 'FRENZY' || swarmState.isFrenzy || emotionalState === 'FRENZY';
 
   return (
     <>
@@ -948,17 +1070,17 @@ export function FloatingQueenBee() {
         ))}
       </AnimatePresence>
 
-      {/* Speed Lines when dragging - now more visible */}
+      {/* Speed Lines when moving fast */}
       <AnimatePresence>
-        {isDragging && Math.abs(dragVelocity.x) + Math.abs(dragVelocity.y) > 6 && (
+        {Math.abs(beeVelocity.x) + Math.abs(beeVelocity.y) > 4 && (
           <>
             {[...Array(8)].map((_, i) => (
               <motion.div
                 key={`speedline-${i}`}
                 className="fixed pointer-events-none z-[97]"
                 style={{
-                  left: queenCenterX - dragVelocity.x * (i + 1) * 0.5,
-                  top: queenCenterY - dragVelocity.y * (i + 1) * 0.5,
+                  left: queenCenterX - beeVelocity.x * (i + 1) * 0.5,
+                  top: queenCenterY - beeVelocity.y * (i + 1) * 0.5,
                 }}
                 initial={{ opacity: 0.8 - i * 0.08, scale: 1.2 - i * 0.1 }}
                 animate={{ opacity: 0, scale: 0.3 }}
@@ -969,7 +1091,7 @@ export function FloatingQueenBee() {
                   style={{
                     background: `linear-gradient(90deg, rgba(247,181,0,${0.9 - i * 0.1}) 0%, transparent 100%)`,
                     boxShadow: `0 0 ${12 - i}px rgba(247,181,0,0.5)`,
-                    transform: `rotate(${Math.atan2(dragVelocity.y, dragVelocity.x) * 180 / Math.PI}deg)`,
+                    transform: `rotate(${Math.atan2(beeVelocity.y, beeVelocity.x) * 180 / Math.PI}deg)`,
                   }}
                 />
               </motion.div>
@@ -980,13 +1102,13 @@ export function FloatingQueenBee() {
       
       {/* Motion blur trail behind queen */}
       <AnimatePresence>
-        {isDragging && Math.abs(dragVelocity.x) + Math.abs(dragVelocity.y) > 3 && (
+        {Math.abs(beeVelocity.x) + Math.abs(beeVelocity.y) > 2.5 && (
           <motion.div
             key="motion-blur"
             className="fixed pointer-events-none z-[99]"
             style={{
-              left: config.position.x - dragVelocity.x * 0.8,
-              top: config.position.y - dragVelocity.y * 0.8,
+              left: config.position.x - beeVelocity.x * 0.8,
+              top: config.position.y - beeVelocity.y * 0.8,
               width: dimension,
               height: dimension,
             }}
@@ -1037,30 +1159,26 @@ export function FloatingQueenBee() {
         )}
       </AnimatePresence>
 
-      {/* Main Queen Bee Container */}
+      {/* Main Queen Bee Container - No longer draggable, moves autonomously */}
       <motion.div
         ref={containerRef}
-        className={`fixed z-[100] select-none touch-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className="fixed z-[100] select-none touch-none cursor-default"
         style={{
           left: config.position.x,
           top: config.position.y,
           width: dimension,
           height: dimension,
         }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
         onMouseEnter={handleBeeMouseEnter}
         onMouseLeave={handleBeeMouseLeave}
         animate={{
-          scale: isDragging ? 1.2 : isMouseNearBee ? 1.08 : mode === 'SLEEPY' ? 0.95 : isFrenzyMode ? 1.15 : 1,
+          scale: isEvading ? 1.12 : isMouseNearBee ? 1.08 : mode === 'SLEEPY' ? 0.95 : isFrenzyMode ? 1.15 : 1,
           rotate: mode === 'ERROR' || mode === 'CONFUSED' 
             ? [0, -10, 10, -10, 10, 0] 
             : isFrenzyMode
               ? [0, -5, 5, -5, 5, 0]
-              : isDragging 
-                ? dragVelocity.x * 0.6 
+              : isEvading 
+                ? beeVelocity.x * 0.6 
                 : mode === 'SLEEPY' 
                   ? [0, -3, 3, 0]
                   : 0,
@@ -1077,9 +1195,9 @@ export function FloatingQueenBee() {
         }}
         data-testid="floating-queen-bee"
       >
-        {/* Glow effect when dragging */}
+        {/* Glow effect when evading */}
         <AnimatePresence>
-          {isDragging && (
+          {isEvading && (
             <motion.div
               className="absolute inset-0 rounded-full"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -1098,7 +1216,7 @@ export function FloatingQueenBee() {
           className={`relative w-full h-full overflow-hidden 
             transition-all duration-150`}
           style={{
-            boxShadow: isDragging 
+            boxShadow: isEvading 
               ? '0 0 40px rgba(247,181,0,0.6), 0 15px 50px rgba(0,0,0,0.3)' 
               : isFrenzyMode
                 ? '0 0 50px rgba(255,50,50,0.7), 0 0 100px rgba(255,50,50,0.4)'
@@ -1113,7 +1231,7 @@ export function FloatingQueenBee() {
               mode={canvasMode}
               width={dimension * 0.95}
               height={dimension * 0.95}
-              velocity={dragVelocity}
+              velocity={beeVelocity}
             />
           </div>
 
@@ -1355,10 +1473,6 @@ export function FloatingQueenBee() {
             )}
           </AnimatePresence>
 
-          {/* Drag handle */}
-          <div className="absolute top-1 left-1/2 -translate-x-1/2 opacity-30 hover:opacity-60 transition-opacity">
-            <GripVertical className="w-3 h-3 text-foreground/50" />
-          </div>
 
           {/* Mode Indicator Dot */}
           <div
@@ -1371,7 +1485,7 @@ export function FloatingQueenBee() {
 
       {/* Floating Tooltip */}
       <AnimatePresence>
-        {(showTooltip || isDragging || currentHint) && (
+        {(showTooltip || isEvading || currentHint) && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1391,17 +1505,24 @@ export function FloatingQueenBee() {
                 <Lightbulb className="w-3 h-3 mr-1" />
                 {currentHint.message}
               </Badge>
-            ) : isDragging ? (
+            ) : isEvading ? (
               <Badge 
                 variant="outline" 
                 className={`text-xs shadow-sm animate-pulse ${
-                  isChristmas 
-                    ? 'border-red-500/50 bg-red-500/10 text-red-600' 
-                    : 'border-honey/50 bg-honey/10 text-honey'
+                  emotionalState === 'FRENZY'
+                    ? 'border-red-500/50 bg-red-500/10 text-red-600'
+                    : isChristmas 
+                      ? 'border-red-500/50 bg-red-500/10 text-red-600' 
+                      : 'border-honey/50 bg-honey/10 text-honey'
                 }`}
               >
-                {isChristmas ? <Star className="w-3 h-3 mr-1" /> : <Zap className="w-3 h-3 mr-1" />}
-                {isChristmas ? 'Flying through snow!' : 'Wheee!'}
+                {emotionalState === 'FRENZY' ? (
+                  <><Zap className="w-3 h-3 mr-1" />ATTACK!</>
+                ) : isChristmas ? (
+                  <><Star className="w-3 h-3 mr-1" />Flying through snow!</>
+                ) : (
+                  <><Zap className="w-3 h-3 mr-1" />Catch me if you can!</>
+                )}
               </Badge>
             ) : (
               <Badge 

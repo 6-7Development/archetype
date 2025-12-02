@@ -125,6 +125,12 @@ const DEFAULT_SWARM_STATE: SwarmState = {
   startTime: 0,
 };
 
+// Autonomous velocity for queen bee movement
+export interface AutonomousVelocity {
+  x: number;
+  y: number;
+}
+
 // Context state interface
 interface QueenBeeContextState {
   mode: QueenBeeMode;
@@ -157,6 +163,9 @@ interface QueenBeeContextState {
   endSwarm: () => void;
   triggerHunting: () => void;
   triggerFrenzy: () => void;
+  // Autonomous movement velocity
+  autonomousVelocity: AutonomousVelocity;
+  updateAutonomousVelocity: (velocity: AutonomousVelocity) => void;
 }
 
 // Get default position
@@ -228,6 +237,9 @@ export function QueenBeeProvider({
   
   // Swarm state for worker bee lifecycle
   const [swarmState, setSwarmState] = useState<SwarmState>(DEFAULT_SWARM_STATE);
+  
+  // Autonomous velocity for queen bee movement
+  const [autonomousVelocity, setAutonomousVelocity] = useState<AutonomousVelocity>({ x: 0, y: 0 });
 
   // Clamp position to viewport
   const clampPosition = useCallback((x: number, y: number): { x: number; y: number } => {
@@ -368,6 +380,11 @@ export function QueenBeeProvider({
   const triggerFrenzy = useCallback(() => {
     triggerSwarm({ frenzy: true, workerCount: 8, duration: 4000 });
   }, [triggerSwarm]);
+
+  // Update autonomous velocity (used by the queen bee for ragdoll physics)
+  const updateAutonomousVelocity = useCallback((velocity: AutonomousVelocity) => {
+    setAutonomousVelocity(velocity);
+  }, []);
 
   // Load saved config
   useEffect(() => {
@@ -821,6 +838,8 @@ export function QueenBeeProvider({
         endSwarm,
         triggerHunting,
         triggerFrenzy,
+        autonomousVelocity,
+        updateAutonomousVelocity,
       }}
     >
       {children}
