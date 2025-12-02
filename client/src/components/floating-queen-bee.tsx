@@ -872,6 +872,48 @@ export function FloatingQueenBee() {
     }
   }, [windowDimensions, isMounted, beeController]);
 
+  // Wire AI brain events (mode changes) to movement state transitions
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    switch (mode) {
+      case 'ERROR':
+      case 'CONFUSED':
+        beeController.movement.forceState('ALERT');
+        beeController.thought.updateContext({ buildStatus: 'error', hasActiveErrors: true });
+        break;
+      case 'SUCCESS':
+      case 'CELEBRATING':
+        beeController.movement.forceState('CELEBRATE');
+        beeController.thought.updateContext({ buildStatus: 'success', hasActiveErrors: false });
+        break;
+      case 'CODING':
+      case 'BUILDING':
+      case 'FOCUSED':
+        beeController.movement.forceState('PATROL');
+        beeController.thought.updateContext({ recentActivity: 'coding', buildStatus: 'running' });
+        break;
+      case 'THINKING':
+      case 'LOADING':
+        beeController.movement.forceState('REST');
+        beeController.thought.updateContext({ recentActivity: 'thinking' });
+        break;
+      case 'SWARM':
+        beeController.movement.forceState('SWARM_ESCORT');
+        break;
+      case 'HUNTING':
+        beeController.movement.forceState('CHASE');
+        break;
+      case 'SLEEPY':
+      case 'RESTING':
+        beeController.movement.forceState('REST');
+        break;
+      case 'IDLE':
+        beeController.movement.forceState('WANDER');
+        break;
+    }
+  }, [mode, isMounted, beeController]);
+
   // Orbiting worker bees animation loop
   useEffect(() => {
     if (!workersVisible || isMobile) {
