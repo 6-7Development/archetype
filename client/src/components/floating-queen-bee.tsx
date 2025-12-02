@@ -836,14 +836,34 @@ export function FloatingQueenBee() {
         mouseVelocity.y
       );
       
+      // HARD CLAMP: Ensure queen stays within viewport bounds
+      // This is the final safety net - queen must NEVER escape visible area
+      const hatPadding = 50; // Extra top padding for Santa hat
+      const edgePadding = 30; // Padding from screen edges
+      const halfDim = dimension / 2;
+      
+      const minX = halfDim + edgePadding;
+      const maxX = windowDimensions.width - halfDim - edgePadding;
+      const minY = halfDim + hatPadding + edgePadding;
+      const maxY = windowDimensions.height - halfDim - edgePadding;
+      
+      // Clamp the center position
+      const clampedX = Math.max(minX, Math.min(maxX, result.position.x));
+      const clampedY = Math.max(minY, Math.min(maxY, result.position.y));
+      
       // Convert center position back to top-left for rendering
-      const newX = result.position.x - dimension / 2;
-      const newY = result.position.y - dimension / 2;
+      const newX = clampedX - halfDim;
+      const newY = clampedY - halfDim;
       
       // Update position through context
       updatePosition(newX, newY);
       setBeeVelocity(result.velocity);
       updateAutonomousVelocity(result.velocity);
+      
+      // Update worker handler with CLAMPED queen position (not the unclamped result)
+      // This ensures workers orbit around where the queen actually is, not where physics wanted it to be
+      beeController.workers.updateQueen(clampedX, clampedY, result.velocity.x, result.velocity.y);
+      beeController.emoteWorkers.updateQueen(clampedX, clampedY);
       
       // Update facing direction based on velocity
       const newFacing = beeController.direction.getFacing();
