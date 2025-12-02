@@ -16,6 +16,8 @@ import { useThemeManager } from "@/hooks/useThemeManager";
 import { VIBRANT_LIGHT_THEME } from "@/lib/theme/types";
 import { QueenBeeProvider } from "@/contexts/queen-bee-context";
 import { FloatingQueenBee } from "@/components/floating-queen-bee";
+import { SeasonalProvider, useChristmasEffects } from "@/contexts/seasonal-context";
+import { SnowPiles } from "@/components/snow-piles";
 import Landing from "@/pages/landing";
 import Pricing from "@/pages/pricing";
 import PricingSuccess from "@/pages/pricing-success";
@@ -296,6 +298,13 @@ function AppWithTheme({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+// Seasonal effects wrapper - uses context to check if effects should be active
+function SeasonalEffects() {
+  const { snowEnabled, maxSnowPiles } = useChristmasEffects();
+  
+  return <SnowPiles enabled={snowEnabled} maxPiles={maxSnowPiles} />;
+}
+
 function App() {
   // Initialize Google Analytics 4 on app load
   useEffect(() => {
@@ -309,14 +318,17 @@ function App() {
           <ThemeProvider defaultTheme="light">
             <AppWithTheme>
               <VersionProvider mobileBreakpoint={768}>
-                <QueenBeeProvider>
-                  <TooltipProvider>
-                    <CommandPalette />
-                    <Toaster />
-                    <FloatingQueenBee />
-                    <Router />
-                  </TooltipProvider>
-                </QueenBeeProvider>
+                <SeasonalProvider>
+                  <QueenBeeProvider>
+                    <TooltipProvider>
+                      <CommandPalette />
+                      <Toaster />
+                      <FloatingQueenBee />
+                      <SeasonalEffects />
+                      <Router />
+                    </TooltipProvider>
+                  </QueenBeeProvider>
+                </SeasonalProvider>
               </VersionProvider>
             </AppWithTheme>
           </ThemeProvider>
