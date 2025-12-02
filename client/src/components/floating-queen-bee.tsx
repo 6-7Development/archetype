@@ -570,6 +570,9 @@ export function FloatingQueenBee() {
     wingFlutter: number;
     rotation: number;
     energyLevel: number;
+    isAttacking?: boolean;
+    targetX?: number;
+    targetY?: number;
   }>>([]);
   const thoughtTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const swarmAnimationRef = useRef<number | null>(null);
@@ -798,43 +801,52 @@ export function FloatingQueenBee() {
     beeController.thought.updateContext(contextUpdates[mode] as any);
   }, [mode, isMounted, beeController]);
 
-  // Orbiting worker bees animation loop
+  // Independent worker bees animation loop - each bee moves independently
   useEffect(() => {
     if (!workersVisible || isMobile) {
       setOrbitingWorkers([]);
       return;
     }
-
-    const queenCenterX = config.position.x + dimension / 2;
-    const queenCenterY = config.position.y + dimension / 2;
     
     let lastTime = performance.now();
     
-    const animateSwarm = (currentTime: number) => {
+    const animateWorkers = (currentTime: number) => {
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
       
-      // Update swarm controller with queen position and velocity
+      // Update worker handler with queen position and velocity
       const qCenterX = config.position.x + dimension / 2;
       const qCenterY = config.position.y + dimension / 2;
-      beeController.swarm.updateQueen(qCenterX, qCenterY, beeVelocity.x, beeVelocity.y);
+      beeController.workers.updateQueen(qCenterX, qCenterY, beeVelocity.x, beeVelocity.y);
       
-      // Update and get worker positions
-      beeController.swarm.update(deltaTime);
-      const positions = beeController.swarm.getWorkerPositions();
-      setOrbitingWorkers(positions);
+      // Update cursor position for attack targeting
+      beeController.workers.updateCursor(mousePos.x, mousePos.y);
       
-      swarmAnimationRef.current = requestAnimationFrame(animateSwarm);
+      // Run independent physics update for each worker bee
+      beeController.workers.update(deltaTime);
+      
+      // Get render state (position, animation, attack status)
+      const renderStates = beeController.workers.getWorkerRenderState();
+      setOrbitingWorkers(renderStates);
+      
+      swarmAnimationRef.current = requestAnimationFrame(animateWorkers);
     };
     
-    swarmAnimationRef.current = requestAnimationFrame(animateSwarm);
+    swarmAnimationRef.current = requestAnimationFrame(animateWorkers);
     
     return () => {
       if (swarmAnimationRef.current) {
         cancelAnimationFrame(swarmAnimationRef.current);
       }
     };
-  }, [workersVisible, isMobile, config.position, dimension, beeVelocity, beeController]);
+  }, [workersVisible, isMobile, config.position, dimension, beeVelocity, mousePos, beeController]);
+  
+  // Sync queen mode to worker behaviors (attack, formation, sleep)
+  useEffect(() => {
+    if (isMounted) {
+      beeController.workers.setQueenMode(mode);
+    }
+  }, [mode, isMounted, beeController]);
 
   // Track mouse/touch position AND velocity for predictive evasion
   useEffect(() => {
@@ -1286,7 +1298,7 @@ export function FloatingQueenBee() {
         <FallingSnowflake key={flake.id} {...flake} windowHeight={windowDimensions.height} />
       ))}
 
-      {/* Orbiting Worker Bees - Smooth polar orbit around queen, attack on FRENZY/HUNTING */}
+      {/* Orbiting Worker Bees - Independent movement with attack, formations, idle behaviors */}
       <AnimatePresence mode="sync">
         {orbitingWorkers.map((worker) => (
           <OrbitingWorkerBee
@@ -1300,9 +1312,9 @@ export function FloatingQueenBee() {
             energyLevel={worker.energyLevel}
             mode={mode}
             isChristmas={isChristmas}
-            isAttacking={swarmState.isFrenzy || mode === 'HUNTING' || emotionalState === 'FRENZY'}
-            targetX={mousePos.x}
-            targetY={mousePos.y}
+            isAttacking={worker.isAttacking || false}
+            targetX={worker.targetX || mousePos.x}
+            targetY={worker.targetY || mousePos.y}
           />
         ))}
       </AnimatePresence>

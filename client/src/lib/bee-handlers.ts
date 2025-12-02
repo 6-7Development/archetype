@@ -1138,6 +1138,593 @@ export class WorkerSwarmController {
 }
 
 // ============================================
+// INDEPENDENT WORKER BEE HANDLER
+// Per-bee physics, behaviors, attack, formations
+// ============================================
+export type WorkerBehavior = 'ORBIT' | 'IDLE_WANDER' | 'ATTACK' | 'FORMATION' | 'RETURN' | 'SLEEP';
+
+export interface IndependentWorkerState {
+  id: number;
+  // Position-based physics
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  // Orbit reference (for returning to orbit)
+  orbitAngle: number;
+  orbitRadius: number;
+  targetOrbitRadius: number;
+  // Behavior
+  behavior: WorkerBehavior;
+  behaviorTimer: number;
+  // Attack
+  attackTarget: { x: number; y: number } | null;
+  attackCooldown: number;
+  isAttacking: boolean;
+  // Formation slot
+  formationSlot: { x: number; y: number } | null;
+  // Animation
+  size: number;
+  wingPhase: number;
+  energyLevel: number;
+  phase: number; // Noise offset
+}
+
+// Formation patterns relative to queen center
+type FormationType = 'CIRCLE' | 'HEART' | 'STAR' | 'SCATTER' | 'SPIRAL';
+
+export class IndependentWorkerHandler {
+  private workers: IndependentWorkerState[] = [];
+  private maxWorkers = 8;
+  private time = 0;
+  
+  // Queen state
+  private queenX = 0;
+  private queenY = 0;
+  private queenVelX = 0;
+  private queenVelY = 0;
+  
+  // Cursor state  
+  private cursorX = 0;
+  private cursorY = 0;
+  
+  // Current queen mode affects behavior
+  private queenMode: string = 'IDLE';
+  
+  // Formation state
+  private activeFormation: FormationType | null = null;
+  private formationProgress = 0;
+  
+  // Config
+  private readonly baseOrbitRadius = 55;
+  private readonly orbitBandMin = 35;
+  private readonly orbitBandMax = 80;
+  private readonly maxSpeed = 4;
+  private readonly attackSpeed = 6;
+  private readonly separationDistance = 25;
+  
+  constructor(count: number = 8) {
+    this.maxWorkers = count;
+    this.initializeWorkers();
+  }
+  
+  private initializeWorkers(): void {
+    this.workers = [];
+    for (let i = 0; i < this.maxWorkers; i++) {
+      this.workers.push(this.createWorker(i));
+    }
+  }
+  
+  private createWorker(id: number): IndependentWorkerState {
+    const angleSpread = (Math.PI * 2) / this.maxWorkers;
+    const angle = id * angleSpread + (Math.random() - 0.5) * 0.5;
+    const radius = this.baseOrbitRadius * (0.7 + Math.random() * 0.3);
+    
+    return {
+      id,
+      x: this.queenX + Math.cos(angle) * radius,
+      y: this.queenY + Math.sin(angle) * radius,
+      vx: 0,
+      vy: 0,
+      orbitAngle: angle,
+      orbitRadius: radius,
+      targetOrbitRadius: radius,
+      behavior: 'ORBIT',
+      behaviorTimer: 0,
+      attackTarget: null,
+      attackCooldown: 0,
+      isAttacking: false,
+      formationSlot: null,
+      size: 0.45 + Math.random() * 0.25,
+      wingPhase: Math.random() * Math.PI * 2,
+      energyLevel: 0.5 + Math.random() * 0.5,
+      phase: Math.random() * Math.PI * 2,
+    };
+  }
+  
+  // Update queen position and velocity
+  updateQueen(x: number, y: number, velX: number, velY: number): void {
+    this.queenX = x;
+    this.queenY = y;
+    this.queenVelX = velX;
+    this.queenVelY = velY;
+  }
+  
+  // Update cursor position for attack targeting
+  updateCursor(x: number, y: number): void {
+    this.cursorX = x;
+    this.cursorY = y;
+  }
+  
+  // Set queen mode to affect worker behaviors
+  setQueenMode(mode: string): void {
+    const prevMode = this.queenMode;
+    this.queenMode = mode;
+    
+    // Trigger behavior changes based on mode
+    if (mode === 'FRENZY' || mode === 'HUNTING' || mode === 'SWARM') {
+      this.triggerAttackMode();
+    } else if (mode === 'CELEBRATING' || mode === 'SUCCESS' || mode === 'EXCITED') {
+      this.triggerFormation('CIRCLE');
+    } else if (mode === 'SLEEPY' || mode === 'RESTING') {
+      this.triggerSleepMode();
+    } else if (prevMode !== mode) {
+      // Return to normal orbit behavior
+      this.workers.forEach(w => {
+        if (w.behavior === 'FORMATION' || w.behavior === 'SLEEP') {
+          w.behavior = 'RETURN';
+          w.behaviorTimer = 0;
+        }
+      });
+      this.activeFormation = null;
+    }
+  }
+  
+  private triggerAttackMode(): void {
+    this.workers.forEach((w, i) => {
+      // Stagger attack starts for natural feel
+      setTimeout(() => {
+        if (w.attackCooldown <= 0 && this.queenMode.match(/FRENZY|HUNTING|SWARM/)) {
+          w.behavior = 'ATTACK';
+          w.isAttacking = true;
+          w.attackTarget = { x: this.cursorX, y: this.cursorY };
+          w.behaviorTimer = 0;
+        }
+      }, i * 100 + Math.random() * 150);
+    });
+  }
+  
+  private triggerFormation(type: FormationType): void {
+    this.activeFormation = type;
+    this.formationProgress = 0;
+    
+    const slots = this.getFormationSlots(type);
+    this.workers.forEach((w, i) => {
+      w.behavior = 'FORMATION';
+      w.formationSlot = slots[i % slots.length];
+      w.behaviorTimer = 0;
+    });
+  }
+  
+  private triggerSleepMode(): void {
+    this.workers.forEach(w => {
+      w.behavior = 'SLEEP';
+      w.behaviorTimer = 0;
+    });
+  }
+  
+  private getFormationSlots(type: FormationType): Array<{ x: number; y: number }> {
+    const slots: Array<{ x: number; y: number }> = [];
+    const count = this.maxWorkers;
+    
+    switch (type) {
+      case 'CIRCLE':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2;
+          slots.push({
+            x: Math.cos(angle) * 45,
+            y: Math.sin(angle) * 45,
+          });
+        }
+        break;
+        
+      case 'HEART':
+        for (let i = 0; i < count; i++) {
+          const t = (i / count) * Math.PI * 2;
+          slots.push({
+            x: 16 * Math.pow(Math.sin(t), 3) * 2.5,
+            y: -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * 2.5,
+          });
+        }
+        break;
+        
+      case 'STAR':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
+          const radius = i % 2 === 0 ? 50 : 25;
+          slots.push({
+            x: Math.cos(angle) * radius,
+            y: Math.sin(angle) * radius,
+          });
+        }
+        break;
+        
+      case 'SPIRAL':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 4;
+          const radius = 20 + i * 5;
+          slots.push({
+            x: Math.cos(angle) * radius,
+            y: Math.sin(angle) * radius,
+          });
+        }
+        break;
+        
+      default: // SCATTER
+        for (let i = 0; i < count; i++) {
+          slots.push({
+            x: (Math.random() - 0.5) * 100,
+            y: (Math.random() - 0.5) * 100,
+          });
+        }
+    }
+    
+    return slots;
+  }
+  
+  // Main update loop
+  update(deltaTime: number): void {
+    this.time += deltaTime;
+    const dt = deltaTime * 0.001; // Convert to seconds for physics
+    const queenSpeed = Math.sqrt(this.queenVelX ** 2 + this.queenVelY ** 2);
+    
+    // Update formation progress
+    if (this.activeFormation) {
+      this.formationProgress = Math.min(1, this.formationProgress + dt * 0.5);
+    }
+    
+    this.workers.forEach((w, i) => {
+      w.behaviorTimer += deltaTime;
+      w.attackCooldown = Math.max(0, w.attackCooldown - deltaTime);
+      
+      // Update wing phase (faster when moving fast)
+      const speed = Math.sqrt(w.vx ** 2 + w.vy ** 2);
+      w.wingPhase += (8 + speed * 0.8 + (w.isAttacking ? 5 : 0)) * dt;
+      
+      // Calculate steering force based on behavior
+      let steerX = 0;
+      let steerY = 0;
+      
+      switch (w.behavior) {
+        case 'ORBIT':
+          // Natural orbiting with independent movement
+          const orbitResult = this.calculateOrbitSteering(w, queenSpeed, dt);
+          steerX = orbitResult.x;
+          steerY = orbitResult.y;
+          
+          // Random transition to idle wander
+          if (Math.random() < 0.001 && !this.queenMode.match(/FRENZY|HUNTING|SWARM|CELEBRATING/)) {
+            w.behavior = 'IDLE_WANDER';
+            w.behaviorTimer = 0;
+          }
+          break;
+          
+        case 'IDLE_WANDER':
+          // Wander near orbit position with jitter
+          const wanderResult = this.calculateWanderSteering(w, dt);
+          steerX = wanderResult.x;
+          steerY = wanderResult.y;
+          
+          // Return to orbit after 2-4 seconds
+          if (w.behaviorTimer > 2000 + Math.random() * 2000) {
+            w.behavior = 'ORBIT';
+            w.behaviorTimer = 0;
+          }
+          break;
+          
+        case 'ATTACK':
+          // Chase cursor
+          if (w.attackTarget) {
+            const attackResult = this.calculateAttackSteering(w);
+            steerX = attackResult.x;
+            steerY = attackResult.y;
+            
+            // Update attack target to follow cursor
+            w.attackTarget = { x: this.cursorX, y: this.cursorY };
+            
+            // Return after 1.5-2.5 seconds or if too far from queen
+            const distToQueen = Math.sqrt((w.x - this.queenX) ** 2 + (w.y - this.queenY) ** 2);
+            if (w.behaviorTimer > 1500 + Math.random() * 1000 || distToQueen > 200) {
+              w.behavior = 'RETURN';
+              w.isAttacking = false;
+              w.attackTarget = null;
+              w.attackCooldown = 2000 + Math.random() * 1000;
+              w.behaviorTimer = 0;
+            }
+          }
+          break;
+          
+        case 'FORMATION':
+          // Move toward formation slot
+          if (w.formationSlot) {
+            const targetX = this.queenX + w.formationSlot.x;
+            const targetY = this.queenY + w.formationSlot.y;
+            const formationResult = this.calculateArrivalSteering(w, targetX, targetY, 30);
+            steerX = formationResult.x * (0.5 + this.formationProgress * 0.5);
+            steerY = formationResult.y * (0.5 + this.formationProgress * 0.5);
+          }
+          
+          // Exit formation after 4 seconds
+          if (w.behaviorTimer > 4000) {
+            w.behavior = 'RETURN';
+            w.formationSlot = null;
+            w.behaviorTimer = 0;
+            this.activeFormation = null;
+          }
+          break;
+          
+        case 'RETURN':
+          // Return to orbit position
+          const returnResult = this.calculateReturnSteering(w);
+          steerX = returnResult.x;
+          steerY = returnResult.y;
+          
+          // Back to orbit when close
+          const distToOrbit = Math.sqrt(
+            (w.x - (this.queenX + Math.cos(w.orbitAngle) * w.orbitRadius)) ** 2 +
+            (w.y - (this.queenY + Math.sin(w.orbitAngle) * w.orbitRadius)) ** 2
+          );
+          if (distToOrbit < 15 || w.behaviorTimer > 2000) {
+            w.behavior = 'ORBIT';
+            w.behaviorTimer = 0;
+          }
+          break;
+          
+        case 'SLEEP':
+          // Gentle hovering near queen
+          const sleepResult = this.calculateSleepSteering(w);
+          steerX = sleepResult.x;
+          steerY = sleepResult.y;
+          break;
+      }
+      
+      // Add separation force (avoid overlapping with other bees)
+      const sepForce = this.calculateSeparation(w, i);
+      steerX += sepForce.x;
+      steerY += sepForce.y;
+      
+      // Apply steering to velocity
+      w.vx += steerX * dt * 60;
+      w.vy += steerY * dt * 60;
+      
+      // Apply damping
+      const damping = w.behavior === 'SLEEP' ? 0.9 : 0.95;
+      w.vx *= damping;
+      w.vy *= damping;
+      
+      // Limit speed
+      const currentSpeed = Math.sqrt(w.vx ** 2 + w.vy ** 2);
+      const maxSpd = w.isAttacking ? this.attackSpeed : (w.behavior === 'SLEEP' ? 1 : this.maxSpeed);
+      if (currentSpeed > maxSpd) {
+        w.vx = (w.vx / currentSpeed) * maxSpd;
+        w.vy = (w.vy / currentSpeed) * maxSpd;
+      }
+      
+      // Update position
+      w.x += w.vx;
+      w.y += w.vy;
+      
+      // Clamp to orbit band (except during attack)
+      if (w.behavior !== 'ATTACK') {
+        const distToQueen = Math.sqrt((w.x - this.queenX) ** 2 + (w.y - this.queenY) ** 2);
+        if (distToQueen > this.orbitBandMax) {
+          const angle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
+          w.x = this.queenX + Math.cos(angle) * this.orbitBandMax;
+          w.y = this.queenY + Math.sin(angle) * this.orbitBandMax;
+        } else if (distToQueen < this.orbitBandMin && w.behavior !== 'FORMATION') {
+          const angle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
+          w.x = this.queenX + Math.cos(angle) * this.orbitBandMin;
+          w.y = this.queenY + Math.sin(angle) * this.orbitBandMin;
+        }
+      }
+      
+      // Update orbit angle based on position
+      w.orbitAngle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
+      
+      // Update energy level
+      w.energyLevel = 0.5 + Math.sin(this.time * 0.001 + w.phase) * 0.2 +
+                      (w.isAttacking ? 0.3 : 0) + (speed > 2 ? 0.1 : 0);
+    });
+  }
+  
+  private calculateOrbitSteering(w: IndependentWorkerState, queenSpeed: number, dt: number): { x: number; y: number } {
+    // Target position on orbit circle (advances over time)
+    const angularSpeed = (0.8 + Math.random() * 0.2) * (1 + queenSpeed * 0.03);
+    const targetAngle = w.orbitAngle + angularSpeed * dt;
+    
+    // Add noise for organic movement
+    const noise = Math.sin(this.time * 0.005 + w.phase) * 0.3 +
+                  Math.cos(this.time * 0.003 + w.phase * 2) * 0.2;
+    
+    const breathe = Math.sin(this.time * 0.002 + w.phase) * 8;
+    const targetRadius = w.targetOrbitRadius + breathe + noise * 10;
+    
+    const targetX = this.queenX + Math.cos(targetAngle) * targetRadius;
+    const targetY = this.queenY + Math.sin(targetAngle) * targetRadius;
+    
+    // Seek target with some lead from queen velocity
+    const leadX = this.queenVelX * 0.3;
+    const leadY = this.queenVelY * 0.3;
+    
+    const dx = (targetX + leadX) - w.x;
+    const dy = (targetY + leadY) - w.y;
+    const dist = Math.sqrt(dx ** 2 + dy ** 2);
+    
+    if (dist < 1) return { x: 0, y: 0 };
+    
+    return {
+      x: (dx / dist) * Math.min(dist * 0.1, 2),
+      y: (dy / dist) * Math.min(dist * 0.1, 2),
+    };
+  }
+  
+  private calculateWanderSteering(w: IndependentWorkerState, dt: number): { x: number; y: number } {
+    // Small random jitter around current position
+    const jitterX = (Math.random() - 0.5) * 0.5;
+    const jitterY = (Math.random() - 0.5) * 0.5;
+    
+    // Gentle pull back toward orbit zone
+    const orbitX = this.queenX + Math.cos(w.orbitAngle) * w.orbitRadius;
+    const orbitY = this.queenY + Math.sin(w.orbitAngle) * w.orbitRadius;
+    const pullX = (orbitX - w.x) * 0.01;
+    const pullY = (orbitY - w.y) * 0.01;
+    
+    return { x: jitterX + pullX, y: jitterY + pullY };
+  }
+  
+  private calculateAttackSteering(w: IndependentWorkerState): { x: number; y: number } {
+    if (!w.attackTarget) return { x: 0, y: 0 };
+    
+    // Seek toward cursor with offset for natural spread
+    const offsetAngle = w.id * 0.3;
+    const targetX = w.attackTarget.x + Math.cos(offsetAngle) * 15;
+    const targetY = w.attackTarget.y + Math.sin(offsetAngle) * 15;
+    
+    const dx = targetX - w.x;
+    const dy = targetY - w.y;
+    const dist = Math.sqrt(dx ** 2 + dy ** 2);
+    
+    if (dist < 1) return { x: 0, y: 0 };
+    
+    return {
+      x: (dx / dist) * 3,
+      y: (dy / dist) * 3,
+    };
+  }
+  
+  private calculateArrivalSteering(w: IndependentWorkerState, targetX: number, targetY: number, slowRadius: number): { x: number; y: number } {
+    const dx = targetX - w.x;
+    const dy = targetY - w.y;
+    const dist = Math.sqrt(dx ** 2 + dy ** 2);
+    
+    if (dist < 1) return { x: 0, y: 0 };
+    
+    const speed = dist < slowRadius ? (dist / slowRadius) * 2 : 2;
+    
+    return {
+      x: (dx / dist) * speed,
+      y: (dy / dist) * speed,
+    };
+  }
+  
+  private calculateReturnSteering(w: IndependentWorkerState): { x: number; y: number } {
+    const targetX = this.queenX + Math.cos(w.orbitAngle) * w.orbitRadius;
+    const targetY = this.queenY + Math.sin(w.orbitAngle) * w.orbitRadius;
+    
+    return this.calculateArrivalSteering(w, targetX, targetY, 40);
+  }
+  
+  private calculateSleepSteering(w: IndependentWorkerState): { x: number; y: number } {
+    // Very gentle drift toward queen with minimal movement
+    const targetX = this.queenX + Math.cos(w.orbitAngle) * (this.orbitBandMin + 5);
+    const targetY = this.queenY + Math.sin(w.orbitAngle) * (this.orbitBandMin + 5);
+    
+    const dx = targetX - w.x;
+    const dy = targetY - w.y;
+    const dist = Math.sqrt(dx ** 2 + dy ** 2);
+    
+    // Gentle hover drift
+    const drift = Math.sin(this.time * 0.001 + w.phase) * 0.1;
+    
+    if (dist < 5) return { x: drift, y: drift };
+    
+    return {
+      x: (dx / dist) * 0.3 + drift,
+      y: (dy / dist) * 0.3 + drift,
+    };
+  }
+  
+  private calculateSeparation(w: IndependentWorkerState, myIndex: number): { x: number; y: number } {
+    let sepX = 0;
+    let sepY = 0;
+    
+    for (let i = 0; i < this.workers.length; i++) {
+      if (i === myIndex) continue;
+      
+      const other = this.workers[i];
+      const dx = w.x - other.x;
+      const dy = w.y - other.y;
+      const dist = Math.sqrt(dx ** 2 + dy ** 2);
+      
+      if (dist < this.separationDistance && dist > 0.1) {
+        const strength = (1 - dist / this.separationDistance) ** 2;
+        sepX += (dx / dist) * strength * 0.5;
+        sepY += (dy / dist) * strength * 0.5;
+      }
+    }
+    
+    return { x: sepX, y: sepY };
+  }
+  
+  // Get render state for all workers
+  getWorkerRenderState(): Array<{
+    id: number;
+    x: number;
+    y: number;
+    size: number;
+    wingFlutter: number;
+    rotation: number;
+    energyLevel: number;
+    isAttacking: boolean;
+    targetX: number;
+    targetY: number;
+  }> {
+    return this.workers.map(w => {
+      // Calculate rotation from velocity
+      const speed = Math.sqrt(w.vx ** 2 + w.vy ** 2);
+      let rotation = 0;
+      if (speed > 0.5) {
+        rotation = Math.atan2(w.vy, w.vx) * (180 / Math.PI);
+      } else {
+        // Use orbit tangent angle when stationary
+        rotation = (w.orbitAngle + Math.PI / 2) * (180 / Math.PI);
+      }
+      
+      return {
+        id: w.id,
+        x: w.x,
+        y: w.y,
+        size: w.size,
+        wingFlutter: Math.sin(w.wingPhase) * 0.5 + 0.5,
+        rotation,
+        energyLevel: w.energyLevel,
+        isAttacking: w.isAttacking,
+        targetX: w.attackTarget?.x || 0,
+        targetY: w.attackTarget?.y || 0,
+      };
+    });
+  }
+  
+  // Trigger attack on all available workers
+  triggerAttack(): void {
+    this.workers.forEach((w, i) => {
+      if (w.attackCooldown <= 0) {
+        setTimeout(() => {
+          w.behavior = 'ATTACK';
+          w.isAttacking = true;
+          w.attackTarget = { x: this.cursorX, y: this.cursorY };
+          w.behaviorTimer = 0;
+        }, i * 80);
+      }
+    });
+  }
+  
+  getWorkerCount(): number {
+    return this.workers.length;
+  }
+}
+
+// ============================================
 // COMBINED BEE CONTROLLER
 // ============================================
 export class BeeController {
@@ -1146,6 +1733,7 @@ export class BeeController {
   public reaction: ReactionHandler;
   public thought: ThoughtHandler;
   public swarm: WorkerSwarmController;
+  public workers: IndependentWorkerHandler;
   public movement: MovementController;
 
   constructor() {
@@ -1154,6 +1742,7 @@ export class BeeController {
     this.reaction = new ReactionHandler();
     this.thought = new ThoughtHandler();
     this.swarm = new WorkerSwarmController(8);
+    this.workers = new IndependentWorkerHandler(8);
     this.movement = new MovementController();
   }
 
