@@ -32,7 +32,7 @@ function ChristmasBulb({ bulb }: { bulb: ChristmasBulb }) {
         width: '6px',
         height: '6px',
         background: bulb.color,
-        zIndex: 80,
+        zIndex: 85,
         animation: `bulb-flash-${bulb.id} 2s infinite ease-in-out`,
         boxShadow: `0 0 8px ${bulb.color}`,
       }}
@@ -43,18 +43,19 @@ function ChristmasBulb({ bulb }: { bulb: ChristmasBulb }) {
 // Corner Wreath - CSS animation only
 function CornerWreath({ corner }: { corner: 'tl' | 'tr' | 'bl' | 'br' }) {
   const positions: Record<string, React.CSSProperties> = {
-    tl: { top: -20, left: -20 },
-    tr: { top: -20, right: -20 },
-    bl: { bottom: -20, left: -20 },
-    br: { bottom: -20, right: -20 },
+    tl: { top: 0, left: 0 },
+    tr: { top: 0, right: 0 },
+    bl: { bottom: 0, left: 0 },
+    br: { bottom: 0, right: 0 },
   };
 
   const svgStyle: React.CSSProperties = {
     position: 'fixed',
     pointerEvents: 'none',
-    zIndex: 75,
+    zIndex: 85,
     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
     animation: 'wreath-sway 6s infinite ease-in-out',
+    transformOrigin: corner.includes('tl') || corner.includes('bl') ? 'top left' : 'top right',
     ...positions[corner],
   };
 
@@ -101,7 +102,7 @@ function FloatingOrnament({ index }: { index: number }) {
     pointerEvents: 'none',
     left: pos.x,
     top: pos.y,
-    zIndex: 75,
+    zIndex: 85,
     animation: `ornament-bob-${index} 4s infinite reverse`,
   };
 
