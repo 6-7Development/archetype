@@ -1064,28 +1064,26 @@ export function FloatingQueenBee() {
           )}
         </AnimatePresence>
 
-        {/* Main container */}
+        {/* Main container - no border, blends with background */}
         <div 
-          className={`relative w-full h-full rounded-full overflow-hidden 
-            bg-background/80 backdrop-blur-sm 
-            ${isFrenzyMode ? 'border-4 border-red-500' : 'border-2'}
-            ${isDragging ? 'border-honey shadow-2xl' : isFrenzyMode ? 'border-red-500 shadow-2xl' : 'border-honey/40 shadow-md'}
-            ${getModeGlow(mode)}
+          className={`relative w-full h-full overflow-hidden 
             transition-all duration-150`}
           style={{
             boxShadow: isDragging 
               ? '0 0 40px rgba(247,181,0,0.6), 0 15px 50px rgba(0,0,0,0.3)' 
               : isFrenzyMode
                 ? '0 0 50px rgba(255,50,50,0.7), 0 0 100px rgba(255,50,50,0.4)'
-                : undefined,
+                : workersVisible
+                  ? '0 0 30px rgba(247,181,0,0.3), 0 0 60px rgba(255,215,77,0.15)'
+                  : undefined,
           }}
         >
-          {/* Queen Bee Canvas */}
+          {/* Queen Bee Canvas - larger for better holiday animation visibility */}
           <div className="absolute inset-0 flex items-center justify-center">
             <QueenBeeCanvas
               mode={canvasMode}
-              width={dimension - 8}
-              height={dimension - 8}
+              width={dimension * 0.95}
+              height={dimension * 0.95}
             />
           </div>
 
