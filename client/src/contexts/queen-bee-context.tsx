@@ -93,12 +93,14 @@ export interface QueenBeeConfig {
   isVisible: boolean;
 }
 
-// Size dimensions - Increased for better visuals & holiday animations
-// LARGER for better mobile/desktop animation visibility
+// Size dimensions - Optimized for mobile & desktop readability
+// These sizes ensure users can clearly see emotes, animations, and thoughts
+// Mobile (sm): 160px - large enough to read but not intrusive
+// Desktop (md/lg): 200-240px - clear visibility of all animations and expressions
 export const SIZE_DIMENSIONS = {
-  sm: 100,
-  md: 140,
-  lg: 160,
+  sm: 160,  // Mobile: good balance between visibility and screen real estate
+  md: 200,  // Desktop: clear animations and emotes
+  lg: 240,  // Large desktop: maximum clarity for complex animations
 };
 
 // Error state tracking
