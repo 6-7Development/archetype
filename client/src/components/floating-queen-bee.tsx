@@ -352,6 +352,7 @@ export function FloatingQueenBee() {
   
   // Track if queen is nearly stationary for hover bob animation
   const [isHovering, setIsHovering] = useState(false);
+  const isHoveringRef = useRef(false); // Ref to avoid stale closure in RAF loop
   
   const containerRef = useRef<HTMLDivElement>(null);
   const wooshIdRef = useRef(0);
@@ -900,11 +901,19 @@ export function FloatingQueenBee() {
       }
       
       // HOVER BOB: Track when queen is nearly stationary (low speed)
-      // This triggers a gentle hovering animation to prevent gliding appearance
-      const HOVER_SPEED_THRESHOLD = 0.5;
-      const newIsHovering = result.speed < HOVER_SPEED_THRESHOLD && !isEvading;
-      if (newIsHovering !== isHovering) {
-        setIsHovering(newIsHovering);
+      // Uses hysteresis to prevent flickering: 0.5 on, 0.8 off
+      const HOVER_ON_THRESHOLD = 0.5;
+      const HOVER_OFF_THRESHOLD = 0.8;
+      const wasHovering = isHoveringRef.current;
+      // Compute isEvading locally to avoid temporal dead zone issues
+      const currentlyEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT' || emotionalState === 'FRENZY';
+      const shouldHover = wasHovering 
+        ? result.speed < HOVER_OFF_THRESHOLD && !currentlyEvading  // Higher threshold to stop hovering
+        : result.speed < HOVER_ON_THRESHOLD && !currentlyEvading;  // Lower threshold to start hovering
+      
+      if (shouldHover !== wasHovering) {
+        isHoveringRef.current = shouldHover;
+        setIsHovering(shouldHover);
       }
       
       animationFrameRef.current = requestAnimationFrame(animate);
@@ -917,7 +926,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerFrenzy, triggerSwarm, setMode, beeController, isHovering, isEvading]);
+  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerFrenzy, triggerSwarm, setMode, beeController]);
 
   // Clean up old woosh particles
   useEffect(() => {
