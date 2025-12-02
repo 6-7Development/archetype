@@ -200,15 +200,15 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
       setBehavior(nextBehavior);
       
       // Physics simulation for each behavior
-      const maxSpeed = isScout ? 4 : 2.5;
-      const acceleration = isDefender ? 0.25 : 0.15;
+      const maxSpeed = isScout ? 10 : 6;
+      const acceleration = isDefender ? 0.6 : 0.4;
       
       let targetPos = { x: targetX, y: targetY };
       
       // Different flight patterns with organic movements
       if (nextBehavior === 'chase') {
         // Direct pursuit with smooth curves - add sine wave wobble
-        const wobble = Math.sin(timeRef.current / 8 + id) * 8;
+        const wobble = Math.sin(timeRef.current / 15 + id) * 4;
         const dx = targetPos.x - posRef.current.x + wobble;
         const dy = targetPos.y - posRef.current.y;
         const angle = Math.atan2(dy, dx);
@@ -216,11 +216,11 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
         velRef.current.y += Math.sin(angle) * acceleration;
       } else if (nextBehavior === 'swarm') {
         // Lissajous curve pattern + spiral for beautiful swarm choreography
-        const time = timeRef.current / 12;
+        const time = timeRef.current / 20;
         const spiralAngle = time + id * (Math.PI / 4);
-        const spiralDist = 40 + Math.sin(timeRef.current / 25) * 20;
-        const lissajousX = Math.sin(time * 0.5 + id) * 15;
-        const lissajousY = Math.cos(time * 0.3 + id) * 15;
+        const spiralDist = 50 + Math.sin(timeRef.current / 40) * 20;
+        const lissajousX = Math.sin(time * 0.5 + id) * 12;
+        const lissajousY = Math.cos(time * 0.3 + id) * 12;
         
         targetPos.x = targetX + Math.cos(spiralAngle) * spiralDist + lissajousX;
         targetPos.y = targetY + Math.sin(spiralAngle) * spiralDist + lissajousY;
@@ -230,31 +230,31 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (dist > 1) {
-          velRef.current.x += (dx / dist) * acceleration * 0.75;
-          velRef.current.y += (dy / dist) * acceleration * 0.75;
+          velRef.current.x += (dx / dist) * acceleration * 0.95;
+          velRef.current.y += (dy / dist) * acceleration * 0.95;
         }
       } else if (nextBehavior === 'evade') {
-        // Chaotic evasion with random jitter
-        const baseAngle = (timeRef.current / 8 + id) * Math.PI;
-        const jitter = Math.sin(timeRef.current / 3 + id * 1.7) * 20;
-        const zigzag = Math.sin(timeRef.current / 4) * 40;
+        // Chaotic evasion with fast random jitter
+        const baseAngle = (timeRef.current / 10 + id) * Math.PI;
+        const jitter = Math.sin(timeRef.current / 2.5 + id * 1.7) * 25;
+        const zigzag = Math.sin(timeRef.current / 3.5) * 50;
         
-        targetPos.x = targetX + Math.cos(baseAngle) * 70 + zigzag + jitter;
-        targetPos.y = targetY + Math.sin(baseAngle) * 70 + Math.cos(timeRef.current / 6) * 20;
+        targetPos.x = targetX + Math.cos(baseAngle) * 80 + zigzag + jitter;
+        targetPos.y = targetY + Math.sin(baseAngle) * 80 + Math.cos(timeRef.current / 5) * 25;
         
         const dx = targetPos.x - posRef.current.x;
         const dy = targetPos.y - posRef.current.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (dist > 1) {
-          velRef.current.x += (dx / dist) * acceleration * 1.1;
-          velRef.current.y += (dy / dist) * acceleration * 1.1;
+          velRef.current.x += (dx / dist) * acceleration * 1.2;
+          velRef.current.y += (dy / dist) * acceleration * 1.2;
         }
       } else {
         // Formation flight with breathing motion
         const formationAngle = (id / 8) * Math.PI * 2;
-        const baseDist = 45;
-        const breathe = Math.sin(timeRef.current / 20) * 8;
+        const baseDist = 50;
+        const breathe = Math.sin(timeRef.current / 30) * 10;
         const formationDist = baseDist + breathe;
         
         targetPos.x = targetX + Math.cos(formationAngle) * formationDist;
@@ -265,8 +265,8 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (dist > 1) {
-          velRef.current.x += (dx / dist) * acceleration * 0.5;
-          velRef.current.y += (dy / dist) * acceleration * 0.5;
+          velRef.current.x += (dx / dist) * acceleration * 0.7;
+          velRef.current.y += (dy / dist) * acceleration * 0.7;
         }
       }
       
@@ -278,8 +278,8 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
         velRef.current.y += (Math.random() - 0.5) * repulsionForce;
       }
       
-      // Apply damping for realistic flight
-      const damping = 0.92;
+      // Apply damping for smooth flight
+      const damping = 0.96;
       velRef.current.x *= damping;
       velRef.current.y *= damping;
       
@@ -298,8 +298,8 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
       setVelocity({ x: velRef.current.x, y: velRef.current.y });
       
       // Wing flapping based on speed
-      setWingRotation((prev) => (prev + 25 + speed * 10) % 360);
-    }, 30);
+      setWingRotation((prev) => (prev + 15 + speed * 8) % 360);
+    }, 16);
     
     return () => clearInterval(interval);
   }, [targetX, targetY, queenX, queenY, isChasing, isAngry, isHappy, isScout, isDefender, id]);
