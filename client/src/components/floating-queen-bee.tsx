@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChristmasDecorations, type DecorationObstacle } from './christmas-decorations';
 import { OrbitingWorkerBee, type OrbitingWorkerBeeProps } from './orbiting-worker-bee';
-import { BeeController, type FacingState, type TouchReaction, type WorkerBeeState, type MovementState, type Vector2, type HeadAimState, type BodyDynamicsState } from '@/lib/bee-handlers';
+import { BeeController, type FacingState, type TouchReaction, type WorkerBeeState, type MovementState, type Vector2, type HeadAimState, type BodyDynamicsState, type EmoteFormation } from '@/lib/bee-handlers';
 
 // Seasonal Detection - Check if it's Christmas season (Nov 15 - Jan 5)
 function isChristmasSeason(): boolean {
@@ -335,6 +335,18 @@ export function FloatingQueenBee() {
     targetX?: number;
     targetY?: number;
   }>>([]);
+  // Emote workers - temporary bees spawned for queen formations (don't disturb attacking workers)
+  const [emoteWorkers, setEmoteWorkers] = useState<Array<{
+    id: number;
+    x: number;
+    y: number;
+    size: number;
+    wingFlutter: number;
+    rotation: number;
+    energyLevel: number;
+    opacity: number;
+    isEmoteBee: true;
+  }>>([]);
   const thoughtTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const swarmAnimationRef = useRef<number | null>(null);
   
@@ -593,9 +605,17 @@ export function FloatingQueenBee() {
       // Run independent physics update for each worker bee
       beeController.workers.update(deltaTime);
       
+      // Update emote workers (temporary formation bees)
+      beeController.emoteWorkers.updateQueen(qCenterX, qCenterY);
+      beeController.emoteWorkers.update(deltaTime);
+      
       // Get render state (position, animation, attack status)
       const renderStates = beeController.workers.getWorkerRenderState();
       setOrbitingWorkers(renderStates);
+      
+      // Get emote worker render states
+      const emoteRenderStates = beeController.emoteWorkers.getEmoteWorkerRenderState();
+      setEmoteWorkers(emoteRenderStates);
       
       swarmAnimationRef.current = requestAnimationFrame(animateWorkers);
     };
@@ -627,6 +647,28 @@ export function FloatingQueenBee() {
     
     // Notify unity controller of mode change
     beeController.unity.handleModeChange(mode, qCenterX, qCenterY);
+    
+    // EMOTE WORKER SPAWNING: Spawn temporary bees for formations
+    // This doesn't disturb regular workers that might be attacking
+    const emoteModes: QueenBeeMode[] = ['CELEBRATING', 'SUCCESS', 'EXCITED', 'HELPFUL'];
+    const isEmoteMode = emoteModes.includes(mode);
+    
+    if (isEmoteMode) {
+      // Map mode to formation type
+      const formationMap: Record<string, EmoteFormation> = {
+        'CELEBRATING': 'STAR',
+        'SUCCESS': 'CROWN',
+        'EXCITED': 'HEART',
+        'HELPFUL': 'CIRCLE',
+      };
+      const formation = formationMap[mode] || 'CIRCLE';
+      
+      // Spawn emote bees that fly out from queen and form the shape
+      beeController.spawnEmoteBees(formation, 8);
+    } else {
+      // When exiting emote mode, fade out emote bees
+      beeController.despawnEmoteBees();
+    }
   }, [mode, isMounted, config.position, dimension, beeController]);
 
   // Track mouse/touch position AND velocity for predictive evasion
@@ -1145,6 +1187,44 @@ export function FloatingQueenBee() {
               attackPhaseProgress={worker.attackPhaseProgress}
               trailPositions={worker.trailPositions}
               velocity={worker.velocity}
+            />
+          );
+        })}
+      </AnimatePresence>
+
+      {/* EMOTE WORKERS - Temporary bees spawned for queen formations
+          These don't disturb regular attacking workers - they spawn from the queen,
+          fly out to formation positions, and fade away when emote ends */}
+      <AnimatePresence mode="sync">
+        {emoteWorkers.map((worker) => {
+          // Get light state for seasonal theming
+          const lightState = beeController.season.getWorkerLightState(worker.id);
+          
+          return (
+            <OrbitingWorkerBee
+              key={`emote-worker-${worker.id}`}
+              id={worker.id}
+              x={worker.x}
+              y={worker.y}
+              size={worker.size}
+              wingFlutter={worker.wingFlutter}
+              rotation={worker.rotation}
+              energyLevel={worker.energyLevel}
+              mode={mode}
+              isChristmas={isChristmas}
+              isAttacking={false}
+              targetX={0}
+              targetY={0}
+              baseOpacity={worker.opacity}
+              seasonColor={lightState.color}
+              lightIntensity={lightState.intensity * worker.opacity}
+              lightGlowRadius={lightState.glowRadius}
+              inFormation={true}
+              formationX={worker.x}
+              formationY={worker.y}
+              formationAngle={0}
+              emotePhase="UNITY_ACTIVE"
+              transitionProgress={1}
             />
           );
         })}

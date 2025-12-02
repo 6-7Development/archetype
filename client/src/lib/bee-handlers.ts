@@ -2900,6 +2900,7 @@ export class BeeController {
   public thought: ThoughtHandler;
   public swarm: WorkerSwarmController;
   public workers: IndependentWorkerHandler;
+  public emoteWorkers: EmoteWorkerHandler; // Temporary bees for formations
   public movement: MovementController;
   public season: SeasonEventHandler;
   public unity: SwarmUnityController;
@@ -2913,11 +2914,28 @@ export class BeeController {
     this.thought = new ThoughtHandler();
     this.swarm = new WorkerSwarmController(8);
     this.workers = new IndependentWorkerHandler(8);
+    this.emoteWorkers = new EmoteWorkerHandler();
     this.movement = new MovementController();
     this.season = new SeasonEventHandler();
     this.unity = new SwarmUnityController(8);
     this.headAim = new HeadAimHandler();
     this.bodyDynamics = new BodyDynamicsHandler();
+  }
+  
+  // Spawn emote bees for queen formation (doesn't disturb regular attacking workers)
+  spawnEmoteBees(formation: EmoteFormation, count: number = 8): void {
+    const pos = this.movement.getPosition();
+    this.emoteWorkers.spawnForFormation(pos.x, pos.y, formation, count);
+  }
+  
+  // Despawn emote bees (fade out)
+  despawnEmoteBees(): void {
+    this.emoteWorkers.despawn();
+  }
+  
+  // Check if emote formation is active
+  isEmoteFormationActive(): boolean {
+    return this.emoteWorkers.isEmoteActive();
   }
 
   // Initialize movement controller with viewport and starting position
