@@ -608,6 +608,9 @@ export function FloatingQueenBee() {
   const [workersVisible, setWorkersVisible] = useState(false);
   const [emotionalState, setEmotionalState] = useState<EmotionalState>('IDLE');
   const [lastFrenzyTime, setLastFrenzyTime] = useState(0);
+  const [currentThought, setCurrentThought] = useState('');
+  const [showThought, setShowThought] = useState(false);
+  const thoughtTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const wooshIdRef = useRef(0);
@@ -622,6 +625,33 @@ export function FloatingQueenBee() {
   
   // SEASONAL: Christmas theme detection
   const isChristmas = useMemo(() => isChristmasSeason(), []);
+  
+  // Show random thought/chat bubble
+  const showRandomThought = useCallback(() => {
+    const thoughts = isChristmas ? [
+      "The snow is falling...",
+      "I love the holidays!",
+      "Time for festive coding!",
+      "Spreading cheer!",
+      "Winter code is best!",
+      "Building magic!",
+    ] : [
+      "Hello!",
+      "What's up?",
+      "Exploring...",
+      "Having fun!",
+      "Let's code!",
+      "Building things!",
+    ];
+    const thought = thoughts[Math.floor(Math.random() * thoughts.length)];
+    setCurrentThought(thought);
+    setShowThought(true);
+    
+    if (thoughtTimeoutRef.current) clearTimeout(thoughtTimeoutRef.current);
+    thoughtTimeoutRef.current = setTimeout(() => {
+      setShowThought(false);
+    }, 3000);
+  }, [isChristmas]);
   
   // Client-side window dimensions for snowflakes (SSR-safe)
   const [windowDimensions, setWindowDimensions] = useState({ width: 1000, height: 800 });
@@ -914,6 +944,17 @@ export function FloatingQueenBee() {
   }, []);
 
   // FIX: Improved tooltip timing - stays visible while hovering or when there's a hint
+  // Show random thought occasionally
+  useEffect(() => {
+    if (!isMounted) return;
+    const interval = setInterval(() => {
+      if (emotionalState === 'IDLE' && Math.random() > 0.6) {
+        showRandomThought();
+      }
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [emotionalState, isMounted, showRandomThought]);
+
   useEffect(() => {
     // Clear any existing timeout
     if (tooltipTimeoutRef.current) {
@@ -1549,6 +1590,28 @@ export function FloatingQueenBee() {
                 {isChristmas ? CHRISTMAS_MESSAGES[mode] : modeText}
               </Badge>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Chat Bubble - Thought near bee's mouth */}
+      <AnimatePresence>
+        {showThought && (
+          <motion.div
+            className="fixed z-[102] pointer-events-none"
+            style={{
+              left: config.position.x + dimension * 0.3,
+              top: config.position.y - dimension * 0.6,
+            }}
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="bg-black/80 text-white/95 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap backdrop-blur-sm shadow-lg">
+              {currentThought}
+              <div className="absolute -bottom-1.5 left-3 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-black/80" />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

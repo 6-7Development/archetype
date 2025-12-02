@@ -177,7 +177,7 @@ export function ChristmasDecorations({
         @keyframes ornament-bob-3 { 0%, 100% { transform: translateY(0px) rotateZ(0deg); } 50% { transform: translateY(-8px) rotateZ(180deg); } }
       `}</style>
 
-      <div className={`fixed inset-0 pointer-events-none z-[75] ${className}`}>
+      <div className={`fixed inset-0 pointer-events-none z-[50] ${className}`}>
         <CornerWreath corner="tl" />
         <CornerWreath corner="tr" />
         <CornerWreath corner="bl" />

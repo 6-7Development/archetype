@@ -511,30 +511,6 @@ class AgentBeeAnimation {
 
     ctx.strokeStyle = modeColor;
     ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(-size * 0.1, -size * 0.2);
-    ctx.quadraticCurveTo(-size * 0.4, -size * 0.6, -size * 0.3, -size * 0.8);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(size * 0.1, -size * 0.2);
-    ctx.quadraticCurveTo(size * 0.4, -size * 0.6, size * 0.3, -size * 0.8);
-    ctx.stroke();
-
-    ctx.strokeStyle = "#ffd700";
-    ctx.fillStyle = "rgba(255, 215, 0, 0.2)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(-size * 0.3, -size * 0.4);
-    ctx.lineTo(-size * 0.4, -size * 0.9);
-    ctx.lineTo(-size * 0.15, -size * 0.6);
-    ctx.lineTo(0, -size * 1.1);
-    ctx.lineTo(size * 0.15, -size * 0.6);
-    ctx.lineTo(size * 0.4, -size * 0.9);
-    ctx.lineTo(size * 0.3, -size * 0.4);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
     // Hat INSIDE bee coordinate system (moves WITH bee)
     if (this.isChristmas) {
       ctx.save();
