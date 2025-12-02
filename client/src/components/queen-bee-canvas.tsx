@@ -13,6 +13,7 @@ interface QueenBeeCanvasProps {
   width?: number;
   height?: number;
   className?: string;
+  velocity?: { x: number; y: number };
 }
 
 class AgentBeeAnimation {
@@ -52,6 +53,10 @@ class AgentBeeAnimation {
       scale: 1,
       time: 0,
       frameId: null,
+      velocity: { x: 0, y: 0 },
+      smoothVelocity: { x: 0, y: 0 },
+      bodyBend: 0,
+      bodyStretch: 1,
     };
 
     this.workers = [];
@@ -115,8 +120,34 @@ class AgentBeeAnimation {
     });
   }
 
+  setVelocity(vx: number, vy: number) {
+    this.state.velocity = { x: vx, y: vy };
+  }
+
+  updateRagdollPhysics() {
+    const { velocity, smoothVelocity } = this.state;
+    const smoothing = 0.15;
+    
+    smoothVelocity.x += (velocity.x - smoothVelocity.x) * smoothing;
+    smoothVelocity.y += (velocity.y - smoothVelocity.y) * smoothing;
+    
+    const speed = Math.sqrt(smoothVelocity.x ** 2 + smoothVelocity.y ** 2);
+    
+    const targetBend = Math.atan2(smoothVelocity.y, smoothVelocity.x) * 0.3;
+    this.state.bodyBend += (targetBend - this.state.bodyBend) * 0.12;
+    
+    const targetStretch = 1 + Math.min(speed * 0.015, 0.25);
+    this.state.bodyStretch += (targetStretch - this.state.bodyStretch) * 0.1;
+    
+    if (speed < 0.5) {
+      this.state.bodyBend *= 0.92;
+      this.state.bodyStretch += (1 - this.state.bodyStretch) * 0.08;
+    }
+  }
+
   update() {
     this.state.time += 1;
+    this.updateRagdollPhysics();
     const s = this.state.scale;
     const mode = this.state.mode;
 
@@ -351,13 +382,23 @@ class AgentBeeAnimation {
   drawRealQueen(x: number, y: number, size: number, modeColor: string) {
     const ctx = this.ctx;
     ctx.save();
+    
+    const { bodyBend, bodyStretch, smoothVelocity } = this.state;
+    const speed = Math.sqrt(smoothVelocity.x ** 2 + smoothVelocity.y ** 2);
+    
     const hover = Math.sin(this.state.time * 0.05) * (size * 0.1);
     ctx.translate(x, y + hover);
+    
+    ctx.rotate(bodyBend);
+    ctx.scale(1 / bodyStretch, bodyStretch);
+    
+    const dragTilt = Math.atan2(smoothVelocity.y, smoothVelocity.x) * 0.15;
+    const wobble = speed > 2 ? Math.sin(this.state.time * 0.3) * speed * 0.02 : 0;
 
-    ctx.shadowBlur = size * 1.5;
+    ctx.shadowBlur = size * 1.5 + speed * 2;
     ctx.shadowColor = modeColor;
 
-    const flap = Math.sin(this.state.time * 0.12) * 0.15;
+    const flap = Math.sin(this.state.time * 0.12 + speed * 0.1) * (0.15 + speed * 0.02);
     ctx.fillStyle = `rgba(${this.hexToRgb(modeColor)}, 0.1)`;
     ctx.strokeStyle = `rgba(${this.hexToRgb(modeColor)}, 0.3)`;
     ctx.lineWidth = 0.5;
@@ -365,7 +406,8 @@ class AgentBeeAnimation {
     [-1, 1].forEach((dir) => {
       ctx.save();
       ctx.scale(dir, 1);
-      ctx.rotate(Math.PI / 8 + flap);
+      const wingDrag = dir * dragTilt * 0.5;
+      ctx.rotate(Math.PI / 8 + flap + wingDrag + wobble);
 
       ctx.beginPath();
       ctx.moveTo(0, -size * 0.2);
@@ -633,6 +675,7 @@ export function QueenBeeCanvas({
   width = 100,
   height = 100,
   className,
+  velocity = { x: 0, y: 0 },
 }: QueenBeeCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -657,6 +700,12 @@ export function QueenBeeCanvas({
       animationRef.current.setMode(mode);
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (animationRef.current) {
+      animationRef.current.setVelocity(velocity.x, velocity.y);
+    }
+  }, [velocity.x, velocity.y]);
 
   return (
     <div

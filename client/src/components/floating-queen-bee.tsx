@@ -948,31 +948,60 @@ export function FloatingQueenBee() {
         ))}
       </AnimatePresence>
 
-      {/* Speed Lines when dragging fast */}
+      {/* Speed Lines when dragging - now more visible */}
       <AnimatePresence>
-        {isDragging && Math.abs(dragVelocity.x) + Math.abs(dragVelocity.y) > 12 && (
+        {isDragging && Math.abs(dragVelocity.x) + Math.abs(dragVelocity.y) > 6 && (
           <>
-            {[...Array(5)].map((_, i) => (
+            {[...Array(8)].map((_, i) => (
               <motion.div
                 key={`speedline-${i}`}
                 className="fixed pointer-events-none z-[97]"
                 style={{
-                  left: queenCenterX - dragVelocity.x * (i + 1) * 0.6,
-                  top: queenCenterY - dragVelocity.y * (i + 1) * 0.6,
+                  left: queenCenterX - dragVelocity.x * (i + 1) * 0.5,
+                  top: queenCenterY - dragVelocity.y * (i + 1) * 0.5,
                 }}
-                initial={{ opacity: 0.7 - i * 0.12, scale: 1 - i * 0.12 }}
-                animate={{ opacity: 0, scale: 0.4 }}
-                transition={{ duration: 0.35 }}
+                initial={{ opacity: 0.8 - i * 0.08, scale: 1.2 - i * 0.1 }}
+                animate={{ opacity: 0, scale: 0.3 }}
+                transition={{ duration: 0.45 }}
               >
                 <div 
-                  className="w-5 h-1.5 bg-gradient-to-r from-honey/70 to-transparent rounded-full"
+                  className="w-8 h-2 rounded-full"
                   style={{
+                    background: `linear-gradient(90deg, rgba(247,181,0,${0.9 - i * 0.1}) 0%, transparent 100%)`,
+                    boxShadow: `0 0 ${12 - i}px rgba(247,181,0,0.5)`,
                     transform: `rotate(${Math.atan2(dragVelocity.y, dragVelocity.x) * 180 / Math.PI}deg)`,
                   }}
                 />
               </motion.div>
             ))}
           </>
+        )}
+      </AnimatePresence>
+      
+      {/* Motion blur trail behind queen */}
+      <AnimatePresence>
+        {isDragging && Math.abs(dragVelocity.x) + Math.abs(dragVelocity.y) > 3 && (
+          <motion.div
+            key="motion-blur"
+            className="fixed pointer-events-none z-[99]"
+            style={{
+              left: config.position.x - dragVelocity.x * 0.8,
+              top: config.position.y - dragVelocity.y * 0.8,
+              width: dimension,
+              height: dimension,
+            }}
+            initial={{ opacity: 0.4 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <div 
+              className="w-full h-full rounded-full"
+              style={{
+                background: `radial-gradient(circle, rgba(247,181,0,0.4) 0%, transparent 70%)`,
+                filter: 'blur(8px)',
+              }}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -1084,6 +1113,7 @@ export function FloatingQueenBee() {
               mode={canvasMode}
               width={dimension * 0.95}
               height={dimension * 0.95}
+              velocity={dragVelocity}
             />
           </div>
 
