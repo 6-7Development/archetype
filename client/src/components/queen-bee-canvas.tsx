@@ -47,7 +47,8 @@ class AgentBeeAnimation {
         ERROR: "#ffd700",
         FRENZY: "#ff1a1a",
       },
-      workerCount: 8,
+      // Canvas workers DISABLED - using OrbitingWorkerBee React components instead
+      workerCount: 0,
     };
 
     this.state = {
