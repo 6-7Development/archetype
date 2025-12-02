@@ -573,6 +573,9 @@ export function FloatingQueenBee() {
       // Update unity formation positions (follows queen during emotes)
       beeController.unity.updateFormation(qCenterX, qCenterY, deltaTime);
       
+      // Update seasonal light patterns (Christmas light chase/wave/twinkle effects)
+      beeController.season.updatePatterns(deltaTime);
+      
       // Run independent physics update for each worker bee
       beeController.workers.update(deltaTime);
       
@@ -1082,6 +1085,7 @@ export function FloatingQueenBee() {
       {/* Orbiting Worker Bees - ALWAYS visible orbiting queen, with varying opacity based on mode
           Workers are persistent (not "summoned") - they orbit queen constantly 
           Each worker has individual Christmas light colors during the holiday season
+          CHRISTMAS LIGHTS: Orchestrated patterns (chase, wave, twinkle) with bright glowing bulbs
           UNITY MODE: Workers unite with queen during emotes and disperse during idle */}
       <AnimatePresence mode="sync">
         {orbitingWorkers.map((worker) => {
@@ -1089,6 +1093,9 @@ export function FloatingQueenBee() {
           const inFormation = beeController.unity.isInFormation();
           const transitionProgress = beeController.unity.getTransitionProgress();
           const emotePhase = beeController.unity.getEmotePhase();
+          
+          // Get orchestrated light state from seasonal pattern handler
+          const lightState = beeController.season.getWorkerLightState(worker.id);
           
           return (
             <OrbitingWorkerBee
@@ -1106,7 +1113,9 @@ export function FloatingQueenBee() {
               targetX={worker.targetX || mousePos.x}
               targetY={worker.targetY || mousePos.y}
               baseOpacity={workersVisible ? 1 : 0.5}
-              seasonColor={beeController.season.getWorkerSeasonColor(worker.id)}
+              seasonColor={lightState.color}
+              lightIntensity={lightState.intensity}
+              lightGlowRadius={lightState.glowRadius}
               inFormation={inFormation}
               formationX={formationTarget?.x}
               formationY={formationTarget?.y}

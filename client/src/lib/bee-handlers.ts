@@ -1829,11 +1829,34 @@ const VALENTINES_COLORS = [
   '#DB7093', // Pale Violet Red
 ];
 
+// Christmas light pattern types for orchestrated effects
+export type LightPattern = 'CHASE' | 'WAVE' | 'TWINKLE' | 'ALL_ON' | 'ALTERNATE' | 'SPARKLE';
+
+export interface LightState {
+  color: string;
+  intensity: number; // 0-1 brightness
+  isOn: boolean;
+  glowRadius: number; // Size of glow effect
+}
+
 export class SeasonEventHandler {
   private currentSeason: SeasonEvent = 'NONE';
+  private patternClock: number = 0;
+  private currentPattern: LightPattern = 'CHASE';
+  private patternDuration: number = 0;
+  private workerCount: number = 8;
   
-  constructor() {
+  // Pattern timing constants
+  private readonly PATTERN_SWITCH_INTERVAL = 8000; // Switch patterns every 8 seconds
+  private readonly CHASE_SPEED = 0.004; // Speed of chase pattern
+  private readonly WAVE_SPEED = 0.003; // Speed of wave pattern
+  private readonly TWINKLE_SPEED = 0.008; // Speed of twinkle effect
+  private readonly SPARKLE_CHANCE = 0.15; // Random sparkle probability
+  
+  constructor(workerCount: number = 8) {
+    this.workerCount = workerCount;
     this.detectSeason();
+    this.selectRandomPattern();
   }
   
   // Auto-detect current season based on date
@@ -1881,6 +1904,99 @@ export class SeasonEventHandler {
     return this.currentSeason === 'VALENTINES';
   }
   
+  // Select a random pattern for variety
+  private selectRandomPattern(): void {
+    const patterns: LightPattern[] = ['CHASE', 'WAVE', 'TWINKLE', 'ALL_ON', 'ALTERNATE', 'SPARKLE'];
+    this.currentPattern = patterns[Math.floor(Math.random() * patterns.length)];
+  }
+  
+  // Update pattern clock and switch patterns periodically
+  updatePatterns(deltaTime: number): void {
+    this.patternClock += deltaTime;
+    this.patternDuration += deltaTime;
+    
+    // Switch to new pattern periodically
+    if (this.patternDuration >= this.PATTERN_SWITCH_INTERVAL) {
+      this.selectRandomPattern();
+      this.patternDuration = 0;
+    }
+  }
+  
+  // Get current light pattern type
+  getCurrentPattern(): LightPattern {
+    return this.currentPattern;
+  }
+  
+  // Calculate light intensity for a worker based on current pattern
+  private calculatePatternIntensity(workerId: number): number {
+    const time = this.patternClock;
+    const workerPhase = (workerId / this.workerCount) * Math.PI * 2;
+    
+    switch (this.currentPattern) {
+      case 'CHASE':
+        // Lights chase around in sequence - one bright at a time
+        const chasePhase = (time * this.CHASE_SPEED) % (Math.PI * 2);
+        const chaseDiff = Math.abs(((chasePhase - workerPhase + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+        return Math.max(0.3, 1 - chaseDiff * 0.5);
+        
+      case 'WAVE':
+        // Smooth wave of brightness
+        return 0.5 + Math.sin(time * this.WAVE_SPEED + workerPhase) * 0.5;
+        
+      case 'TWINKLE':
+        // Random-ish twinkling using sin with different frequencies per worker
+        const twinkle1 = Math.sin(time * this.TWINKLE_SPEED + workerId * 1.7);
+        const twinkle2 = Math.sin(time * this.TWINKLE_SPEED * 1.3 + workerId * 2.3);
+        return 0.4 + (twinkle1 * twinkle2 + 1) * 0.3;
+        
+      case 'ALL_ON':
+        // All lights fully on with gentle pulse
+        return 0.85 + Math.sin(time * 0.002) * 0.15;
+        
+      case 'ALTERNATE':
+        // Alternate even/odd workers
+        const alternatePhase = Math.sin(time * 0.004) > 0;
+        return (workerId % 2 === 0) === alternatePhase ? 1 : 0.3;
+        
+      case 'SPARKLE':
+        // Random sparkle with base glow
+        const sparkleBase = 0.5 + Math.sin(time * 0.003 + workerPhase) * 0.2;
+        const sparkle = Math.sin(time * 0.02 + workerId * 3.7) > (1 - this.SPARKLE_CHANCE * 2) ? 1 : 0;
+        return Math.max(sparkleBase, sparkle);
+        
+      default:
+        return 0.8;
+    }
+  }
+  
+  // Get full light state for a worker (color, intensity, glow)
+  getWorkerLightState(workerId: number): LightState {
+    const color = this.getWorkerSeasonColor(workerId);
+    
+    if (!color || this.currentSeason === 'NONE') {
+      return {
+        color: '#FFD700',
+        intensity: 0,
+        isOn: false,
+        glowRadius: 0,
+      };
+    }
+    
+    const intensity = this.calculatePatternIntensity(workerId);
+    const isOn = intensity > 0.4;
+    
+    // Glow radius scales with intensity - brighter = larger glow
+    const baseGlow = this.currentSeason === 'CHRISTMAS' ? 12 : 8;
+    const glowRadius = baseGlow * intensity;
+    
+    return {
+      color,
+      intensity,
+      isOn,
+      glowRadius,
+    };
+  }
+  
   // Get individual light color for a worker bee based on season
   getWorkerSeasonColor(workerId: number): string | null {
     switch (this.currentSeason) {
@@ -1907,6 +2023,11 @@ export class SeasonEventHandler {
       default:
         return [];
     }
+  }
+  
+  // Check if seasonal effects are active (for UI to know when to show normal vs themed)
+  hasActiveSeasonalEffects(): boolean {
+    return this.currentSeason !== 'NONE';
   }
 }
 

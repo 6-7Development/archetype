@@ -26,6 +26,8 @@ export interface OrbitingWorkerBeeProps {
   targetY?: number;             // Target Y for attacks
   baseOpacity?: number;         // Base opacity level (0-1), defaults to 1
   seasonColor?: string | null;  // Individual season color (Christmas lights, etc.)
+  lightIntensity?: number;      // Orchestrated light intensity from pattern (0-1)
+  lightGlowRadius?: number;     // Glow radius for Christmas light effect
   inFormation?: boolean;        // Whether worker is in unified formation with queen
   formationX?: number;          // Override X position for formation
   formationY?: number;          // Override Y position for formation
@@ -80,6 +82,8 @@ export function OrbitingWorkerBee({
   formationAngle,
   emotePhase = 0,
   transitionProgress = 0,
+  lightIntensity = 0.8,
+  lightGlowRadius = 10,
 }: OrbitingWorkerBeeProps) {
   // Worker bees should be ~45% the size of the queen bee (queen is ~80-100px)
   // Base size 20px makes workers appropriately smaller than queen
@@ -102,9 +106,11 @@ export function OrbitingWorkerBee({
   // Wing flutter animation
   const wingAngle = wingFlutter * 0.5;
   
-  // Christmas light glow effect - pulsing light
+  // CHRISTMAS LIGHTS: Bright glowing orbs with orchestrated patterns
+  // lightIntensity comes from SeasonEventHandler pattern system (0-1)
   const hasSeasonLight = !!seasonColor && isChristmas;
-  const lightPulse = hasSeasonLight ? Math.sin(Date.now() * 0.005 + id * 0.5) * 0.3 + 0.7 : 1;
+  const effectiveLightIntensity = hasSeasonLight ? lightIntensity : 0;
+  const effectiveGlowRadius = hasSeasonLight ? lightGlowRadius * lightIntensity : 0;
   
   // FORMATION MODE: Synchronized emote animations with queen
   // When in formation, workers use formation position and sync their animations
@@ -294,12 +300,34 @@ export function OrbitingWorkerBee({
           strokeWidth="1"
           fill="none"
         />
-        {/* Antenna tip - becomes Christmas light during season */}
+        {/* Antenna tip - becomes BRIGHT glowing Christmas light during season */}
         {hasSeasonLight ? (
           <>
-            {/* Glowing Christmas light bulb */}
-            <circle cx="12" cy="1" r="2.5" fill={seasonColor!} opacity={lightPulse} />
-            <circle cx="12" cy="1" r="1.5" fill="#FFF" opacity={0.6 * lightPulse} />
+            {/* Large outer glow - very visible */}
+            <circle 
+              cx="12" 
+              cy="1" 
+              r={4 + effectiveGlowRadius * 0.3} 
+              fill={seasonColor!} 
+              opacity={effectiveLightIntensity * 0.5} 
+              style={{ filter: `blur(${2 + effectiveGlowRadius * 0.15}px)` }}
+            />
+            {/* Main light bulb - bright and colorful */}
+            <circle 
+              cx="12" 
+              cy="1" 
+              r={3} 
+              fill={seasonColor!} 
+              opacity={0.7 + effectiveLightIntensity * 0.3}
+            />
+            {/* Inner bright core */}
+            <circle 
+              cx="12" 
+              cy="1" 
+              r={1.5} 
+              fill="#FFFFFF" 
+              opacity={0.5 + effectiveLightIntensity * 0.4}
+            />
           </>
         ) : (
           <circle cx="12" cy="1" r="1" fill="#333" />
@@ -311,12 +339,34 @@ export function OrbitingWorkerBee({
           strokeWidth="1"
           fill="none"
         />
-        {/* Antenna tip - becomes Christmas light during season */}
+        {/* Antenna tip - becomes BRIGHT glowing Christmas light during season */}
         {hasSeasonLight ? (
           <>
-            {/* Glowing Christmas light bulb */}
-            <circle cx="28" cy="1" r="2.5" fill={seasonColor!} opacity={lightPulse} />
-            <circle cx="28" cy="1" r="1.5" fill="#FFF" opacity={0.6 * lightPulse} />
+            {/* Large outer glow - very visible */}
+            <circle 
+              cx="28" 
+              cy="1" 
+              r={4 + effectiveGlowRadius * 0.3} 
+              fill={seasonColor!} 
+              opacity={effectiveLightIntensity * 0.5}
+              style={{ filter: `blur(${2 + effectiveGlowRadius * 0.15}px)` }}
+            />
+            {/* Main light bulb - bright and colorful */}
+            <circle 
+              cx="28" 
+              cy="1" 
+              r={3} 
+              fill={seasonColor!} 
+              opacity={0.7 + effectiveLightIntensity * 0.3}
+            />
+            {/* Inner bright core */}
+            <circle 
+              cx="28" 
+              cy="1" 
+              r={1.5} 
+              fill="#FFFFFF" 
+              opacity={0.5 + effectiveLightIntensity * 0.4}
+            />
           </>
         ) : (
           <circle cx="28" cy="1" r="1" fill="#333" />
