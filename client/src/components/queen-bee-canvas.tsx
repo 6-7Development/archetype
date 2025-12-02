@@ -14,6 +14,7 @@ interface QueenBeeCanvasProps {
   height?: number;
   className?: string;
   velocity?: { x: number; y: number };
+  isChristmas?: boolean;
 }
 
 class AgentBeeAnimation {
@@ -24,6 +25,7 @@ class AgentBeeAnimation {
   state: any;
   workers: any[];
   particles: any[];
+  isChristmas: boolean = false;
 
   constructor(container: HTMLDivElement, canvas: HTMLCanvasElement) {
     this.container = container;
@@ -266,6 +268,11 @@ class AgentBeeAnimation {
     const cy = h / 2;
 
     this.drawRealQueen(cx, cy, s * 0.14, modeColor);
+    
+    // Draw Christmas hat if in holiday season
+    if (this.isChristmas) {
+      this.drawChristmasHat(cx, cy, s * 0.14);
+    }
 
     this.workers.forEach((worker) => {
       const wx = cx + worker.currentX;
@@ -354,6 +361,49 @@ class AgentBeeAnimation {
         this.ctx.fill();
       }
     }
+  }
+
+  drawChristmasHat(x: number, y: number, size: number) {
+    const ctx = this.ctx;
+    ctx.save();
+    
+    // Move to bee head position (higher for the hat)
+    ctx.translate(x, y - size * 0.5);
+    
+    // Santa hat cone - red body
+    ctx.fillStyle = '#DC2626'; // Christmas red
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.35, 0);
+    ctx.lineTo(size * 0.35, 0);
+    ctx.lineTo(0, -size * 0.8);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Hat outline
+    ctx.strokeStyle = '#991B1B';
+    ctx.lineWidth = size * 0.05;
+    ctx.stroke();
+    
+    // White fur trim at base
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, size * 0.38, size * 0.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Pompom (gold ball) at tip
+    const pompomY = -size * 0.75;
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(0, pompomY, size * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Pompom shine
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.beginPath();
+    ctx.arc(-size * 0.04, pompomY - size * 0.04, size * 0.05, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
   }
 
   drawBlueprintGrid(s: number, color: string) {
@@ -681,7 +731,7 @@ export interface QueenBeeCanvasHandle {
 }
 
 const QueenBeeCanvasComponent = forwardRef<QueenBeeCanvasHandle, QueenBeeCanvasProps>(
-  ({ mode = "IDLE", width = 100, height = 100, className, velocity = { x: 0, y: 0 } }, ref) => {
+  ({ mode = "IDLE", width = 100, height = 100, className, velocity = { x: 0, y: 0 }, isChristmas = false }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animationRef = useRef<AgentBeeAnimation | null>(null);
@@ -711,6 +761,13 @@ const QueenBeeCanvasComponent = forwardRef<QueenBeeCanvasHandle, QueenBeeCanvasP
         animationRef.current.setVelocity(velocity.x, velocity.y);
       }
     }, [velocity.x, velocity.y]);
+
+    // Update Christmas hat state
+    useEffect(() => {
+      if (animationRef.current) {
+        animationRef.current.isChristmas = isChristmas;
+      }
+    }, [isChristmas]);
 
     // Expose resetRagdoll via ref
     useEffect(() => {

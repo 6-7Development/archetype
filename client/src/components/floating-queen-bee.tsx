@@ -1237,6 +1237,7 @@ export function FloatingQueenBee() {
               width={dimension * 0.95}
               height={dimension * 0.95}
               velocity={beeVelocity}
+              isChristmas={isChristmas}
             />
           </div>
 

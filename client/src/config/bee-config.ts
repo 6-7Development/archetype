@@ -96,9 +96,17 @@ export const BeeConfig = {
     
     // Christmas-specific config
     christmas: {
-      snowHatStyle: 'classic',  // 'classic' (fluffy), 'stocking' (festive), 'elf' (pointy)
-      snowHatColor: '#FFFFFF',
-      snowHatTrim: '#FF0000',
+      // Hat configuration - drawn directly on canvas
+      hat: {
+        enabled: true,
+        style: 'santa',      // 'santa' (classic fluffy), 'stocking' (tall festive), 'elf' (pointy)
+        color: '#DC2626',    // Christmas red
+        trimColor: '#FFFFFF', // White fur trim
+        pompomColor: '#FFD700', // Gold pompom
+        scale: 1.0,          // Size multiplier (1.0 = normal)
+        offsetY: -5,         // Y offset from crown top
+        offsetX: 0,          // X offset from center
+      },
       
       // Snow effects on page elements
       snowOnLetters: true,     // Add snow accumulation to text
@@ -112,12 +120,12 @@ export const BeeConfig = {
       
       // Holiday thoughts (random mascot messages)
       thoughts: [
-        "The snow is falling... so peaceful! ❄️",
-        "I love the holiday season! 🎄",
-        "Time for some festive coding! 🎅",
-        "Spreading holiday cheer to all developers! 🎁",
-        "Winter code is the best code! ⛄",
-        "Let's build something magical this season! ✨",
+        "The snow is falling... so peaceful!",
+        "I love the holiday season!",
+        "Time for some festive coding!",
+        "Spreading holiday cheer to all developers!",
+        "Winter code is the best code!",
+        "Let's build something magical this season!",
       ],
     },
   },
