@@ -251,7 +251,9 @@ function getModeGlow(mode: QueenBeeMode): string {
   }
 }
 
-// Realistic Worker Bee Component with Swarm AI - Proportional to queen size
+// Worker Bee with Phase-Based Lifecycle: SPAWN → CHASE → RETURN → DESPAWN
+type WorkerPhase = 'SPAWN' | 'CHASE' | 'RETURN' | 'DESPAWN';
+
 interface WorkerBeeProps {
   id: number;
   targetX: number;
@@ -262,201 +264,130 @@ interface WorkerBeeProps {
   mode: QueenBeeMode;
 }
 
-// Worker orbit distance proportional to queen (uses context dimension)
-const WORKER_ORBIT_BASE = 28; // Base orbit distance
+// Phase timing (ms)
+const PHASE_TIMING = {
+  SPAWN: 300,
+  CHASE: 2500,
+  RETURN: 1200,
+  DESPAWN: 400,
+};
 
 function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: WorkerBeeProps) {
-  // Initialize position near queen with offset based on ID - proportional orbit
-  const initialOffset = useMemo(() => ({
-    x: Math.cos(id * (Math.PI / 4)) * WORKER_ORBIT_BASE,
-    y: Math.sin(id * (Math.PI / 4)) * WORKER_ORBIT_BASE,
-  }), [id]);
-  
-  const [pos, setPos] = useState({ x: queenX + initialOffset.x, y: queenY + initialOffset.y });
-  const [velocity, setVelocity] = useState({ x: 0, y: 0 });
+  const [phase, setPhase] = useState<WorkerPhase>('SPAWN');
+  const [pos, setPos] = useState({ x: queenX, y: queenY });
   const [wingRotation, setWingRotation] = useState(0);
-  const [behavior, setBehavior] = useState<'chase' | 'swarm' | 'evade' | 'formation'>('chase');
-  const posRef = useRef({ x: queenX + initialOffset.x, y: queenY + initialOffset.y });
-  const velRef = useRef({ x: 0, y: 0 });
-  const timeRef = useRef(0);
-  const hasInitializedRef = useRef(false);
+  const phaseStartRef = useRef(Date.now());
+  const animFrameRef = useRef<number | null>(null);
+  const lastTargetRef = useRef({ x: targetX, y: targetY });
   
-  // FIX: Reset position to near queen when queen position changes significantly
-  useEffect(() => {
-    if (!hasInitializedRef.current) {
-      posRef.current = { x: queenX + initialOffset.x, y: queenY + initialOffset.y };
-      setPos({ x: queenX + initialOffset.x, y: queenY + initialOffset.y });
-      hasInitializedRef.current = true;
-    }
-  }, [queenX, queenY, initialOffset]);
-  
-  // Different behavior based on mode
-  const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || mode === 'ALERT';
-  const isHappy = mode === 'CELEBRATING' || mode === 'SUCCESS' || mode === 'EXCITED';
-  
-  // Swarm behavior - different bees have different roles
-  const role = id % 3; // 0: scout, 1: defender, 2: worker
-  const isScout = role === 0;
-  const isDefender = role === 1;
-  
-  // Update bee physics and behavior
+  // Phase lifecycle management
   useEffect(() => {
     if (!isChasing) {
-      // Return to near queen position with figure-8 hover pattern
-      const hoverTime = Date.now() / 1000;
-      const hoverX = Math.sin(hoverTime * 0.8 + id) * 6;
-      const hoverY = Math.cos(hoverTime * 1.2 + id * 0.7) * 4;
-      const returnX = queenX + Math.cos(id * (Math.PI / 4)) * WORKER_ORBIT_BASE + hoverX;
-      const returnY = queenY + Math.sin(id * (Math.PI / 4)) * WORKER_ORBIT_BASE + hoverY;
-      
-      // Smoothly move back to queen instead of teleporting
-      const dx = returnX - posRef.current.x;
-      const dy = returnY - posRef.current.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      if (dist > 5) {
-        // Gradually move towards queen
-        posRef.current.x += dx * 0.1;
-        posRef.current.y += dy * 0.1;
-        setPos({ x: posRef.current.x, y: posRef.current.y });
-      } else {
-        setPos({ x: returnX, y: returnY });
-        posRef.current = { x: returnX, y: returnY };
-      }
-      setVelocity({ x: 0, y: 0 });
-      velRef.current = { x: 0, y: 0 };
+      setPhase('RETURN');
       return;
     }
     
-    const interval = setInterval(() => {
-      timeRef.current += 1;
-      
-      // Determine behavior based on mode
-      let nextBehavior: typeof behavior = 'chase';
-      if (isAngry) nextBehavior = isDefender ? 'evade' : 'chase';
-      else if (isHappy) nextBehavior = 'swarm';
-      else nextBehavior = isScout ? 'chase' : 'formation';
-      setBehavior(nextBehavior);
-      
-      // Physics simulation for each behavior
-      const maxSpeed = isScout ? 10 : 6;
-      const acceleration = isDefender ? 0.6 : 0.4;
-      
-      let targetPos = { x: targetX, y: targetY };
-      
-      // Different flight patterns with organic movements
-      if (nextBehavior === 'chase') {
-        // Direct pursuit with smooth curves - add sine wave wobble
-        const wobble = Math.sin(timeRef.current / 15 + id) * 4;
-        const dx = targetPos.x - posRef.current.x + wobble;
-        const dy = targetPos.y - posRef.current.y;
-        const angle = Math.atan2(dy, dx);
-        velRef.current.x += Math.cos(angle) * acceleration;
-        velRef.current.y += Math.sin(angle) * acceleration;
-      } else if (nextBehavior === 'swarm') {
-        // Lissajous curve pattern + spiral for beautiful swarm choreography - proportional
-        const time = timeRef.current / 20;
-        const spiralAngle = time + id * (Math.PI / 4);
-        const spiralDist = WORKER_ORBIT_BASE * 1.5 + Math.sin(timeRef.current / 40) * 12;
-        const lissajousX = Math.sin(time * 0.5 + id) * 8;
-        const lissajousY = Math.cos(time * 0.3 + id) * 8;
-        
-        targetPos.x = targetX + Math.cos(spiralAngle) * spiralDist + lissajousX;
-        targetPos.y = targetY + Math.sin(spiralAngle) * spiralDist + lissajousY;
-        
-        const dx = targetPos.x - posRef.current.x;
-        const dy = targetPos.y - posRef.current.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist > 1) {
-          velRef.current.x += (dx / dist) * acceleration * 0.95;
-          velRef.current.y += (dy / dist) * acceleration * 0.95;
-        }
-      } else if (nextBehavior === 'evade') {
-        // Chaotic evasion with fast random jitter - proportional distances
-        const baseAngle = (timeRef.current / 10 + id) * Math.PI;
-        const jitter = Math.sin(timeRef.current / 2.5 + id * 1.7) * 15;
-        const zigzag = Math.sin(timeRef.current / 3.5) * 30;
-        
-        targetPos.x = targetX + Math.cos(baseAngle) * WORKER_ORBIT_BASE * 2 + zigzag + jitter;
-        targetPos.y = targetY + Math.sin(baseAngle) * WORKER_ORBIT_BASE * 2 + Math.cos(timeRef.current / 5) * 15;
-        
-        const dx = targetPos.x - posRef.current.x;
-        const dy = targetPos.y - posRef.current.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist > 1) {
-          velRef.current.x += (dx / dist) * acceleration * 1.2;
-          velRef.current.y += (dy / dist) * acceleration * 1.2;
-        }
-      } else {
-        // Formation flight with breathing motion - proportional
-        const formationAngle = (id / 8) * Math.PI * 2;
-        const baseDist = WORKER_ORBIT_BASE * 1.4;
-        const breathe = Math.sin(timeRef.current / 30) * 6;
-        const formationDist = baseDist + breathe;
-        
-        targetPos.x = targetX + Math.cos(formationAngle) * formationDist;
-        targetPos.y = targetY + Math.sin(formationAngle) * formationDist;
-        
-        const dx = targetPos.x - posRef.current.x;
-        const dy = targetPos.y - posRef.current.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist > 1) {
-          velRef.current.x += (dx / dist) * acceleration * 0.7;
-          velRef.current.y += (dy / dist) * acceleration * 0.7;
-        }
-      }
-      
-      // Collision avoidance - bees repel each other slightly
-      if (id > 0) {
-        const prevBeeOffset = 20; // approximate distance to check
-        const repulsionForce = 0.03;
-        velRef.current.x += (Math.random() - 0.5) * repulsionForce;
-        velRef.current.y += (Math.random() - 0.5) * repulsionForce;
-      }
-      
-      // Apply damping for smooth flight
-      const damping = 0.96;
-      velRef.current.x *= damping;
-      velRef.current.y *= damping;
-      
-      // Limit maximum speed
-      const speed = Math.sqrt(velRef.current.x ** 2 + velRef.current.y ** 2);
-      if (speed > maxSpeed) {
-        velRef.current.x = (velRef.current.x / speed) * maxSpeed;
-        velRef.current.y = (velRef.current.y / speed) * maxSpeed;
-      }
-      
-      // Update position
-      posRef.current.x += velRef.current.x;
-      posRef.current.y += velRef.current.y;
-      
-      setPos({ x: posRef.current.x, y: posRef.current.y });
-      setVelocity({ x: velRef.current.x, y: velRef.current.y });
-      
-      // Wing flapping based on speed
-      setWingRotation((prev) => (prev + 15 + speed * 8) % 360);
-    }, 16);
+    phaseStartRef.current = Date.now();
+    setPhase('SPAWN');
     
-    return () => clearInterval(interval);
-  }, [targetX, targetY, queenX, queenY, isChasing, isAngry, isHappy, isScout, isDefender, id]);
-
-  // Calculate bee heading
-  const heading = Math.atan2(velocity.y, velocity.x) * (180 / Math.PI);
+    // Phase transitions
+    const spawnTimer = setTimeout(() => {
+      setPhase('CHASE');
+      lastTargetRef.current = { x: targetX, y: targetY };
+    }, PHASE_TIMING.SPAWN);
+    
+    const chaseTimer = setTimeout(() => {
+      setPhase('RETURN');
+    }, PHASE_TIMING.SPAWN + PHASE_TIMING.CHASE);
+    
+    return () => {
+      clearTimeout(spawnTimer);
+      clearTimeout(chaseTimer);
+    };
+  }, [isChasing]);
   
-  // Color based on role and mode
-  const beeColor = isAngry 
-    ? (isDefender ? '#FF3B3B' : '#FF6B6B')
-    : isHappy 
-      ? (isScout ? '#FFE66D' : '#FFB84D')
-      : (isScout ? '#F7B500' : '#E6A300');
+  // Animation loop with requestAnimationFrame
+  useEffect(() => {
+    const animate = () => {
+      const elapsed = Date.now() - phaseStartRef.current;
+      const orbitAngle = (id * Math.PI / 4) + (elapsed * 0.002);
+      
+      // Wing flapping
+      setWingRotation((elapsed * 0.5 + id * 50) % 360);
+      
+      if (phase === 'SPAWN') {
+        // Emerge from queen with slight spread
+        const progress = Math.min(elapsed / PHASE_TIMING.SPAWN, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease out cubic
+        const spawnDist = 20 * eased;
+        setPos({
+          x: queenX + Math.cos(orbitAngle) * spawnDist,
+          y: queenY + Math.sin(orbitAngle) * spawnDist,
+        });
+      } else if (phase === 'CHASE') {
+        // Smoothly chase cursor with spring physics
+        lastTargetRef.current = { x: targetX, y: targetY };
+        setPos(prev => {
+          const dx = targetX - prev.x;
+          const dy = targetY - prev.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          // Add wobble for natural flight
+          const wobbleX = Math.sin(elapsed * 0.008 + id * 2) * 8;
+          const wobbleY = Math.cos(elapsed * 0.006 + id * 1.5) * 6;
+          
+          // Spring-like chase (faster when far, slower when close)
+          const speed = Math.min(0.08, 0.02 + dist * 0.0003);
+          
+          return {
+            x: prev.x + dx * speed + wobbleX * 0.1,
+            y: prev.y + dy * speed + wobbleY * 0.1,
+          };
+        });
+      } else if (phase === 'RETURN') {
+        // Smooth bezier-like return to queen
+        setPos(prev => {
+          const dx = queenX - prev.x;
+          const dy = queenY - prev.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist < 5) {
+            return { x: queenX, y: queenY };
+          }
+          
+          // Ease back with gentle curve
+          const returnSpeed = 0.06;
+          const curveX = Math.sin(elapsed * 0.01 + id) * 3;
+          const curveY = Math.cos(elapsed * 0.012 + id) * 3;
+          
+          return {
+            x: prev.x + dx * returnSpeed + curveX,
+            y: prev.y + dy * returnSpeed + curveY,
+          };
+        });
+      }
+      
+      animFrameRef.current = requestAnimationFrame(animate);
+    };
+    
+    animFrameRef.current = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, [phase, queenX, queenY, targetX, targetY, id]);
   
-  const wingOpacity = 0.6 + Math.sin(wingRotation * Math.PI / 180) * 0.3;
-
-  // Calculate tilt based on velocity
-  const tilt = Math.atan2(velocity.y, velocity.x) * 0.3;
+  // Color based on phase
+  const beeColor = phase === 'CHASE' ? '#F7B500' : phase === 'RETURN' ? '#E6A300' : '#FFD54F';
+  const wingOpacity = 0.5 + Math.sin(wingRotation * Math.PI / 180) * 0.3;
+  
+  // Calculate heading from movement
+  const dx = phase === 'CHASE' ? targetX - pos.x : queenX - pos.x;
+  const dy = phase === 'CHASE' ? targetY - pos.y : queenY - pos.y;
+  const heading = Math.atan2(dy, dx) * (180 / Math.PI);
+  const tilt = Math.atan2(dy, dx) * 0.15;
   
   return (
     <motion.div
@@ -1187,33 +1118,31 @@ export function FloatingQueenBee() {
         <FallingSnowflake key={flake.id} {...flake} windowHeight={windowDimensions.height} />
       ))}
 
-      {/* Worker Bees - Smooth lifecycle with proper spawn/despawn animations */}
-      <AnimatePresence mode="popLayout">
+      {/* Worker Bees - Phase-based lifecycle: SPAWN → CHASE → RETURN → DESPAWN */}
+      <AnimatePresence mode="sync">
         {!isMobile && workersVisible && (
           <>
             {[...Array(NUM_WORKERS)].map((_, i) => (
               <motion.div
                 key={`worker-${i}`}
-                initial={{ opacity: 0, scale: 0.3, y: 20 }}
+                initial={{ opacity: 0, scale: 0.2 }}
                 animate={{ 
                   opacity: 1, 
-                  scale: 1, 
-                  y: 0,
-                  transition: { 
-                    duration: 0.4, 
-                    delay: i * 0.08,
-                    ease: [0.34, 1.56, 0.64, 1]
-                  }
+                  scale: 1,
                 }}
                 exit={{ 
                   opacity: 0, 
-                  scale: 0.2, 
-                  y: -15,
+                  scale: 0,
                   transition: { 
-                    duration: 0.35, 
-                    delay: i * 0.03,
-                    ease: "easeInOut"
+                    duration: 0.4, 
+                    delay: i * 0.05,
+                    ease: "easeOut"
                   }
+                }}
+                transition={{ 
+                  duration: 0.3, 
+                  delay: i * 0.06,
+                  ease: "easeOut"
                 }}
               >
                 <WorkerBee
