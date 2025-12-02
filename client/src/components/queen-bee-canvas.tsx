@@ -268,11 +268,6 @@ class AgentBeeAnimation {
     const cy = h / 2;
 
     this.drawRealQueen(cx, cy, s * 0.14, modeColor);
-    
-    // Draw Christmas hat if in holiday season
-    if (this.isChristmas) {
-      this.drawChristmasHat(cx, cy, s * 0.14);
-    }
 
     this.workers.forEach((worker) => {
       const wx = cx + worker.currentX;
@@ -361,49 +356,6 @@ class AgentBeeAnimation {
         this.ctx.fill();
       }
     }
-  }
-
-  drawChristmasHat(x: number, y: number, size: number) {
-    const ctx = this.ctx;
-    ctx.save();
-    
-    // Position hat directly on top of bee's head (centered horizontally, on head vertically)
-    ctx.translate(x, y - size * 0.65);
-    
-    // Santa hat cone - red body
-    ctx.fillStyle = '#DC2626'; // Christmas red
-    ctx.beginPath();
-    ctx.moveTo(-size * 0.35, 0);
-    ctx.lineTo(size * 0.35, 0);
-    ctx.lineTo(0, -size * 0.8);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Hat outline
-    ctx.strokeStyle = '#991B1B';
-    ctx.lineWidth = size * 0.05;
-    ctx.stroke();
-    
-    // White fur trim at base
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, size * 0.38, size * 0.15, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Pompom (gold ball) at tip
-    const pompomY = -size * 0.75;
-    ctx.fillStyle = '#FFD700';
-    ctx.beginPath();
-    ctx.arc(0, pompomY, size * 0.12, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Pompom shine
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.beginPath();
-    ctx.arc(-size * 0.04, pompomY - size * 0.04, size * 0.05, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.restore();
   }
 
   drawBlueprintGrid(s: number, color: string) {
@@ -582,6 +534,36 @@ class AgentBeeAnimation {
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
+
+    // Hat INSIDE bee coordinate system (moves WITH bee)
+    if (this.isChristmas) {
+      ctx.save();
+      ctx.translate(0, -size * 0.65);
+      ctx.fillStyle = '#DC2626';
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.35, 0);
+      ctx.lineTo(size * 0.35, 0);
+      ctx.lineTo(0, -size * 0.8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#991B1B';
+      ctx.lineWidth = size * 0.05;
+      ctx.stroke();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, size * 0.38, size * 0.15, 0, 0, Math.PI * 2);
+      ctx.fill();
+      const pompomY = -size * 0.75;
+      ctx.fillStyle = '#FFD700';
+      ctx.beginPath();
+      ctx.arc(0, pompomY, size * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.beginPath();
+      ctx.arc(-size * 0.04, pompomY - size * 0.04, size * 0.05, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
 
     ctx.restore();
   }
