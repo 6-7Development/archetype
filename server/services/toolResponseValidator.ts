@@ -259,3 +259,58 @@ export class ToolResponseValidator {
 
 // Export singleton
 export const toolResponseValidator = new ToolResponseValidator();
+
+/**
+ * Parse raw tool result string into structured ToolResult
+ * Converts legacy string-based tool responses to structured format
+ */
+export function parseToolResult(rawResult: string | any): ToolResult {
+  // If already a ToolResult object, return as-is
+  if (typeof rawResult === 'object' && rawResult !== null && 'success' in rawResult) {
+    return rawResult as ToolResult;
+  }
+  
+  // Handle string results
+  if (typeof rawResult === 'string') {
+    // Check for success indicators
+    const isSuccess = rawResult.startsWith('✅') || 
+                      rawResult.includes('successfully') ||
+                      rawResult.includes('complete') ||
+                      !rawResult.startsWith('❌');
+    
+    // Check for error indicators  
+    const isError = rawResult.startsWith('❌') ||
+                    rawResult.toLowerCase().includes('error') ||
+                    rawResult.toLowerCase().includes('failed');
+    
+    // Check for warning indicators
+    const isWarning = rawResult.startsWith('⚠️') ||
+                      rawResult.toLowerCase().includes('warning');
+    
+    return {
+      success: isSuccess && !isError,
+      data: rawResult,
+      error: isError ? rawResult : undefined,
+      warnings: isWarning ? [rawResult] : undefined,
+    };
+  }
+  
+  // Handle other types (arrays, objects without success field)
+  return {
+    success: true,
+    data: rawResult,
+  };
+}
+
+/**
+ * Convert ToolResult to JSON for Gemini conversation history
+ */
+export function toolResultToJSON(result: ToolResult): string {
+  if (result.success) {
+    if (typeof result.data === 'string') {
+      return result.data;
+    }
+    return JSON.stringify(result.data, null, 2);
+  }
+  return `Error: ${result.error}`;
+}

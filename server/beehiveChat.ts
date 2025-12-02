@@ -19,6 +19,16 @@ import { trackAIUsage } from './usage-tracking.js';
 import { AgentExecutor } from './services/agentExecutor.js';
 import { CreditManager } from './services/creditManager.js';
 
+// Scout Orchestrator - Session management and workflow tracking
+import { 
+  initializeScoutSession, 
+  processToolCallsWithOrchestrator,
+  executeToolWithTracking,
+  getWorkflowStatePrompt,
+  detectPhaseFromContent,
+  getGeminiToolDeclarations
+} from './services/scoutOrchestratorIntegration.js';
+
 // ✅ GAP RE-INTEGRATION - Lazy loading with error boundaries
 // Services will be loaded on-demand inside router handlers to avoid async issues at module level
 let performanceTracker: any = null;
@@ -201,6 +211,16 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
     const agentRunId = agentRunResult.runId!;
     console.log(`[LOMU-CHAT] Agent run started: ${agentRunId}, reserved ${CREDITS_TO_RESERVE} credits`);
 
+    // Initialize Scout Orchestrator session for workflow tracking
+    const scoutSessionId = `chat-${agentRunId}`;
+    const scoutSession = initializeScoutSession({
+      sessionId: scoutSessionId,
+      userId,
+      projectId: activeProjectId,
+      targetContext: 'platform',
+    });
+    console.log(`[LOMU-CHAT] Scout session initialized: ${scoutSessionId} (phase: ${scoutSession.currentPhase})`);
+
     // Create backup before any changes (non-blocking - continue even if it fails)
     let backup: any = null;
     try {
@@ -252,7 +272,13 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                           message.toLowerCase().includes('find problems');
 
     // Use the new friendly system prompts from config
-    const systemPrompt = getSystemPrompt(message, isSimpleTask);
+    const baseSystemPrompt = getSystemPrompt(message, isSimpleTask);
+    
+    // Enhance system prompt with current workflow state from Scout orchestrator
+    const workflowState = getWorkflowStatePrompt(scoutSessionId);
+    const systemPrompt = workflowState 
+      ? `${baseSystemPrompt}\n\n${workflowState}`
+      : baseSystemPrompt;
 
     // TOKEN EFFICIENCY: Build smart tools array based on task complexity
     const basicTools = [
@@ -612,6 +638,13 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
         if (block.type === 'text') {
           fullContent += block.text;
           sendEvent('content', { content: block.text });
+          
+          // Detect workflow phase from AI content
+          const detectedPhase = detectPhaseFromContent(scoutSessionId, block.text);
+          if (detectedPhase) {
+            console.log(`[LOMU-CHAT] Workflow phase detected: ${detectedPhase}`);
+            sendEvent('workflow_phase', { phase: detectedPhase });
+          }
         } else if (block.type === 'tool_use') {
           const { name, input, id } = block;
 
@@ -1120,12 +1153,25 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
               toolResult = await getEnvVarTemplates();
             }
 
+            // Track tool execution in Scout Orchestrator for workflow state
+            await processToolCallsWithOrchestrator(scoutSessionId, [{
+              name: name,
+              args: input,
+            }]);
+            console.log(`[LOMU-CHAT] Orchestrator tracked tool: ${name}`);
+
             toolResults.push({
               type: 'tool_result',
               tool_use_id: id,
               content: toolResult || 'Success',
             });
           } catch (error: any) {
+            // Track failed tool in orchestrator
+            await processToolCallsWithOrchestrator(scoutSessionId, [{
+              name: name,
+              args: input,
+            }]).catch(() => {}); // Ignore orchestrator errors on failure path
+            
             toolResults.push({
               type: 'tool_result',
               tool_use_id: id,
