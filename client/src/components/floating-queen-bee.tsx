@@ -1577,24 +1577,24 @@ export function FloatingQueenBee() {
         )}
       </AnimatePresence>
 
-      {/* Chat Bubble - Thought near bee's mouth (positioned to RIGHT of bee where face is) */}
+      {/* Chat Bubble - Thought touching bee's mouth */}
       <AnimatePresence>
         {showThought && (
           <motion.div
             className="fixed z-[102] pointer-events-none"
             style={{
-              left: config.position.x + dimension + 8,
-              top: config.position.y + dimension * 0.15,
+              left: config.position.x + dimension * 0.85,
+              top: config.position.y + dimension * 0.25,
             }}
-            initial={{ opacity: 0, scale: 0.8, x: -10 }}
+            initial={{ opacity: 0, scale: 0.8, x: -5 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.8, x: -10 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, scale: 0.8, x: -5 }}
+            transition={{ duration: 0.25 }}
           >
-            <div className="relative bg-black/85 text-white px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap backdrop-blur-sm shadow-lg">
+            <div className="relative bg-black/90 text-white px-2 py-1.5 rounded-md text-[10px] font-medium whitespace-nowrap backdrop-blur-sm shadow-md">
               {currentThought}
-              {/* Speech bubble tail pointing LEFT toward bee's mouth */}
-              <div className="absolute top-1/2 -left-2 -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent border-r-black/85" />
+              {/* Speech bubble tail pointing LEFT directly at mouth */}
+              <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 w-0 h-0 border-t-[5px] border-b-[5px] border-r-[6px] border-t-transparent border-b-transparent border-r-black/90" />
             </div>
           </motion.div>
         )}
