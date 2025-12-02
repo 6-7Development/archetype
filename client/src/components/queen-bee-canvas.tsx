@@ -630,10 +630,13 @@ class AgentBeeAnimation {
     ctx.lineWidth = 1;
     
     // Santa Hat - also affected by head transforms
+    // LIMIT head transform effect on hat to prevent displacement
     if (this.isChristmas) {
       ctx.save();
-      ctx.translate(0, -size * 0.65 + headTilt * size * 0.1);
-      ctx.rotate(-headRotation * 0.3); // Hat sways opposite to head rotation
+      const clampedHeadTilt = Math.max(-0.3, Math.min(0.3, headTilt)); // Clamp tilt effect
+      const clampedHeadRotation = Math.max(-0.4, Math.min(0.4, headRotation)); // Clamp rotation
+      ctx.translate(0, -size * 0.65 + clampedHeadTilt * size * 0.05); // Reduced tilt effect
+      ctx.rotate(-clampedHeadRotation * 0.15); // Reduced sway so hat stays on head
       ctx.fillStyle = '#DC2626';
       ctx.beginPath();
       ctx.moveTo(-size * 0.35, 0);

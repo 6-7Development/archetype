@@ -98,7 +98,9 @@ export function OrbitingWorkerBee({
 }: OrbitingWorkerBeeProps) {
   // Worker bees should be ~45% the size of the queen bee (queen is ~80-100px)
   // Base size 20px makes workers appropriately smaller than queen
-  const baseSize = 20 * Math.min(1, size);
+  // MINIMUM SIZE: Enforce min 0.85 so workers never shrink too small to see
+  const clampedSize = Math.max(0.85, Math.min(1.3, size));
+  const baseSize = 20 * clampedSize;
   const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || isAttacking;
   const isHappy = mode === 'EXCITED' || mode === 'HELPFUL' || mode === 'CELEBRATING';
   const isSleepy = mode === 'SLEEPY' || mode === 'RESTING';

@@ -971,31 +971,49 @@ export class MovementController {
 
   private stayInBounds(): Vector2 {
     const force = { x: 0, y: 0 };
-    const pad = this.config.boundaryPadding;
     const halfDim = this.dimension / 2;
+    const hatPadding = 40; // Match the hard clamp padding for Santa hat
+    const edgePadding = 20; // Extra margin from screen edges
     
-    // Soft boundaries with increasing force
-    if (this.position.x < pad + halfDim) {
-      force.x = (pad + halfDim - this.position.x) * 0.05;
-    } else if (this.position.x > this.viewportSize.x - pad - halfDim) {
-      force.x = (this.viewportSize.x - pad - halfDim - this.position.x) * 0.05;
+    // Calculate safe bounds (matching hard clamp)
+    const minX = halfDim + edgePadding;
+    const maxX = this.viewportSize.x - halfDim - edgePadding;
+    const minY = halfDim + hatPadding + edgePadding; // Extra top padding for hat
+    const maxY = this.viewportSize.y - halfDim - edgePadding;
+    
+    // Soft boundaries with increasing force - push back before hitting edge
+    const softZone = 60; // Start pushing back this far from edge
+    
+    if (this.position.x < minX + softZone) {
+      force.x = (minX + softZone - this.position.x) * 0.08;
+    } else if (this.position.x > maxX - softZone) {
+      force.x = (maxX - softZone - this.position.x) * 0.08;
     }
     
-    if (this.position.y < pad + halfDim) {
-      force.y = (pad + halfDim - this.position.y) * 0.05;
-    } else if (this.position.y > this.viewportSize.y - pad - halfDim) {
-      force.y = (this.viewportSize.y - pad - halfDim - this.position.y) * 0.05;
+    if (this.position.y < minY + softZone) {
+      force.y = (minY + softZone - this.position.y) * 0.08;
+    } else if (this.position.y > maxY - softZone) {
+      force.y = (maxY - softZone - this.position.y) * 0.08;
     }
     
     return force;
   }
 
   private pickNewWanderTarget(): void {
-    // Pick a random point within the viewport
-    const pad = this.config.boundaryPadding + this.dimension;
+    // Pick a random point within the safe viewport area
+    const halfDim = this.dimension / 2;
+    const hatPadding = 40; // Extra space for Santa hat
+    const edgePadding = 20; // Extra margin from screen edges
+    const softZone = 60; // Stay away from edges
+    
+    const minX = halfDim + edgePadding + softZone;
+    const maxX = this.viewportSize.x - halfDim - edgePadding - softZone;
+    const minY = halfDim + hatPadding + edgePadding + softZone;
+    const maxY = this.viewportSize.y - halfDim - edgePadding - softZone;
+    
     this.targetPosition = {
-      x: pad + Math.random() * (this.viewportSize.x - pad * 2),
-      y: pad + Math.random() * (this.viewportSize.y - pad * 2),
+      x: minX + Math.random() * Math.max(0, maxX - minX),
+      y: minY + Math.random() * Math.max(0, maxY - minY),
     };
   }
 
@@ -1120,10 +1138,28 @@ export class MovementController {
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
     
-    // Hard clamp to viewport
+    // STRICT border constraints - queen bee must stay fully visible
+    // Use dimension + extra padding to account for accessories like Santa hat
     const halfDim = this.dimension / 2;
-    this.position.x = Math.max(halfDim, Math.min(this.viewportSize.x - halfDim, this.position.x));
-    this.position.y = Math.max(halfDim, Math.min(this.viewportSize.y - halfDim, this.position.y));
+    const hatPadding = 40; // Extra space for Santa hat and other decorations
+    const edgePadding = 20; // Extra margin from screen edges
+    
+    // Clamp position so entire bee (including hat) stays in view
+    const minX = halfDim + edgePadding;
+    const maxX = this.viewportSize.x - halfDim - edgePadding;
+    const minY = halfDim + hatPadding + edgePadding; // Extra top padding for hat
+    const maxY = this.viewportSize.y - halfDim - edgePadding;
+    
+    this.position.x = Math.max(minX, Math.min(maxX, this.position.x));
+    this.position.y = Math.max(minY, Math.min(maxY, this.position.y));
+    
+    // If hitting edge, zero out velocity in that direction to prevent sticking
+    if (this.position.x <= minX || this.position.x >= maxX) {
+      this.velocity.x *= -0.3; // Bounce back slightly
+    }
+    if (this.position.y <= minY || this.position.y >= maxY) {
+      this.velocity.y *= -0.3; // Bounce back slightly
+    }
     
     return {
       position: { ...this.position },
@@ -2118,7 +2154,7 @@ export class EmoteWorkerHandler {
         lifespan: 5000, // 5 second lifespan by default
         opacity: 0, // Start invisible, fade in
         transitionProgress: 0,
-        size: 0.7 + Math.random() * 0.2, // Slightly smaller than regular workers
+        size: 0.95 + Math.random() * 0.15, // Same size as regular workers (0.95-1.1)
         wingPhase: Math.random() * Math.PI * 2,
         energyLevel: 0.6 + Math.random() * 0.4,
         phase: Math.random() * Math.PI * 2,
