@@ -1458,7 +1458,7 @@ export class IndependentWorkerHandler {
           break;
           
         case 'ATTACK':
-          // Chase cursor
+          // Chase cursor - workers actively pursue the cursor position
           if (w.attackTarget) {
             const attackResult = this.calculateAttackSteering(w);
             steerX = attackResult.x;
@@ -1467,9 +1467,13 @@ export class IndependentWorkerHandler {
             // Update attack target to follow cursor
             w.attackTarget = { x: this.cursorX, y: this.cursorY };
             
-            // Return after 1.5-2.5 seconds or if too far from queen
+            // Return after 3-4 seconds OR if cursor is too far from queen (beyond attack range)
+            // Note: distToQueen check uses attackRangeMax (400px) not 200px
             const distToQueen = Math.sqrt((w.x - this.queenX) ** 2 + (w.y - this.queenY) ** 2);
-            if (w.behaviorTimer > 1500 + Math.random() * 1000 || distToQueen > 200) {
+            const attackTimeout = w.behaviorTimer > 3000 + Math.random() * 1000;
+            const tooFar = distToQueen > this.attackRangeMax;
+            
+            if (attackTimeout || tooFar) {
               w.behavior = 'RETURN';
               w.isAttacking = false;
               w.attackTarget = null;
@@ -1630,19 +1634,24 @@ export class IndependentWorkerHandler {
     if (!w.attackTarget) return { x: 0, y: 0 };
     
     // Seek toward cursor with offset for natural spread
-    const offsetAngle = w.id * 0.3;
-    const targetX = w.attackTarget.x + Math.cos(offsetAngle) * 15;
-    const targetY = w.attackTarget.y + Math.sin(offsetAngle) * 15;
+    const offsetAngle = w.id * 0.5;
+    const spreadRadius = 20;
+    const targetX = w.attackTarget.x + Math.cos(offsetAngle) * spreadRadius;
+    const targetY = w.attackTarget.y + Math.sin(offsetAngle) * spreadRadius;
     
     const dx = targetX - w.x;
     const dy = targetY - w.y;
     const dist = Math.sqrt(dx ** 2 + dy ** 2);
     
-    if (dist < 1) return { x: 0, y: 0 };
+    if (dist < 5) return { x: 0, y: 0 };
+    
+    // Strong steering force (6.0) for aggressive attack movement
+    // The further from target, the stronger the force (up to 6.0)
+    const force = Math.min(6, dist * 0.1);
     
     return {
-      x: (dx / dist) * 3,
-      y: (dy / dist) * 3,
+      x: (dx / dist) * force,
+      y: (dy / dist) * force,
     };
   }
   
