@@ -1166,20 +1166,21 @@ export function FloatingQueenBee() {
         )}
       </AnimatePresence>
 
-      {/* Main Queen Bee Container - No longer draggable, moves autonomously */}
+      {/* Main Queen Bee Container - Autonomous AI mascot, fully transparent, NON-INTERACTIVE */}
       <motion.div
         ref={containerRef}
-        className="fixed z-[100] select-none touch-none cursor-default"
+        className="fixed z-[100] select-none touch-none cursor-default pointer-events-none"
         style={{
           left: config.position.x,
           top: config.position.y,
           width: dimension,
           height: dimension,
+          background: 'transparent',
+          border: 'none',
+          boxShadow: 'none',
         }}
-        onMouseEnter={handleBeeMouseEnter}
-        onMouseLeave={handleBeeMouseLeave}
         animate={{
-          scale: isEvading ? 1.12 : isMouseNearBee ? 1.08 : mode === 'SLEEPY' ? 0.95 : isFrenzyMode ? 1.15 : 1,
+          scale: isEvading ? 1.12 : mode === 'SLEEPY' ? 0.95 : isFrenzyMode ? 1.15 : 1,
           rotate: mode === 'ERROR' || mode === 'CONFUSED' 
             ? [0, -10, 10, -10, 10, 0] 
             : isFrenzyMode
@@ -1202,11 +1203,11 @@ export function FloatingQueenBee() {
         }}
         data-testid="floating-queen-bee"
       >
-        {/* Glow effect when evading */}
+        {/* Glow effect when evading - VISUAL ONLY, NO BOX */}
         <AnimatePresence>
           {isEvading && (
             <motion.div
-              className="absolute inset-0 rounded-full"
+              className="absolute inset-0 rounded-full pointer-events-none"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1.4 }}
               exit={{ opacity: 0, scale: 0.8 }}
@@ -1218,20 +1219,14 @@ export function FloatingQueenBee() {
           )}
         </AnimatePresence>
 
-        {/* Main container - FULLY TRANSPARENT, NO BACKGROUND BOX */}
+        {/* Main container - FULLY TRANSPARENT, NO BACKGROUND, NO BOX SHADOW */}
         <div 
-          className={`relative w-full h-full pointer-events-none
-            transition-all duration-150`}
+          className="relative w-full h-full pointer-events-none"
           style={{
             background: 'transparent',
             border: 'none',
-            boxShadow: isEvading 
-              ? '0 0 40px rgba(247,181,0,0.6), 0 15px 50px rgba(0,0,0,0.3)' 
-              : isFrenzyMode
-                ? '0 0 50px rgba(255,50,50,0.7), 0 0 100px rgba(255,50,50,0.4)'
-                : workersVisible
-                  ? '0 0 30px rgba(247,181,0,0.3), 0 0 60px rgba(255,215,77,0.15)'
-                  : undefined,
+            boxShadow: 'none',
+            outline: 'none',
           }}
         >
           {/* Queen Bee Canvas - FULLY TRANSPARENT overlay, larger for better visibility */}
