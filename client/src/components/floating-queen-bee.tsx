@@ -106,6 +106,8 @@ function FallingSnowflake({ id, startX, delay, windowHeight }: SnowflakeProps) {
 }
 
 // Map QueenBeeMode to canvas BeeMode
+// Important: ERROR/ALERT/CONFUSED should map to ERROR (defensive visual)
+// SWARM/EXCITED/HUNTING map to SWARM (active multi-agent visual)
 function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
   switch (mode) {
     case 'LOADING':
@@ -125,11 +127,11 @@ function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
       return 'BUILDING';
     case 'SUCCESS':
     case 'CELEBRATING':
-      return 'IDLE';
+      return 'SUCCESS';
     case 'ERROR':
     case 'ALERT':
     case 'CONFUSED':
-      return 'SWARM';
+      return 'ERROR';
     case 'SWARM':
     case 'EXCITED':
     case 'HUNTING':
@@ -767,11 +769,12 @@ export function FloatingQueenBee() {
   const handleObstaclesReady = useCallback((obstacles: DecorationObstacle[]) => {
     beeController.movement.clearObstacles();
     obstacles.forEach(obstacle => {
-      beeController.movement.addObstacle({
+      beeController.movement.registerObstacle({
         id: obstacle.id,
         x: obstacle.x + obstacle.width / 2,
         y: obstacle.y + obstacle.height / 2,
         radius: Math.max(obstacle.width, obstacle.height) / 2 + 20,
+        type: 'decoration',
       });
     });
   }, [beeController]);
@@ -873,45 +876,82 @@ export function FloatingQueenBee() {
   }, [windowDimensions, isMounted, beeController]);
 
   // Wire AI brain events (mode changes) to movement state transitions
+  // This maps the QueenBeeMode from context to MovementState in the physics controller
+  // One-way data flow: mode -> movement state (no feedback loops)
+  const lastProcessedModeRef = useRef<{ mode: string; timestamp: number }>({ mode: '', timestamp: 0 });
   useEffect(() => {
     if (!isMounted) return;
     
-    switch (mode) {
-      case 'ERROR':
-      case 'CONFUSED':
-        beeController.movement.forceState('ALERT');
-        beeController.thought.updateContext({ buildStatus: 'error', hasActiveErrors: true });
-        break;
-      case 'SUCCESS':
-      case 'CELEBRATING':
-        beeController.movement.forceState('CELEBRATE');
-        beeController.thought.updateContext({ buildStatus: 'success', hasActiveErrors: false });
-        break;
-      case 'CODING':
-      case 'BUILDING':
-      case 'FOCUSED':
-        beeController.movement.forceState('PATROL');
-        beeController.thought.updateContext({ recentActivity: 'coding', buildStatus: 'running' });
-        break;
-      case 'THINKING':
-      case 'LOADING':
-        beeController.movement.forceState('REST');
-        beeController.thought.updateContext({ recentActivity: 'thinking' });
-        break;
-      case 'SWARM':
-        beeController.movement.forceState('SWARM_ESCORT');
-        break;
-      case 'HUNTING':
-        beeController.movement.forceState('CHASE');
-        break;
-      case 'SLEEPY':
-      case 'RESTING':
-        beeController.movement.forceState('REST');
-        break;
-      case 'IDLE':
-        beeController.movement.forceState('WANDER');
-        break;
+    // Robust debounce: Check both mode value AND controller state to prevent thrashing
+    const now = Date.now();
+    const currentControllerState = beeController.movement.getState();
+    
+    // Skip if same mode was processed within 100ms (debounce)
+    if (lastProcessedModeRef.current.mode === mode && now - lastProcessedModeRef.current.timestamp < 100) {
+      return;
     }
+    lastProcessedModeRef.current = { mode, timestamp: now };
+    
+    // Map QueenBeeMode to MovementState - strictly one-way, no setMode calls
+    const modeToMovementState: Record<QueenBeeMode, MovementState> = {
+      'ERROR': 'ALERT',
+      'CONFUSED': 'ALERT',
+      'ALERT': 'ALERT',
+      'SUCCESS': 'CELEBRATE',
+      'CELEBRATING': 'CELEBRATE',
+      'EXCITED': 'CELEBRATE',
+      'CODING': 'PATROL',
+      'BUILDING': 'PATROL',
+      'FOCUSED': 'PATROL',
+      'TYPING': 'PATROL',
+      'THINKING': 'REST',
+      'LOADING': 'REST',
+      'LISTENING': 'REST',
+      'SLEEPY': 'REST',
+      'RESTING': 'REST',
+      'SWARM': 'SWARM_ESCORT',
+      'FRENZY': 'EVADE',
+      'HUNTING': 'CHASE',
+      'CURIOUS': 'WANDER',
+      'HELPFUL': 'WANDER',
+      'IDLE': 'WANDER',
+    };
+    
+    const targetState = modeToMovementState[mode];
+    
+    // Only force state if controller isn't already in the target state
+    if (targetState && currentControllerState !== targetState) {
+      beeController.movement.forceState(targetState);
+    }
+    
+    // Comprehensive thought context updates for ALL modes (keeps AI brain in sync)
+    type ThoughtContext = { recentActivity?: string; buildStatus?: string; hasActiveErrors?: boolean };
+    const contextUpdates: Record<QueenBeeMode, ThoughtContext> = {
+      'ERROR': { buildStatus: 'error', hasActiveErrors: true, recentActivity: 'error' },
+      'CONFUSED': { hasActiveErrors: true, recentActivity: 'debugging' },
+      'ALERT': { hasActiveErrors: true, recentActivity: 'alerting' },
+      'SUCCESS': { buildStatus: 'success', hasActiveErrors: false, recentActivity: 'celebrating' },
+      'CELEBRATING': { hasActiveErrors: false, recentActivity: 'celebrating' },
+      'EXCITED': { hasActiveErrors: false, recentActivity: 'celebrating' },
+      'CODING': { recentActivity: 'coding', buildStatus: 'running', hasActiveErrors: false },
+      'BUILDING': { recentActivity: 'coding', buildStatus: 'building', hasActiveErrors: false },
+      'FOCUSED': { recentActivity: 'coding', hasActiveErrors: false },
+      'TYPING': { recentActivity: 'typing', hasActiveErrors: false },
+      'THINKING': { recentActivity: 'thinking', hasActiveErrors: false },
+      'LOADING': { recentActivity: 'loading', hasActiveErrors: false },
+      'LISTENING': { recentActivity: 'listening', hasActiveErrors: false },
+      'SLEEPY': { recentActivity: 'idle', hasActiveErrors: false },
+      'RESTING': { recentActivity: 'idle', hasActiveErrors: false },
+      'SWARM': { recentActivity: 'swarming', buildStatus: 'running', hasActiveErrors: false },
+      'FRENZY': { recentActivity: 'frenzy', hasActiveErrors: false },
+      'HUNTING': { recentActivity: 'hunting', hasActiveErrors: false },
+      'CURIOUS': { recentActivity: 'exploring', hasActiveErrors: false },
+      'HELPFUL': { recentActivity: 'helping', hasActiveErrors: false },
+      'IDLE': { recentActivity: 'idle', hasActiveErrors: false },
+    };
+    
+    // Always update thought context for every mode change
+    beeController.thought.updateContext(contextUpdates[mode] as any);
   }, [mode, isMounted, beeController]);
 
   // Orbiting worker bees animation loop
