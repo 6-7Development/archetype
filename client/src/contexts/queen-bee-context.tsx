@@ -93,14 +93,15 @@ export interface QueenBeeConfig {
   isVisible: boolean;
 }
 
-// Size dimensions - Optimized for mobile & desktop readability
-// These sizes ensure users can clearly see emotes, animations, and thoughts
-// Mobile (sm): 160px - large enough to read but not intrusive
-// Desktop (md/lg): 200-240px - clear visibility of all animations and expressions
+// Size dimensions - Industry-standard mascot sizes (like Slack, Zendesk, chatbots)
+// Sized to be visible but not intrusive, matching typical website companion mascots
+// Mobile (sm): 56px - compact for small screens
+// Desktop (md): 72px - standard mascot size  
+// Large (lg): 88px - slightly larger for big displays
 export const SIZE_DIMENSIONS = {
-  sm: 160,  // Mobile: good balance between visibility and screen real estate
-  md: 200,  // Desktop: clear animations and emotes
-  lg: 240,  // Large desktop: maximum clarity for complex animations
+  sm: 56,   // Mobile: compact, non-intrusive
+  md: 72,   // Desktop: standard website mascot size
+  lg: 88,   // Large desktop: slightly larger for visibility
 };
 
 // Error state tracking
