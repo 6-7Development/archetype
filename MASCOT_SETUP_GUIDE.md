@@ -1,379 +1,376 @@
-# 🐝 BeeHive Queen Bee Mascot - Implementation Guide
+# BeeHive Mascot Implementation - Working Setup Guide
 
-Complete setup for adding an interactive, AI-aware mascot with 18 emotional states, worker bees, mobile support, and Scout AI brain connection.
+## Quick Reference
 
-## Quick Overview
-
-The Queen Bee is a persistent, draggable mascot that:
-- ✅ **Reacts to user actions** (clicking, typing, scrolling, hovering UI elements)
-- ✅ **Connects to Scout AI brain** (responds to THINKING, CODING, BUILDING, SUCCESS, ERROR states)
-- ✅ **Mobile-friendly** (touch support, responsive sizing, hidden worker bees on mobile)
-- ✅ **18 emotional states** (IDLE, LISTENING, TYPING, THINKING, CODING, BUILDING, SUCCESS, ERROR, SWARM, LOADING, CURIOUS, ALERT, EXCITED, HELPFUL, SLEEPY, CELEBRATING, CONFUSED, FOCUSED)
-- ✅ **Smooth 60fps animations** with physics-based worker bees
-- ✅ **Draggable** with woosh trail effects and speed lines
+This is the **complete working mascot setup from BeeHive**. Share this guide to troubleshoot mascot rendering issues in other Replit projects.
 
 ---
 
-## 1. Core Files Structure
+## Architecture Overview
 
-```
-client/src/
-├── contexts/
-│   └── queen-bee-context.tsx          # State management & AI brain connection
-├── components/
-│   ├── floating-queen-bee.tsx         # Main component with drag & workers
-│   ├── queen-bee-canvas.tsx           # Canvas animation modes
-│   └── queen-bee-animation.tsx        # Animation utilities
-└── App.tsx                            # Integration point
-```
+The mascot system has 3 core layers:
 
----
+### Layer 1: Queen Bee Context (`client/src/contexts/queen-bee-context.tsx`)
+**Manages**: Emotional state, hover detection, AI activity tracking
 
-## 2. Context Setup: `queen-bee-context.tsx`
+**18 Emotional States**:
+- IDLE, LISTENING, TYPING, THINKING, CODING, BUILDING
+- SUCCESS, ERROR, SWARM, LOADING, CURIOUS, ALERT
+- EXCITED, HELPFUL, SLEEPY, CELEBRATING, CONFUSED, FOCUSED
 
-The context manages the queen bee's state, user interactions, and **AI brain connection**.
+### Layer 2: Floating Queen Bee (`client/src/components/floating-queen-bee.tsx`)
+**Manages**: Visual rendering, drag interactions, worker bees, seasonal themes
 
-### Key Features:
-- **Mode Management**: 18 emotional states
-- **AI Brain Listening**: Detects Scout activity via custom events
-- **User Activity Tracking**: Clicks, typing, scrolling, hover detection
-- **Inactivity Detection**: Goes SLEEPY after 30 seconds
-- **Error Handling**: Priority-based mode system
+**Features**:
+- Draggable position + grip handle
+- Worker bees spawn near queen (not random)
+- Tooltip/thought bubble display
+- Christmas season detection (Nov 15 - Jan 5)
+- Falling snowflakes with deterministic animation
 
-### AI Brain Connection (NEW):
-```typescript
-// Listens for Scout activity events
-document.addEventListener('scout-activity', (event: CustomEvent) => {
-  const { status, phase } = event.detail;
-  // Maps to emotional states:
-  // 'thinking' | 'assess' | 'plan' → THINKING
-  // 'coding' | 'execute' → CODING
-  // 'building' | 'refactoring' → BUILDING
-  // 'testing' | 'test' | 'verify' → LOADING
-  // 'success' | 'commit' → SUCCESS + CELEBRATION
-  // 'error' | 'failed' → ERROR
-  // 'running' | 'active' → SWARM
-});
-
-// Also listens for generic AI state changes
-document.addEventListener('ai-state-change', (event: CustomEvent) => {
-  setIsAIActive(event.detail?.isActive);
-  setMode(event.detail?.mode);
-});
-```
-
-### To trigger AI brain events from your Scout component:
-```typescript
-// When Scout starts working
-document.dispatchEvent(new CustomEvent('scout-activity', {
-  detail: { status: 'thinking', phase: 'ASSESS' }
-}));
-
-// When Scout finishes successfully
-document.dispatchEvent(new CustomEvent('scout-activity', {
-  detail: { status: 'success', phase: 'COMMIT' }
-}));
-```
+### Layer 3: Queen Bee Canvas (`client/src/components/queen-bee-canvas.tsx`)
+**Manages**: SVG 2D rendering with 5 visual states
 
 ---
 
-## 3. Main Component: `floating-queen-bee.tsx`
+## Critical Implementation Details
 
-The visual component with drag handling, worker bees, and responsive sizing.
+### 1. Tooltip Hover Management (Most Important)
 
-### Mobile Optimization (NEW):
-```typescript
-// Automatically detects mobile/touch devices
-const [isMobile, setIsMobile] = useState(false);
-const [isTouchDevice, setIsTouchDevice] = useState(false);
+**Problem**: Tooltips disappear immediately when moving between hinted UI elements
 
-// Worker bees hidden on mobile to save performance
-{!isMobile && (
-  <WorkerBee key={i} id={i} ... />
-)}
-
-// Touch event tracking for worker bee targeting
-window.addEventListener('touchmove', handleTouchMove, { passive: true });
-```
-
-### Key Components:
-1. **Dragging**: Pointer events (mouse + touch)
-2. **Worker Bees**: 8 realistic SVG bees with physics simulation
-3. **Trail Effects**: Woosh particles and speed lines
-4. **Mode Indicators**: Color ring + icon badge
-5. **Responsive Sizing**: `sm` on mobile, user-configurable on desktop
-
-### Worker Bee Physics:
-- **Speed**: Scouts (10 px/frame), Workers (6 px/frame)
-- **Behaviors**: Chase, Swarm, Evade, Formation
-- **60fps**: 16ms update interval
-- **Smooth Damping**: 0.96 for natural motion
-- **SVG Rendering**: Anatomically accurate with wings, antennae, stripes
-
----
-
-## 4. Canvas Modes: `queen-bee-canvas.tsx`
-
-Pre-built canvas animation system showing different modes:
-- **IDLE**: Gentle drifting
-- **THINKING**: Spinning with tilting
-- **CODING**: Circuit board movement
-- **BUILDING**: Hexagonal formation
-- **SWARM**: Chaotic orbital motion
-- **SUCCESS/ERROR**: Mixed states
-
----
-
-## 5. Integration in App.tsx
-
-Wrap your app with the context provider:
+**Solution**: Use a ref to track and cancel pending timeouts
 
 ```typescript
+// In context initialization:
+const hintClearTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+// In mouseover handler - CANCEL any pending timeout:
+const handleMouseOver = (e: MouseEvent) => {
+  // ... detect hint ...
+  
+  if (detectedHint && ELEMENT_HINTS[detectedHint]) {
+    // CRITICAL: Cancel pending timeout when entering new hinted element
+    if (hintClearTimeoutRef.current) {
+      clearTimeout(hintClearTimeoutRef.current);
+      hintClearTimeoutRef.current = null;
+    }
+    
+    setCurrentHint(ELEMENT_HINTS[detectedHint]);
+  }
+};
+
+// In mouseout handler - STORE timeout for cancellation:
+const handleMouseOut = (e: MouseEvent) => {
+  const target = e.target as HTMLElement;
+  const relatedTarget = e.relatedTarget as HTMLElement | null;
+  
+  // ... detect current and next hinted elements ...
+  
+  // Detect if newTestId would produce a valid hint
+  const wouldNewTestIdProduceHint = newTestId && (
+    newTestId.includes('login') || newTestId.includes('signin') ||
+    newTestId.includes('signup') || newTestId.includes('register') ||
+    newTestId.includes('pricing') || newTestId.includes('preview') ||
+    newTestId.includes('chat') || newTestId.includes('message') ||
+    newTestId.includes('file') || newTestId.includes('browser') ||
+    newTestId.includes('terminal') || newTestId.includes('deploy') ||
+    newTestId.includes('publish') || newTestId.includes('setting') ||
+    newTestId.includes('theme') || newTestId.includes('dashboard') ||
+    newTestId.includes('new-project') || newTestId.includes('create-project')
+  );
+  
+  const isEnteringHintedElement = !!(newHintKey && ELEMENT_HINTS[newHintKey]) || wouldNewTestIdProduceHint;
+  
+  // Only schedule clear if leaving a hinted element AND not entering another
+  if ((hintKey || testId) && !isEnteringHintedElement) {
+    if (hintClearTimeoutRef.current) {
+      clearTimeout(hintClearTimeoutRef.current);
+    }
+    
+    // 2000ms display duration is CRITICAL for smooth UX
+    hintClearTimeoutRef.current = setTimeout(() => {
+      setCurrentHint(null);
+      // ... reset mode if needed ...
+      hintClearTimeoutRef.current = null;
+    }, 2000);
+  }
+};
+
+// In useEffect cleanup - ALWAYS clear timeout on unmount:
+return () => {
+  document.removeEventListener('mouseover', handleMouseOver);
+  document.removeEventListener('mouseout', handleMouseOut);
+  if (hintClearTimeoutRef.current) {
+    clearTimeout(hintClearTimeoutRef.current);
+  }
+};
+```
+
+### 2. Client-Safe Snowflake Animation (SSR Safety)
+
+**Problem**: Hydration mismatch with randomized snowflake positions
+
+**Solution**: Use deterministic positions based on particle ID
+
+```typescript
+function FallingSnowflake({ id, startX, delay, windowHeight }: SnowflakeProps) {
+  // CRITICAL: Use stable scale based on id, NOT random()
+  const scale = useMemo(() => 0.5 + (id % 10) * 0.05, [id]);
+  const duration = useMemo(() => 8 + (id % 5), [id]);
+  
+  return (
+    <motion.div
+      className="fixed pointer-events-none z-[95]"
+      initial={{ 
+        x: startX, 
+        y: -20, 
+        opacity: 0.8,
+        rotate: 0,
+        scale,
+      }}
+      animate={{ 
+        y: [null, windowHeight + 20],
+        x: [null, startX + Math.sin(id) * 50], // Deterministic sway
+        opacity: [0.8, 0.6, 0.4, 0],
+        rotate: [0, 360],
+      }}
+      transition={{ 
+        duration,
+        delay: delay,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+    >
+      <Snowflake className="w-3 h-3 text-blue-200 drop-shadow-md" />
+    </motion.div>
+  );
+}
+```
+
+### 3. Seasonal Christmas Theme Detection
+
+**Simple and Reliable**:
+
+```typescript
+function isChristmasSeason(): boolean {
+  const now = new Date();
+  const month = now.getMonth(); // 0-indexed (0=Jan, 11=Dec)
+  const day = now.getDate();
+  
+  // November 15 - December 31
+  if (month === 10 && day >= 15) return true;
+  if (month === 11) return true;
+  // January 1-5
+  if (month === 0 && day <= 5) return true;
+  
+  return false;
+}
+```
+
+**Christmas Messages** (All 18 modes):
+
+```typescript
+const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
+  'IDLE': 'Ho ho ho! Merry coding!',
+  'LISTENING': 'Santa Bee is listening...',
+  'TYPING': 'Writing your wishlist...',
+  'THINKING': 'Checking the nice list...',
+  'CODING': 'Coding presents!',
+  'BUILDING': 'Building a toy factory!',
+  'SUCCESS': 'Gift wrapped!',
+  'ERROR': 'Uh oh, coal!',
+  'SWARM': 'Elf swarm activated!',
+  'LOADING': 'Loading the sleigh...',
+  'CURIOUS': 'Peeking at presents?',
+  'ALERT': 'Jingle alert!',
+  'EXCITED': 'Holiday cheer!',
+  'HELPFUL': 'Spreading joy!',
+  'SLEEPY': 'Dreaming of sugarplums...',
+  'CELEBRATING': 'Merry celebration!',
+  'CONFUSED': 'Tangled lights?',
+  'FOCUSED': 'Wrapping focus!',
+};
+```
+
+---
+
+## Setup Instructions
+
+### Step 1: Copy Core Files
+
+```
+From BeeHive → To Your Project:
+client/src/contexts/queen-bee-context.tsx
+client/src/components/floating-queen-bee.tsx
+client/src/components/queen-bee-canvas.tsx
+```
+
+### Step 2: Wrap App with Context Provider
+
+```jsx
+// App.tsx
 import { QueenBeeProvider } from '@/contexts/queen-bee-context';
-import { FloatingQueenBee } from '@/components/floating-queen-bee';
 
 export default function App() {
   return (
-    <QueenBeeProvider initialMode="IDLE" initialGuest={true}>
-      <YourApp />
-      <FloatingQueenBee />
+    <QueenBeeProvider>
+      <YourThemeProvider>
+        {/* Your routes and content */}
+      </YourThemeProvider>
     </QueenBeeProvider>
   );
 }
 ```
 
----
+### Step 3: Add Mascot to Layout
 
-## 6. Design & Theming
+```jsx
+import { FloatingQueenBee } from '@/components/floating-queen-bee';
 
-### Colors (from `index.css`):
-```css
---honey: 40 97% 50%;           /* #F7B500 - Primary */
---nectar: 48 100% 65%;         /* #FFD34D - Accent */
---mint: 171 100% 42%;          /* #00D4B3 - Success */
---charcoal: 216 9% 7%;         /* #101113 - Dark bg */
-```
-
-### Emotional State Colors:
-- THINKING: Cyan (`#00f0ff`)
-- CODING: Green (`#00ff41`)
-- BUILDING: Orange (`#ffae00`)
-- SWARM: Red/Pink (`#ff0055`)
-- SUCCESS: Mint (`#10b981`)
-- ERROR: Red (`#ef4444`)
-
----
-
-## 7. API: Using the Context
-
-```typescript
-import { useQueenBee } from '@/contexts/queen-bee-context';
-
-function MyComponent() {
-  const { 
-    mode,                  // Current emotional state
-    setMode,              // Change mode manually
-    config,               // Position, size, visibility
-    updatePosition,       // Move the bee
-    toggleVisibility,     // Hide/show
-    isAIActive,           // Is AI working?
-    setIsAIActive,        // Set AI status
-    errorState,           // Error tracking
-    triggerError,         // Show error
-    clearError,           // Clear error
-    triggerCelebration,   // Success animation
-  } = useQueenBee();
-
+export default function YourLayout() {
   return (
-    <button onClick={() => triggerCelebration()}>
-      Celebrate! 🎉
-    </button>
+    <>
+      {/* Your main content */}
+      <FloatingQueenBee />
+    </>
   );
 }
 ```
 
+### Step 4: Add Data Attributes for Hints
+
+```jsx
+// On UI elements you want the mascot to react to:
+<Button data-bee-hint="chat">Start Chat</Button>
+<Button data-testid="button-deploy">Deploy Now</Button>
+<Button data-testid="link-settings">Settings</Button>
+```
+
 ---
 
-## 8. Scout AI Integration Example
+## Troubleshooting Checklist
 
-To connect your Scout AI to the mascot:
+### Mascot Not Appearing
+- [ ] Is `QueenBeeProvider` wrapping the entire app?
+- [ ] Is `FloatingQueenBee` component in your layout?
+- [ ] Check z-index: Should be `z-[100]` or higher
+- [ ] Check CSS: Parent element has `position: relative`?
+- [ ] Check console for import errors
 
-```typescript
-// In your Scout component or service
-function ScoutWorker() {
-  const handleScoutPhaseChange = (phase: string) => {
-    // Dispatch custom event for queen bee to listen to
-    document.dispatchEvent(new CustomEvent('scout-activity', {
-      detail: {
-        status: phase.toLowerCase(),
-        phase: phase.toUpperCase()
-      }
-    }));
+### Tooltips Disappearing Too Fast
+- [ ] Verify `hintClearTimeoutRef` is created with `useRef`
+- [ ] Verify timeout is cleared in mouseover handler
+- [ ] Verify timeout is stored and can be cancelled
+- [ ] Test timeout duration is 2000ms (not less)
+- [ ] Check that cleanup in useEffect unmounts properly
+
+### Snowflakes Cause Errors
+- [ ] Ensure snowflake scale uses `useMemo` with ID-based calculation
+- [ ] Ensure no `Math.random()` during render
+- [ ] Ensure window height passed as prop (not accessed directly)
+- [ ] Check for hydration warnings in console
+
+### Christmas Theme Not Showing
+- [ ] Verify current date: Check `new Date().getMonth()` and `.getDate()`
+- [ ] Should return true if Nov 15+ through Jan 5
+- [ ] Check `isChristmasSeason()` function logic
+- [ ] Test in browser console:
+  ```javascript
+  const now = new Date();
+  console.log(now.getMonth(), now.getDate()); 
+  // Should match ranges above for Christmas theme
+  ```
+
+### Worker Bees Spawning Wrong
+- [ ] Verify worker bees use queen's position as origin
+- [ ] Should spawn NEAR queen, not random screen locations
+- [ ] Check that offset calculation uses queen's x/y
+
+---
+
+## Icon Library
+
+Uses `lucide-react` exclusively (NO emoji):
+
+```javascript
+import { 
+  Snowflake, Gift, Star, TreePine, Candy,
+  PartyPopper, Heart, Zap, Coffee, Sparkles,
+  Brain, Code, Hammer, CheckCircle, Bell, Bug,
+  Lightbulb, Moon, HelpCircle, Target, Hand,
+  Keyboard, ScrollText, Ear, Pencil, RefreshCw,
+  GripVertical
+} from 'lucide-react';
+```
+
+---
+
+## Performance Tips
+
+1. **Canvas Rendering**: Uses requestAnimationFrame (60fps)
+2. **Memory**: Snowflakes repeat infinitely (Framer Motion handles cleanup)
+3. **Event Listeners**: Properly added and removed on mount/unmount
+4. **Timeouts**: Always stored as refs for cancellation
+5. **Framer Motion**: Ensures smooth animations, GPU acceleration
+
+---
+
+## Common Integration Points
+
+### Trigger Emotional Responses
+
+```jsx
+import { useQueenBee } from '@/contexts/queen-bee-context';
+
+export default function ChatComponent() {
+  const { setMode, triggerError } = useQueenBee();
+
+  const handleUserTyping = () => setMode('LISTENING');
+  
+  const handleAIResponse = () => {
+    setMode('TYPING');
+    // ... when done:
+    setMode('SUCCESS');
   };
-
-  const runScout = async () => {
-    // Start thinking
-    handleScoutPhaseChange('THINKING');
-    
-    // ... do analysis ...
-    
-    // Start coding
-    handleScoutPhaseChange('CODING');
-    
-    // ... write code ...
-    
-    // Testing
-    handleScoutPhaseChange('TESTING');
-    
-    // ... run tests ...
-    
-    // Success!
-    handleScoutPhaseChange('SUCCESS');
-  };
+  
+  const handleCodeChange = () => setMode('CODING');
+  
+  const handleError = (msg) => triggerError(msg);
+  
+  return (/* JSX */);
 }
 ```
 
 ---
 
-## 9. Customization Options
+## Quick Testing
 
-### Change Emotional States
-Edit `queen-bee-context.tsx`:
-```typescript
-export type QueenBeeMode = 
-  | 'IDLE' | 'LISTENING' | 'THINKING' | ... // Add your own states
-```
-
-### Adjust Worker Bee Behavior
-Edit `floating-queen-bee.tsx` WorkerBee component:
-```typescript
-const maxSpeed = isScout ? 10 : 6;        // Adjust speed
-const acceleration = 0.4;                 // Adjust acceleration
-const damping = 0.96;                     // Adjust smoothness (higher = slower damping)
-```
-
-### Resize Bee
-```typescript
-const SIZE_DIMENSIONS = {
-  sm: 48,   // Mobile
-  md: 64,   // Default
-  lg: 80,   // Large
-};
-```
-
-### Change Update Frequency
-In WorkerBee useEffect:
-```typescript
-const interval = setInterval(() => {
-  // ... physics update ...
-}, 16); // Change 16ms to adjust frame rate
-```
+1. **Drag mascot** - Should move smoothly with woosh effect
+2. **Hover buttons** - Tooltip appears, stays visible on move, disappears 2s after leaving
+3. **Click elements** - Mascot reacts with `CURIOUS` mode
+4. **Inactive 30s+** - Mascot goes `SLEEPY`
+5. **Dec 2-Jan 5** - Santa hat visible, snowflakes falling, festive messages
+6. **Mobile** - Responsive sizing, touch-friendly position
 
 ---
 
-## 10. Mobile Considerations
+## Files Reference
 
-✅ **Already Implemented:**
-- Touch event tracking (no mouse needed)
-- Responsive bee sizing (smaller on <480px)
-- Worker bees hidden on mobile (performance)
-- Pointer events (universal mouse+touch handling)
-- Passive touch listeners (smooth scrolling)
-
-✅ **Tested On:**
-- Desktop (768px+)
-- Tablet (481px-768px)
-- Mobile (< 480px)
+| File | Purpose | Key Exports |
+|------|---------|-------------|
+| `queen-bee-context.tsx` | State management, AI brain connection | `useQueenBee()`, `QueenBeeProvider`, `QueenBeeMode` |
+| `floating-queen-bee.tsx` | UI component, drag, workers, seasonal | `FloatingQueenBee` component |
+| `queen-bee-canvas.tsx` | SVG rendering, animation states | `QueenBeeCanvas` component, `BeeMode` |
 
 ---
 
-## 11. Performance Tips
+## Support Notes
 
-1. **Worker bees disabled on mobile** → -30% CPU
-2. **60fps physics** → Smooth motion without stuttering
-3. **Canvas mode** → Efficient rendering
-4. **Memoized calculations** → Prevent unnecessary re-renders
-5. **Passive event listeners** → Non-blocking scrolling
+- All files are **fully TypeScript typed** for IDE support
+- Context uses **custom events** for external state management
+- Animations are **GPU-accelerated** via Framer Motion
+- Mobile support is **built-in** with responsive sizing
+- Christmas theme is **completely automatic** (date-based)
 
----
-
-## 12. Common Patterns
-
-### Show bee reacting to Scout success:
-```typescript
-// In Scout completion handler
-document.dispatchEvent(new CustomEvent('scout-activity', {
-  detail: { status: 'success', phase: 'COMMIT' }
-}));
-```
-
-### Show bee in error state:
-```typescript
-const { triggerError } = useQueenBee();
-triggerError('Something went wrong!');
-```
-
-### Update bee position programmatically:
-```typescript
-const { updatePosition } = useQueenBee();
-updatePosition(100, 200); // x, y coordinates
-```
-
-### Freeze bee (make it unresponsive):
-```typescript
-const { setMode } = useQueenBee();
-setMode('SLEEPY'); // Sets to sleepy state
-```
-
----
-
-## 13. Files to Copy
-
-For another project, copy these files:
-```
-client/src/contexts/queen-bee-context.tsx
-client/src/components/floating-queen-bee.tsx
-client/src/components/queen-bee-canvas.tsx
-client/src/components/queen-bee-animation.tsx
-```
-
-Then integrate in `App.tsx` as shown in step 5.
-
----
-
-## 14. Troubleshooting
-
-**Bee not showing?**
-- Check `config.isVisible` is `true`
-- Ensure QueenBeeProvider wraps your app
-- Check z-index conflicts (`z-[100]` in use)
-
-**Worker bees not moving?**
-- Check not on mobile (workers hidden <768px)
-- Verify `mousePos` is being tracked
-- Check `shouldWorkersChase` condition
-
-**Lag/performance issues?**
-- Reduce `NUM_WORKERS` from 8
-- Increase `interval` from 16ms to 33ms
-- Hide workers entirely on low-end devices
-
-**AI brain not connecting?**
-- Verify `scout-activity` event is being dispatched
-- Check event detail has `{ status, phase }` properties
-- Console.log to verify event firing
-
----
-
-## 15. Summary
-
-You now have a production-ready mascot that:
-1. ✅ Responds to user interactions in real-time
-2. ✅ Connects to your Scout AI brain
-3. ✅ Works seamlessly on mobile with touch
-4. ✅ Displays 18 different emotional states
-5. ✅ Features smooth 60fps animations
-6. ✅ Is fully draggable and customizable
-7. ✅ Shows error states and celebrations
-
-**Just add to your App.tsx and dispatch events from Scout!** 🐝✨
+**Need help?** Check the context provider - it has detailed JSDoc comments explaining every feature.
