@@ -2033,9 +2033,17 @@ export class SwarmUnityController {
     if (this.phase === 'UNITY_TRANSIT' && elapsed >= this.TRANSIT_DURATION) {
       this.phase = 'UNITY_ACTIVE';
     } else if (this.phase === 'DISPERSING' && elapsed >= this.DISPERSE_DURATION) {
-      this.phase = 'PATROL';
-      this.formationTargets.clear();
+      // Full reset to ensure workers return to patrol orbit
+      this.resetFormation();
     }
+  }
+  
+  // Complete reset of formation state - workers return to patrol orbit
+  private resetFormation(): void {
+    this.phase = 'PATROL';
+    this.formationTargets.clear();
+    this.emoteClock = 0;
+    this.emoteStartTime = 0;
   }
   
   private refreshFormation(mode: string, queenX: number, queenY: number): void {

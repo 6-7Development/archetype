@@ -81,8 +81,9 @@ export function OrbitingWorkerBee({
   emotePhase = 0,
   transitionProgress = 0,
 }: OrbitingWorkerBeeProps) {
-  // LARGER size to match original canvas workers (was 18, now 36)
-  const baseSize = 36 * size;
+  // Worker bees should be ~45% the size of the queen bee (queen is ~80-100px)
+  // Base size 20px makes workers appropriately smaller than queen
+  const baseSize = 20 * Math.min(1, size);
   const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || isAttacking;
   const isHappy = mode === 'EXCITED' || mode === 'HELPFUL' || mode === 'CELEBRATING';
   const isSleepy = mode === 'SLEEPY' || mode === 'RESTING';
