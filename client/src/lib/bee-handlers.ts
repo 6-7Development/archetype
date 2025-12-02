@@ -1031,7 +1031,7 @@ export class WorkerSwarmController {
       targetRadius: this.baseOrbitRadius * (0.7 + Math.random() * 0.3),
       angularVelocity: 0.8 + Math.random() * 0.4, // Base rotation speed
       phase: Math.random() * Math.PI * 2,
-      size: 0.45 + Math.random() * 0.25, // 45-70% of base size
+      size: 0.85 + Math.random() * 0.25, // 85-110% size (larger, visible bees)
       wingPhase: Math.random() * Math.PI * 2,
       energyLevel: 0.5 + Math.random() * 0.5,
     };
@@ -1195,12 +1195,13 @@ export class IndependentWorkerHandler {
   private activeFormation: FormationType | null = null;
   private formationProgress = 0;
   
-  // Config
+  // Config - expanded boundaries for attack mode
   private readonly baseOrbitRadius = 55;
   private readonly orbitBandMin = 35;
-  private readonly orbitBandMax = 80;
+  private readonly orbitBandMax = 120;  // Larger orbit band for non-attack
+  private readonly attackRangeMax = 400; // Bees can fly 400px away during attack
   private readonly maxSpeed = 4;
-  private readonly attackSpeed = 6;
+  private readonly attackSpeed = 8;      // Faster attack speed
   private readonly separationDistance = 25;
   
   constructor(count: number = 8) {
@@ -1235,7 +1236,7 @@ export class IndependentWorkerHandler {
       attackCooldown: 0,
       isAttacking: false,
       formationSlot: null,
-      size: 0.45 + Math.random() * 0.25,
+      size: 0.85 + Math.random() * 0.25,  // 85-110% size (larger, visible bees)
       wingPhase: Math.random() * Math.PI * 2,
       energyLevel: 0.5 + Math.random() * 0.5,
       phase: Math.random() * Math.PI * 2,
@@ -1514,9 +1515,18 @@ export class IndependentWorkerHandler {
       w.x += w.vx;
       w.y += w.vy;
       
-      // Clamp to orbit band (except during attack)
-      if (w.behavior !== 'ATTACK') {
-        const distToQueen = Math.sqrt((w.x - this.queenX) ** 2 + (w.y - this.queenY) ** 2);
+      // Clamp to appropriate range based on behavior
+      const distToQueen = Math.sqrt((w.x - this.queenX) ** 2 + (w.y - this.queenY) ** 2);
+      
+      if (w.behavior === 'ATTACK') {
+        // During attack, allow bees to fly far but still clamp to max attack range
+        if (distToQueen > this.attackRangeMax) {
+          const angle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
+          w.x = this.queenX + Math.cos(angle) * this.attackRangeMax;
+          w.y = this.queenY + Math.sin(angle) * this.attackRangeMax;
+        }
+      } else {
+        // Normal orbit clamping when not attacking
         if (distToQueen > this.orbitBandMax) {
           const angle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
           w.x = this.queenX + Math.cos(angle) * this.orbitBandMax;
