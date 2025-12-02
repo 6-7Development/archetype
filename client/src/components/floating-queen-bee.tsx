@@ -1,18 +1,18 @@
 /**
- * Floating Queen Bee Component - Enhanced with Woosh & Worker Bee Effects
- * ========================================================================
- * A draggable, persistent queen bee that floats across all pages.
- * - Woosh trail effect when dragging
- * - Worker bees that chase the mouse (attacking animation)
- * - Expressive emotional reactions to user actions
- * - Error and success animations
- * - Fully CSS-driven animations for performance
+ * Floating Queen Bee - Full Emotional AI Companion
+ * =================================================
+ * A draggable, persistent queen bee with complete emotional range.
+ * - 18 different emotional states
+ * - Interactive hints when hovering UI elements
+ * - Worker bees that follow mouse
+ * - Woosh trail effects when dragging
+ * - Contextual messages and suggestions
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { QueenBeeCanvas, BeeMode } from './queen-bee-canvas';
 import { useQueenBee, SIZE_DIMENSIONS, QueenBeeMode } from '@/contexts/queen-bee-context';
-import { X, GripVertical, AlertTriangle, RefreshCw, Sparkles } from 'lucide-react';
+import { X, GripVertical, AlertTriangle, RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, XCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,26 +25,33 @@ function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
       return 'THINKING';
     case 'LISTENING':
     case 'CURIOUS':
+    case 'HELPFUL':
       return 'IDLE';
     case 'TYPING':
       return 'THINKING';
     case 'CODING':
+    case 'FOCUSED':
       return 'CODING';
     case 'BUILDING':
       return 'BUILDING';
     case 'SUCCESS':
+    case 'CELEBRATING':
       return 'IDLE';
     case 'ERROR':
     case 'ALERT':
+    case 'CONFUSED':
       return 'SWARM';
     case 'SWARM':
+    case 'EXCITED':
       return 'SWARM';
+    case 'SLEEPY':
+      return 'IDLE';
     default:
       return 'IDLE';
   }
 }
 
-// Get mode indicator color with animation classes
+// Get mode indicator color
 function getModeColor(mode: QueenBeeMode): string {
   switch (mode) {
     case 'LISTENING': return 'bg-blue-400';
@@ -56,13 +63,19 @@ function getModeColor(mode: QueenBeeMode): string {
     case 'ERROR': return 'bg-red-500 animate-pulse';
     case 'ALERT': return 'bg-yellow-500 animate-pulse';
     case 'SWARM': return 'bg-honey animate-pulse';
-    case 'LOADING': return 'bg-blue-400 animate-spin';
+    case 'LOADING': return 'bg-blue-400';
     case 'CURIOUS': return 'bg-purple-300';
+    case 'EXCITED': return 'bg-pink-400 animate-bounce';
+    case 'HELPFUL': return 'bg-teal-400';
+    case 'SLEEPY': return 'bg-indigo-300';
+    case 'CELEBRATING': return 'bg-gradient-to-r from-pink-400 to-yellow-400';
+    case 'CONFUSED': return 'bg-orange-500 animate-pulse';
+    case 'FOCUSED': return 'bg-blue-500';
     default: return 'bg-gray-400';
   }
 }
 
-// Get mode label for tooltip
+// Get mode label text
 function getModeLabel(mode: QueenBeeMode): string {
   switch (mode) {
     case 'LISTENING': return 'Listening...';
@@ -70,35 +83,73 @@ function getModeLabel(mode: QueenBeeMode): string {
     case 'THINKING': return 'Thinking...';
     case 'CODING': return 'Coding...';
     case 'BUILDING': return 'Building...';
-    case 'SUCCESS': return 'Success!';
-    case 'ERROR': return 'Error!';
-    case 'ALERT': return 'Attention!';
-    case 'SWARM': return 'SWARM Mode';
+    case 'SUCCESS': return 'Done!';
+    case 'ERROR': return 'Oops!';
+    case 'ALERT': return 'Hey!';
+    case 'SWARM': return 'SWARM!';
     case 'LOADING': return 'Loading...';
-    case 'CURIOUS': return 'Curious';
-    default: return 'Idle';
+    case 'CURIOUS': return 'Hmm?';
+    case 'EXCITED': return 'Woohoo!';
+    case 'HELPFUL': return 'Need help?';
+    case 'SLEEPY': return 'Zzz...';
+    case 'CELEBRATING': return 'Amazing!';
+    case 'CONFUSED': return 'Hmm...';
+    case 'FOCUSED': return 'Focused';
+    default: return 'Hi!';
   }
 }
 
-// Get border/glow effect based on mode
+// Get mode icon component
+function getModeIcon(mode: QueenBeeMode): React.ReactNode {
+  const iconClass = "w-3 h-3";
+  switch (mode) {
+    case 'LISTENING': return <Ear className={iconClass} />;
+    case 'TYPING': return <Pencil className={iconClass} />;
+    case 'THINKING': return <Brain className={iconClass} />;
+    case 'CODING': return <Code className={iconClass} />;
+    case 'BUILDING': return <Hammer className={iconClass} />;
+    case 'SUCCESS': return <CheckCircle className={iconClass} />;
+    case 'ERROR': return <XCircle className={iconClass} />;
+    case 'ALERT': return <Bell className={iconClass} />;
+    case 'SWARM': return <Bug className={iconClass} />;
+    case 'LOADING': return <RefreshCw className={`${iconClass} animate-spin`} />;
+    case 'CURIOUS': return <HelpCircle className={iconClass} />;
+    case 'EXCITED': return <PartyPopper className={iconClass} />;
+    case 'HELPFUL': return <Lightbulb className={iconClass} />;
+    case 'SLEEPY': return <Moon className={iconClass} />;
+    case 'CELEBRATING': return <PartyPopper className={iconClass} />;
+    case 'CONFUSED': return <HelpCircle className={iconClass} />;
+    case 'FOCUSED': return <Target className={iconClass} />;
+    default: return <Hand className={iconClass} />;
+  }
+}
+
+// Get glow effect
 function getModeGlow(mode: QueenBeeMode): string {
   switch (mode) {
     case 'ERROR':
+    case 'CONFUSED':
       return 'ring-2 ring-red-500/50 ring-offset-2 ring-offset-background';
     case 'ALERT':
       return 'ring-2 ring-yellow-500/50 ring-offset-1 ring-offset-background';
     case 'SUCCESS':
+    case 'CELEBRATING':
       return 'ring-2 ring-green-500/30 ring-offset-1 ring-offset-background';
     case 'SWARM':
+    case 'EXCITED':
       return 'ring-2 ring-honey/40 ring-offset-1 ring-offset-background';
     case 'LOADING':
       return 'ring-1 ring-blue-400/30';
+    case 'HELPFUL':
+      return 'ring-2 ring-teal-400/40';
+    case 'SLEEPY':
+      return 'ring-1 ring-indigo-300/30';
     default:
       return '';
   }
 }
 
-// Worker bee component that chases the mouse
+// Worker bee component
 interface WorkerBeeProps {
   id: number;
   targetX: number;
@@ -106,25 +157,28 @@ interface WorkerBeeProps {
   queenX: number;
   queenY: number;
   isChasing: boolean;
+  mode: QueenBeeMode;
 }
 
-function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing }: WorkerBeeProps) {
+function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: WorkerBeeProps) {
   const [pos, setPos] = useState({ x: queenX, y: queenY });
-  const delay = id * 50; // Stagger the workers
+  const delay = id * 40;
+  
+  // Different behavior based on mode
+  const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || mode === 'ALERT';
+  const isHappy = mode === 'CELEBRATING' || mode === 'SUCCESS' || mode === 'EXCITED';
   
   useEffect(() => {
     if (!isChasing) {
-      // Return to queen when not chasing
       const timer = setTimeout(() => {
         setPos({ x: queenX, y: queenY });
       }, delay);
       return () => clearTimeout(timer);
     }
     
-    // Chase the target with some randomness
     const timer = setTimeout(() => {
       const angle = Math.random() * Math.PI * 2;
-      const spread = 20 + Math.random() * 30;
+      const spread = isAngry ? 40 : isHappy ? 50 : 25;
       setPos({
         x: targetX + Math.cos(angle) * spread,
         y: targetY + Math.sin(angle) * spread,
@@ -132,7 +186,11 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing }: WorkerBe
     }, delay);
     
     return () => clearTimeout(timer);
-  }, [targetX, targetY, queenX, queenY, isChasing, delay]);
+  }, [targetX, targetY, queenX, queenY, isChasing, delay, isAngry, isHappy]);
+
+  const beeColor = isAngry ? 'from-red-400 to-red-600' : 
+                   isHappy ? 'from-pink-400 to-honey' : 
+                   'from-honey to-amber-600';
 
   return (
     <motion.div
@@ -140,27 +198,26 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing }: WorkerBe
       animate={{
         left: pos.x - 6,
         top: pos.y - 6,
-        scale: isChasing ? [1, 1.2, 1] : 1,
-        rotate: isChasing ? [0, 10, -10, 0] : 0,
+        scale: isChasing ? [1, 1.3, 1] : 1,
+        rotate: isChasing ? [0, 15, -15, 0] : 0,
       }}
       transition={{
         type: 'spring',
-        stiffness: 150 - id * 10,
-        damping: 15 + id * 2,
-        mass: 0.5 + id * 0.1,
+        stiffness: 180 - id * 15,
+        damping: 12 + id * 2,
+        mass: 0.4 + id * 0.08,
       }}
     >
       <div 
-        className={`w-3 h-3 rounded-full bg-gradient-to-br from-honey to-amber-600 
+        className={`w-3 h-3 rounded-full bg-gradient-to-br ${beeColor} 
           shadow-sm border border-amber-700/30
           ${isChasing ? 'animate-pulse' : ''}`}
         style={{
           boxShadow: isChasing 
-            ? '0 0 8px rgba(247, 181, 0, 0.6), 0 0 16px rgba(247, 181, 0, 0.3)' 
+            ? `0 0 10px ${isAngry ? 'rgba(239,68,68,0.6)' : 'rgba(247,181,0,0.6)'}` 
             : '0 1px 2px rgba(0,0,0,0.2)',
         }}
       >
-        {/* Tiny wings */}
         <div className="absolute -left-1 top-0.5 w-1.5 h-1 bg-white/60 rounded-full transform -rotate-45" />
         <div className="absolute -right-1 top-0.5 w-1.5 h-1 bg-white/60 rounded-full transform rotate-45" />
       </div>
@@ -188,6 +245,8 @@ export function FloatingQueenBee() {
     isPageLoading,
     lastActivity,
     recentClicks,
+    currentHint,
+    inactivityTime,
   } = useQueenBee();
   
   const [isDragging, setIsDragging] = useState(false);
@@ -201,10 +260,8 @@ export function FloatingQueenBee() {
   const containerRef = useRef<HTMLDivElement>(null);
   const wooshIdRef = useRef(0);
   
-  // Worker bees configuration
-  const NUM_WORKERS = 6;
+  const NUM_WORKERS = 8;
   
-  // Detect mobile
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -213,12 +270,11 @@ export function FloatingQueenBee() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Track mouse position globally
+  // Track mouse position
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
       
-      // Check if mouse is near the bee
       const beeCenter = {
         x: config.position.x + dimension / 2,
         y: config.position.y + dimension / 2,
@@ -227,19 +283,19 @@ export function FloatingQueenBee() {
         Math.pow(e.clientX - beeCenter.x, 2) + 
         Math.pow(e.clientY - beeCenter.y, 2)
       );
-      setIsMouseNearBee(distance < 150);
+      setIsMouseNearBee(distance < 120);
     };
     
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [config.position]);
 
-  // Get current size
   const currentSize = isMobile ? 'sm' : config.size;
   const dimension = SIZE_DIMENSIONS[currentSize];
   const canvasMode = mapToCanvasMode(mode);
+  const modeText = getModeLabel(mode);
+  const modeIcon = getModeIcon(mode);
 
-  // Handle pointer down - start dragging
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (!containerRef.current) return;
     
@@ -254,11 +310,9 @@ export function FloatingQueenBee() {
     setIsDragging(true);
     setLastDragPos({ x: e.clientX, y: e.clientY });
     
-    // Capture pointer for smooth dragging
     containerRef.current.setPointerCapture(e.pointerId);
   }, []);
 
-  // Handle pointer move - update position with woosh effect
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDragging) return;
     
@@ -266,30 +320,26 @@ export function FloatingQueenBee() {
     const newX = e.clientX - dragOffset.x;
     const newY = e.clientY - dragOffset.y;
     
-    // Calculate velocity for woosh effect
     const vx = e.clientX - lastDragPos.x;
     const vy = e.clientY - lastDragPos.y;
     setDragVelocity({ x: vx, y: vy });
     setLastDragPos({ x: e.clientX, y: e.clientY });
     
-    // Add woosh particles based on velocity
     const speed = Math.sqrt(vx * vx + vy * vy);
-    if (speed > 5) {
+    if (speed > 4) {
       const newParticle: WooshParticle = {
         id: wooshIdRef.current++,
         x: config.position.x + dimension / 2,
         y: config.position.y + dimension / 2,
         timestamp: Date.now(),
       };
-      setWooshTrail(prev => [...prev.slice(-15), newParticle]);
+      setWooshTrail(prev => [...prev.slice(-20), newParticle]);
     }
     
-    // Clamp and update position
     const clamped = clampPosition(newX, newY);
     updatePosition(clamped.x, clamped.y);
   }, [isDragging, dragOffset, clampPosition, updatePosition, lastDragPos, config.position, dimension]);
 
-  // Handle pointer up - stop dragging
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
     if (!isDragging) return;
     
@@ -305,21 +355,20 @@ export function FloatingQueenBee() {
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      setWooshTrail(prev => prev.filter(p => now - p.timestamp < 500));
+      setWooshTrail(prev => prev.filter(p => now - p.timestamp < 600));
     }, 100);
     return () => clearInterval(interval);
   }, []);
 
   // Show tooltip on mode changes
   useEffect(() => {
-    if (mode !== 'IDLE') {
+    if (mode !== 'IDLE' && mode !== 'SLEEPY') {
       setShowTooltip(true);
-      const timer = setTimeout(() => setShowTooltip(false), 2000);
+      const timer = setTimeout(() => setShowTooltip(false), 2500);
       return () => clearTimeout(timer);
     }
   }, [mode]);
 
-  // Don't render if hidden - show small restore button
   if (!config.isVisible) {
     return (
       <Button
@@ -337,32 +386,35 @@ export function FloatingQueenBee() {
   const queenCenterX = config.position.x + dimension / 2;
   const queenCenterY = config.position.y + dimension / 2;
 
+  // Determine if workers should chase
+  const shouldWorkersChase = isDragging || isMouseNearBee || mode === 'EXCITED' || mode === 'SWARM';
+
   return (
     <>
       {/* Woosh Trail Effect */}
       <AnimatePresence>
-        {wooshTrail.map((particle, index) => (
+        {wooshTrail.map((particle) => (
           <motion.div
             key={particle.id}
             className="fixed pointer-events-none z-[98]"
             initial={{ 
-              left: particle.x - 4, 
-              top: particle.y - 4, 
-              opacity: 0.8,
-              scale: 1,
+              left: particle.x - 6, 
+              top: particle.y - 6, 
+              opacity: 0.9,
+              scale: 1.2,
             }}
             animate={{ 
               opacity: 0,
-              scale: 0.3,
+              scale: 0.2,
             }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
           >
             <div 
-              className="w-2 h-2 rounded-full"
+              className="w-3 h-3 rounded-full"
               style={{
-                background: `radial-gradient(circle, rgba(247,181,0,0.8) 0%, rgba(247,181,0,0) 70%)`,
-                boxShadow: '0 0 8px rgba(247,181,0,0.5)',
+                background: `radial-gradient(circle, rgba(247,181,0,0.9) 0%, rgba(247,181,0,0) 70%)`,
+                boxShadow: '0 0 12px rgba(247,181,0,0.6)',
               }}
             />
           </motion.div>
@@ -371,22 +423,22 @@ export function FloatingQueenBee() {
 
       {/* Speed Lines when dragging fast */}
       <AnimatePresence>
-        {isDragging && Math.abs(dragVelocity.x) + Math.abs(dragVelocity.y) > 15 && (
+        {isDragging && Math.abs(dragVelocity.x) + Math.abs(dragVelocity.y) > 12 && (
           <>
-            {[...Array(4)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <motion.div
                 key={`speedline-${i}`}
                 className="fixed pointer-events-none z-[97]"
                 style={{
-                  left: queenCenterX - dragVelocity.x * (i + 1) * 0.5,
-                  top: queenCenterY - dragVelocity.y * (i + 1) * 0.5,
+                  left: queenCenterX - dragVelocity.x * (i + 1) * 0.6,
+                  top: queenCenterY - dragVelocity.y * (i + 1) * 0.6,
                 }}
-                initial={{ opacity: 0.6 - i * 0.1, scale: 1 - i * 0.15 }}
-                animate={{ opacity: 0, scale: 0.5 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0.7 - i * 0.12, scale: 1 - i * 0.12 }}
+                animate={{ opacity: 0, scale: 0.4 }}
+                transition={{ duration: 0.35 }}
               >
                 <div 
-                  className="w-4 h-1 bg-gradient-to-r from-honey/60 to-transparent rounded-full"
+                  className="w-5 h-1.5 bg-gradient-to-r from-honey/70 to-transparent rounded-full"
                   style={{
                     transform: `rotate(${Math.atan2(dragVelocity.y, dragVelocity.x) * 180 / Math.PI}deg)`,
                   }}
@@ -397,7 +449,7 @@ export function FloatingQueenBee() {
         )}
       </AnimatePresence>
 
-      {/* Worker Bees that chase the mouse */}
+      {/* Worker Bees */}
       {!isMobile && (
         <>
           {[...Array(NUM_WORKERS)].map((_, i) => (
@@ -408,7 +460,8 @@ export function FloatingQueenBee() {
               targetY={mousePos.y}
               queenX={queenCenterX}
               queenY={queenCenterY}
-              isChasing={isDragging || isMouseNearBee}
+              isChasing={shouldWorkersChase}
+              mode={mode}
             />
           ))}
         </>
@@ -429,12 +482,24 @@ export function FloatingQueenBee() {
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         animate={{
-          scale: isDragging ? 1.15 : isMouseNearBee ? 1.05 : 1,
-          rotate: mode === 'ERROR' ? [0, -8, 8, -8, 8, 0] : isDragging ? dragVelocity.x * 0.5 : 0,
+          scale: isDragging ? 1.2 : isMouseNearBee ? 1.08 : mode === 'SLEEPY' ? 0.95 : 1,
+          rotate: mode === 'ERROR' || mode === 'CONFUSED' 
+            ? [0, -10, 10, -10, 10, 0] 
+            : isDragging 
+              ? dragVelocity.x * 0.6 
+              : mode === 'SLEEPY' 
+                ? [0, -3, 3, 0]
+                : 0,
+          y: mode === 'SLEEPY' ? [0, 3, 0] : 0,
         }}
         transition={{
           scale: { type: 'spring', stiffness: 400, damping: 25 },
-          rotate: { duration: 0.5, repeat: mode === 'ERROR' ? Infinity : 0, repeatDelay: 1 },
+          rotate: { 
+            duration: mode === 'SLEEPY' ? 2 : 0.5, 
+            repeat: (mode === 'ERROR' || mode === 'CONFUSED' || mode === 'SLEEPY') ? Infinity : 0, 
+            repeatDelay: mode === 'SLEEPY' ? 0 : 1 
+          },
+          y: { duration: 2, repeat: mode === 'SLEEPY' ? Infinity : 0 },
         }}
         data-testid="floating-queen-bee"
       >
@@ -444,30 +509,30 @@ export function FloatingQueenBee() {
             <motion.div
               className="absolute inset-0 rounded-full"
               initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1.3 }}
+              animate={{ opacity: 1, scale: 1.4 }}
               exit={{ opacity: 0, scale: 0.8 }}
               style={{
-                background: 'radial-gradient(circle, rgba(247,181,0,0.4) 0%, transparent 70%)',
-                filter: 'blur(8px)',
+                background: 'radial-gradient(circle, rgba(247,181,0,0.5) 0%, transparent 70%)',
+                filter: 'blur(10px)',
               }}
             />
           )}
         </AnimatePresence>
 
-        {/* Main container with glass effect */}
+        {/* Main container */}
         <div 
           className={`relative w-full h-full rounded-full overflow-hidden 
             bg-background/80 backdrop-blur-sm border-2 
-            ${isDragging ? 'border-honey shadow-xl scale-105' : 'border-honey/40 shadow-md'}
+            ${isDragging ? 'border-honey shadow-2xl' : 'border-honey/40 shadow-md'}
             ${getModeGlow(mode)}
             transition-all duration-150`}
           style={{
             boxShadow: isDragging 
-              ? '0 0 30px rgba(247,181,0,0.5), 0 10px 40px rgba(0,0,0,0.3)' 
+              ? '0 0 40px rgba(247,181,0,0.6), 0 15px 50px rgba(0,0,0,0.3)' 
               : undefined,
           }}
         >
-          {/* Queen Bee Canvas - Always visible and animated */}
+          {/* Queen Bee Canvas */}
           <div className="absolute inset-0 flex items-center justify-center">
             <QueenBeeCanvas
               mode={canvasMode}
@@ -476,26 +541,61 @@ export function FloatingQueenBee() {
             />
           </div>
 
-          {/* Sparkle effect when excited (many clicks) */}
+          {/* Sleepy overlay */}
           <AnimatePresence>
-            {recentClicks > 3 && (
+            {mode === 'SLEEPY' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.3 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-indigo-900/30 rounded-full"
+              >
+                <motion.div
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <Coffee className="w-4 h-4 text-indigo-300" />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Excited sparkles */}
+          <AnimatePresence>
+            {(mode === 'EXCITED' || recentClicks > 4) && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 flex items-center justify-center pointer-events-none"
               >
-                <Sparkles className="w-4 h-4 text-honey animate-pulse" />
+                <Sparkles className="w-5 h-5 text-pink-400 animate-pulse" />
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Error Overlay */}
+          {/* Helpful heart */}
           <AnimatePresence>
-            {mode === 'ERROR' && (
+            {mode === 'HELPFUL' && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1, y: [-5, -10, -5] }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ y: { duration: 1, repeat: Infinity } }}
+                className="absolute -top-3 right-0 pointer-events-none"
+              >
+                <Heart className="w-4 h-4 text-teal-400 fill-teal-400" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Error overlay */}
+          <AnimatePresence>
+            {(mode === 'ERROR' || mode === 'CONFUSED') && (
               <motion.div
                 initial={{ opacity: 0 }}
-                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                animate={{ opacity: [0.2, 0.5, 0.2] }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5, repeat: Infinity }}
                 className="absolute inset-0 bg-red-500/30 rounded-full flex items-center justify-center"
@@ -505,37 +605,67 @@ export function FloatingQueenBee() {
             )}
           </AnimatePresence>
 
-          {/* Success Celebration */}
+          {/* Celebrating confetti */}
+          <AnimatePresence>
+            {mode === 'CELEBRATING' && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                >
+                  <PartyPopper className="w-4 h-4 text-pink-500" />
+                </motion.div>
+                {[...Array(12)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-1.5 h-1.5 rounded-full"
+                    style={{
+                      left: '50%',
+                      top: '50%',
+                      background: ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181'][i % 5],
+                    }}
+                    animate={{
+                      x: [0, Math.cos(i * 30 * Math.PI / 180) * 35],
+                      y: [0, Math.sin(i * 30 * Math.PI / 180) * 35],
+                      opacity: [1, 0],
+                      scale: [1, 0.3],
+                    }}
+                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.08 }}
+                  />
+                ))}
+              </>
+            )}
+          </AnimatePresence>
+
+          {/* Success celebration */}
           <AnimatePresence>
             {mode === 'SUCCESS' && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.5 }}
-                className="absolute inset-0 flex items-center justify-center pointer-events-none"
-              >
+              <>
                 {[...Array(8)].map((_, i) => (
                   <motion.div
                     key={i}
                     className="absolute w-1.5 h-1.5 rounded-full bg-mint"
+                    style={{ left: '50%', top: '50%' }}
                     animate={{
-                      x: [0, Math.cos(i * 45 * Math.PI / 180) * 25],
-                      y: [0, Math.sin(i * 45 * Math.PI / 180) * 25],
+                      x: [0, Math.cos(i * 45 * Math.PI / 180) * 30],
+                      y: [0, Math.sin(i * 45 * Math.PI / 180) * 30],
                       opacity: [1, 0],
-                      scale: [1, 0.5],
+                      scale: [1, 0.4],
                     }}
-                    transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.1 }}
+                    transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.1 }}
                   />
                 ))}
-              </motion.div>
+              </>
             )}
           </AnimatePresence>
 
-          {/* Loading Spinner Overlay */}
+          {/* Loading spinner */}
           <AnimatePresence>
             {isPageLoading && (
               <motion.div
-                initial={{ opacity: 0, rotate: 0 }}
+                initial={{ opacity: 0 }}
                 animate={{ opacity: 1, rotate: 360 }}
                 exit={{ opacity: 0 }}
                 transition={{ rotate: { duration: 1, repeat: Infinity, ease: 'linear' } }}
@@ -546,48 +676,52 @@ export function FloatingQueenBee() {
             )}
           </AnimatePresence>
 
-          {/* SWARM Mode - Orbiting particles */}
+          {/* SWARM Mode orbiting particles */}
           <AnimatePresence>
             {mode === 'SWARM' && (
               <>
-                {[...Array(6)].map((_, i) => (
+                {[...Array(8)].map((_, i) => (
                   <motion.div
                     key={i}
                     className="absolute w-1.5 h-1.5 rounded-full bg-honey"
-                    style={{
-                      left: '50%',
-                      top: '50%',
-                      marginLeft: -3,
-                      marginTop: -3,
-                    }}
+                    style={{ left: '50%', top: '50%', marginLeft: -3, marginTop: -3 }}
                     animate={{
                       x: [
-                        Math.cos(i * 60 * Math.PI / 180) * 20,
-                        Math.cos((i * 60 + 360) * Math.PI / 180) * 20,
+                        Math.cos(i * 45 * Math.PI / 180) * 25,
+                        Math.cos((i * 45 + 360) * Math.PI / 180) * 25,
                       ],
                       y: [
-                        Math.sin(i * 60 * Math.PI / 180) * 20,
-                        Math.sin((i * 60 + 360) * Math.PI / 180) * 20,
+                        Math.sin(i * 45 * Math.PI / 180) * 25,
+                        Math.sin((i * 45 + 360) * Math.PI / 180) * 25,
                       ],
                     }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: 'linear',
-                      delay: i * 0.1,
-                    }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: i * 0.08 }}
                   />
                 ))}
               </>
             )}
           </AnimatePresence>
 
-          {/* Drag handle indicator (subtle) */}
+          {/* Focused mode - electric sparks */}
+          <AnimatePresence>
+            {mode === 'FOCUSED' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute -top-2 -right-2 pointer-events-none"
+              >
+                <Zap className="w-4 h-4 text-blue-400 animate-pulse" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Drag handle */}
           <div className="absolute top-1 left-1/2 -translate-x-1/2 opacity-30 hover:opacity-60 transition-opacity">
             <GripVertical className="w-3 h-3 text-foreground/50" />
           </div>
 
-          {/* Close/Hide button */}
+          {/* Close button */}
           <Button
             size="icon"
             variant="ghost"
@@ -604,8 +738,8 @@ export function FloatingQueenBee() {
 
           {/* Mode Indicator Dot */}
           <div
-            className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background ${getModeColor(mode)}`}
-            title={getModeLabel(mode)}
+            className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-background ${getModeColor(mode)}`}
+            title={modeText}
             data-testid="queen-bee-mode-indicator"
           />
         </div>
@@ -613,7 +747,7 @@ export function FloatingQueenBee() {
 
       {/* Floating Tooltip */}
       <AnimatePresence>
-        {(showTooltip || errorState.hasError || isDragging) && (
+        {(showTooltip || errorState.hasError || isDragging || currentHint) && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -621,7 +755,7 @@ export function FloatingQueenBee() {
             className="fixed z-[101] whitespace-nowrap pointer-events-auto"
             style={{
               left: config.position.x + dimension / 2,
-              top: config.position.y + dimension + 10,
+              top: config.position.y + dimension + 12,
               transform: 'translateX(-50%)',
             }}
           >
@@ -634,35 +768,47 @@ export function FloatingQueenBee() {
                   clearError();
                 }}
               >
-                <AlertTriangle className="w-3 h-3 mr-1" />
+                <XCircle className="w-3 h-3 mr-1" />
                 {errorState.message?.slice(0, 30) || 'Error'}
                 {(errorState.message?.length || 0) > 30 ? '...' : ''}
+              </Badge>
+            ) : currentHint ? (
+              <Badge 
+                variant="outline" 
+                className="text-xs shadow-md border-teal-500/40 bg-teal-500/10 text-teal-600 dark:text-teal-400"
+              >
+                <Lightbulb className="w-3 h-3 mr-1" />
+                {currentHint.message}
               </Badge>
             ) : isDragging ? (
               <Badge 
                 variant="outline" 
                 className="text-xs shadow-sm border-honey/50 bg-honey/10 text-honey animate-pulse"
               >
-                Whoooosh!
+                <Zap className="w-3 h-3 mr-1" />
+                Wheee!
               </Badge>
             ) : (
               <Badge 
                 variant="outline" 
                 className={`text-xs shadow-sm ${
-                  mode === 'SUCCESS' ? 'border-green-500/30 bg-green-500/10 text-green-600' :
-                  mode === 'ERROR' ? 'border-red-500/30 bg-red-500/10 text-red-600' :
-                  mode === 'SWARM' ? 'border-honey/30 bg-honey/10 text-honey' :
+                  mode === 'SUCCESS' || mode === 'CELEBRATING' ? 'border-green-500/30 bg-green-500/10 text-green-600' :
+                  mode === 'ERROR' || mode === 'CONFUSED' ? 'border-red-500/30 bg-red-500/10 text-red-600' :
+                  mode === 'SWARM' || mode === 'EXCITED' ? 'border-honey/30 bg-honey/10 text-honey' :
+                  mode === 'HELPFUL' ? 'border-teal-500/30 bg-teal-500/10 text-teal-600' :
+                  mode === 'SLEEPY' ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-600' :
                   'border-border/50'
                 }`}
               >
-                {getModeLabel(mode)}
+                <span className="mr-1">{modeIcon}</span>
+                {modeText}
               </Badge>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Activity indicator emoji */}
+      {/* Activity indicator */}
       <AnimatePresence>
         {lastActivity !== 'idle' && lastActivity !== 'navigating' && (
           <motion.div
@@ -671,15 +817,15 @@ export function FloatingQueenBee() {
             exit={{ opacity: 0, scale: 0, rotate: 45 }}
             className="fixed z-[101] pointer-events-none"
             style={{
-              left: config.position.x - 8,
-              top: config.position.y - 8,
+              left: config.position.x - 10,
+              top: config.position.y - 10,
             }}
           >
-            <span className="text-sm drop-shadow-md">
-              {lastActivity === 'clicking' && '👆'}
-              {lastActivity === 'typing' && '⌨️'}
-              {lastActivity === 'scrolling' && '📜'}
-            </span>
+            <div className="p-1 bg-background/80 rounded-full backdrop-blur-sm shadow-sm">
+              {lastActivity === 'clicking' && <Hand className="w-4 h-4 text-honey" />}
+              {lastActivity === 'typing' && <Keyboard className="w-4 h-4 text-blue-400" />}
+              {lastActivity === 'scrolling' && <ScrollText className="w-4 h-4 text-purple-400" />}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

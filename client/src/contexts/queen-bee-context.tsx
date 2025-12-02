@@ -1,12 +1,31 @@
 /**
- * Global Queen Bee Context - Enhanced with User Action Reactions
- * ===============================================================
- * Manages the queen bee's emotional state across the entire application.
- * - Reacts to user actions (clicks, typing, scrolling, errors)
- * - Shows loading animation on page navigation
- * - Displays error animations when errors occur
- * - Cycles through animations for guest users
- * - Supports pixel-based draggable positioning
+ * Global Queen Bee Context - Enhanced with Full Emotional Range
+ * ==============================================================
+ * Complete emotional AI companion that reacts to all user actions.
+ * 
+ * EMOTIONS:
+ * - IDLE: Resting, gentle floating
+ * - LISTENING: User is typing
+ * - THINKING: Processing/reasoning
+ * - TYPING: AI generating response
+ * - CODING: Writing code
+ * - BUILDING: Creating files/structure
+ * - SUCCESS: Task completed
+ * - ERROR: Something went wrong
+ * - SWARM: Multi-agent parallel execution
+ * - LOADING: Page loading
+ * - CURIOUS: User clicked something
+ * - ALERT: Attention needed
+ * - EXCITED: Many rapid interactions
+ * - HELPFUL: Hovering helpful elements
+ * - SLEEPY: User inactive for a while
+ * - CELEBRATING: Big achievement
+ * - CONFUSED: Error or issue detected
+ * - FOCUSED: User working on code
+ * 
+ * INTERACTIVE HINTS:
+ * - Detects when user hovers over key UI elements
+ * - Provides contextual suggestions and tips
  */
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
@@ -14,35 +33,64 @@ import { useLocation } from 'wouter';
 
 // All possible queen bee emotional states
 export type QueenBeeMode = 
-  | 'IDLE'      // Default resting state
-  | 'LISTENING' // User is typing/interacting
-  | 'TYPING'    // AI is generating response
-  | 'THINKING'  // AI is processing/reasoning
-  | 'CODING'    // AI is writing/editing code
-  | 'BUILDING'  // AI is creating files/structure
-  | 'SUCCESS'   // Task completed successfully
-  | 'ERROR'     // Something went wrong
-  | 'SWARM'     // Multi-agent parallel execution
-  | 'LOADING'   // Page is loading
-  | 'CURIOUS'   // User clicked something
-  | 'ALERT';    // Attention needed
+  | 'IDLE'        // Default resting state
+  | 'LISTENING'   // User is typing/interacting
+  | 'TYPING'      // AI is generating response
+  | 'THINKING'    // AI is processing/reasoning
+  | 'CODING'      // AI is writing/editing code
+  | 'BUILDING'    // AI is creating files/structure
+  | 'SUCCESS'     // Task completed successfully
+  | 'ERROR'       // Something went wrong
+  | 'SWARM'       // Multi-agent parallel execution
+  | 'LOADING'     // Page is loading
+  | 'CURIOUS'     // User clicked something
+  | 'ALERT'       // Attention needed
+  | 'EXCITED'     // Many rapid interactions
+  | 'HELPFUL'     // Hovering helpful UI elements
+  | 'SLEEPY'      // User inactive
+  | 'CELEBRATING' // Big achievement
+  | 'CONFUSED'    // Error or issue
+  | 'FOCUSED';    // User working on code
 
-// Modes to cycle through for guests (excludes ERROR, LOADING, ALERT)
+// Interactive hint types
+export interface InteractiveHint {
+  message: string;
+  element: string;
+  action?: string;
+}
+
+// Modes to cycle through for guests
 const GUEST_CYCLE_MODES: QueenBeeMode[] = [
-  'IDLE', 'LISTENING', 'TYPING', 'THINKING', 'CODING', 'BUILDING', 'SUCCESS', 'SWARM', 'CURIOUS'
+  'IDLE', 'LISTENING', 'CURIOUS', 'THINKING', 'CODING', 'BUILDING', 'EXCITED', 'HELPFUL'
 ];
 
-// Header height buffer to prevent bee from going under headers
+// Interactive hints based on hovered elements
+const ELEMENT_HINTS: Record<string, InteractiveHint> = {
+  'login': { message: "Hey! Log in to save your projects", element: 'login', action: 'click' },
+  'signup': { message: "Join the hive! Sign up for free", element: 'signup', action: 'click' },
+  'pricing': { message: "Check out our pricing plans", element: 'pricing', action: 'explore' },
+  'preview': { message: "See your app come to life!", element: 'preview', action: 'watch' },
+  'chat': { message: "Ask Scout anything!", element: 'chat', action: 'type' },
+  'files': { message: "Your project files live here", element: 'files', action: 'browse' },
+  'terminal': { message: "Run commands here", element: 'terminal', action: 'type' },
+  'deploy': { message: "Ready to go live?", element: 'deploy', action: 'click' },
+  'settings': { message: "Customize your workspace", element: 'settings', action: 'explore' },
+  'theme': { message: "Toggle light/dark mode", element: 'theme', action: 'click' },
+  'dashboard': { message: "View all your projects", element: 'dashboard', action: 'explore' },
+  'new-project': { message: "Start something amazing!", element: 'new-project', action: 'create' },
+};
+
+// Header height buffer
 const HEADER_BUFFER = 60;
 
-// Configuration for the queen bee with pixel-based positioning
+// Configuration for the queen bee
 export interface QueenBeeConfig {
   size: 'sm' | 'md' | 'lg';
-  position: { x: number; y: number }; // Pixel-based position
+  position: { x: number; y: number };
   isVisible: boolean;
 }
 
-// Size dimensions for clamping
+// Size dimensions
 export const SIZE_DIMENSIONS = {
   sm: 48,
   md: 64,
@@ -69,18 +117,22 @@ interface QueenBeeContextState {
   isAIActive: boolean;
   setIsAIActive: (active: boolean) => void;
   clampPosition: (x: number, y: number) => { x: number; y: number };
-  // New: Error state
   errorState: ErrorState;
   triggerError: (message: string) => void;
   clearError: () => void;
-  // New: Page loading
   isPageLoading: boolean;
-  // New: User activity tracking
   lastActivity: string;
   recentClicks: number;
+  // New: Interactive hints
+  currentHint: InteractiveHint | null;
+  setCurrentHint: (hint: InteractiveHint | null) => void;
+  // New: Inactivity tracking
+  inactivityTime: number;
+  // New: Celebration trigger
+  triggerCelebration: () => void;
 }
 
-// Get default position (bottom-right, above footer)
+// Get default position
 function getDefaultPosition(): { x: number; y: number } {
   if (typeof window === 'undefined') {
     return { x: 100, y: 100 };
@@ -88,7 +140,7 @@ function getDefaultPosition(): { x: number; y: number } {
   const size = SIZE_DIMENSIONS.md;
   return {
     x: window.innerWidth - size - 20,
-    y: window.innerHeight - size - 80, // Above typical footer
+    y: window.innerHeight - size - 80,
   };
 }
 
@@ -117,8 +169,7 @@ interface QueenBeeProviderProps {
 }
 
 /**
- * Queen Bee Provider - Enhanced with User Action Reactions
- * Wraps the application to provide global queen bee state
+ * Queen Bee Provider - Full Emotional AI Companion
  */
 export function QueenBeeProvider({ 
   children, 
@@ -133,16 +184,20 @@ export function QueenBeeProvider({
   const [isPageLoading, setIsPageLoading] = useState(false);
   const [lastActivity, setLastActivity] = useState<string>('idle');
   const [recentClicks, setRecentClicks] = useState(0);
+  const [currentHint, setCurrentHint] = useState<InteractiveHint | null>(null);
+  const [inactivityTime, setInactivityTime] = useState(0);
   const [location] = useLocation();
   
-  // Refs for debouncing and tracking
+  // Refs for debouncing
   const modeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const activityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousLocationRef = useRef(location);
   const clickCountRef = useRef(0);
   const clickResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastActivityTimeRef = useRef(Date.now());
 
-  // Clamp position to viewport bounds
+  // Clamp position to viewport
   const clampPosition = useCallback((x: number, y: number): { x: number; y: number } => {
     if (typeof window === 'undefined') return { x, y };
     
@@ -155,9 +210,8 @@ export function QueenBeeProvider({
     };
   }, [config.size]);
 
-  // Smart mode setter that respects priority (errors take precedence)
+  // Smart mode setter with priority
   const setMode = useCallback((newMode: QueenBeeMode) => {
-    // Clear any pending mode timeout
     if (modeTimeoutRef.current) {
       clearTimeout(modeTimeoutRef.current);
       modeTimeoutRef.current = null;
@@ -165,10 +219,12 @@ export function QueenBeeProvider({
     
     // Error state takes highest priority
     if (errorState.hasError && newMode !== 'ERROR' && newMode !== 'IDLE') {
-      return; // Don't override error state
+      return;
     }
     
     setModeState(newMode);
+    lastActivityTimeRef.current = Date.now();
+    setInactivityTime(0);
   }, [errorState.hasError]);
 
   // Trigger error state
@@ -180,7 +236,6 @@ export function QueenBeeProvider({
     });
     setModeState('ERROR');
     
-    // Auto-clear after 5 seconds
     modeTimeoutRef.current = setTimeout(() => {
       setErrorState(DEFAULT_ERROR_STATE);
       setModeState('IDLE');
@@ -196,26 +251,31 @@ export function QueenBeeProvider({
     setModeState('IDLE');
   }, []);
 
-  // Load saved config from localStorage
+  // Trigger celebration
+  const triggerCelebration = useCallback(() => {
+    setModeState('CELEBRATING');
+    modeTimeoutRef.current = setTimeout(() => {
+      setModeState('IDLE');
+    }, 3000);
+  }, []);
+
+  // Load saved config
   useEffect(() => {
     try {
       const saved = localStorage.getItem('queenBeeConfig');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Clamp saved position to current viewport
         if (parsed.position) {
           parsed.position = clampPosition(parsed.position.x, parsed.position.y);
         }
         setConfigState(prev => ({ ...prev, ...parsed }));
       } else {
-        // Set default position on first load
         setConfigState(prev => ({
           ...prev,
           position: getDefaultPosition(),
         }));
       }
     } catch {
-      // Set default position on error
       setConfigState(prev => ({
         ...prev,
         position: getDefaultPosition(),
@@ -223,7 +283,7 @@ export function QueenBeeProvider({
     }
   }, [clampPosition]);
 
-  // Re-clamp position on window resize
+  // Re-clamp on resize
   useEffect(() => {
     const handleResize = () => {
       setConfigState(prev => ({
@@ -236,20 +296,20 @@ export function QueenBeeProvider({
     return () => window.removeEventListener('resize', handleResize);
   }, [clampPosition]);
 
-  // Save config to localStorage when it changes
+  // Save config
   const setConfig = useCallback((updates: Partial<QueenBeeConfig>) => {
     setConfigState(prev => {
       const newConfig = { ...prev, ...updates };
       try {
         localStorage.setItem('queenBeeConfig', JSON.stringify(newConfig));
       } catch {
-        // Ignore storage errors
+        // Ignore
       }
       return newConfig;
     });
   }, []);
 
-  // Update position with clamping
+  // Update position
   const updatePosition = useCallback((x: number, y: number) => {
     const clamped = clampPosition(x, y);
     setConfig({ position: clamped });
@@ -260,7 +320,7 @@ export function QueenBeeProvider({
     setConfig({ isVisible: !config.isVisible });
   }, [config.isVisible, setConfig]);
 
-  // PAGE NAVIGATION: React to route changes with loading animation
+  // PAGE NAVIGATION: Loading animation
   useEffect(() => {
     if (location !== previousLocationRef.current && !isAIActive && !errorState.hasError) {
       previousLocationRef.current = location;
@@ -268,7 +328,6 @@ export function QueenBeeProvider({
       setModeState('LOADING');
       setLastActivity('navigating');
       
-      // Show loading briefly then return to idle
       const timer = setTimeout(() => {
         setIsPageLoading(false);
         setModeState('IDLE');
@@ -279,25 +338,109 @@ export function QueenBeeProvider({
     }
   }, [location, isAIActive, errorState.hasError]);
 
+  // INACTIVITY TRACKING: Go sleepy after 30 seconds
+  useEffect(() => {
+    const checkInactivity = () => {
+      const elapsed = Date.now() - lastActivityTimeRef.current;
+      setInactivityTime(elapsed);
+      
+      if (elapsed > 30000 && !isAIActive && !errorState.hasError) {
+        setModeState('SLEEPY');
+      }
+    };
+
+    inactivityTimerRef.current = setInterval(checkInactivity, 5000);
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearInterval(inactivityTimerRef.current);
+      }
+    };
+  }, [isAIActive, errorState.hasError]);
+
+  // HOVER DETECTION: Interactive hints for UI elements
+  useEffect(() => {
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // Check for data-bee-hint attribute or common selectors
+      const hintKey = target.closest('[data-bee-hint]')?.getAttribute('data-bee-hint');
+      const testId = target.closest('[data-testid]')?.getAttribute('data-testid');
+      
+      let detectedHint: string | null = null;
+      
+      // Check explicit hints
+      if (hintKey && ELEMENT_HINTS[hintKey]) {
+        detectedHint = hintKey;
+      }
+      // Check common testids
+      else if (testId) {
+        if (testId.includes('login') || testId.includes('signin')) detectedHint = 'login';
+        else if (testId.includes('signup') || testId.includes('register')) detectedHint = 'signup';
+        else if (testId.includes('pricing')) detectedHint = 'pricing';
+        else if (testId.includes('preview')) detectedHint = 'preview';
+        else if (testId.includes('chat') || testId.includes('message')) detectedHint = 'chat';
+        else if (testId.includes('file') || testId.includes('browser')) detectedHint = 'files';
+        else if (testId.includes('terminal')) detectedHint = 'terminal';
+        else if (testId.includes('deploy') || testId.includes('publish')) detectedHint = 'deploy';
+        else if (testId.includes('setting')) detectedHint = 'settings';
+        else if (testId.includes('theme')) detectedHint = 'theme';
+        else if (testId.includes('dashboard')) detectedHint = 'dashboard';
+        else if (testId.includes('new-project') || testId.includes('create-project')) detectedHint = 'new-project';
+      }
+      
+      if (detectedHint && ELEMENT_HINTS[detectedHint]) {
+        setCurrentHint(ELEMENT_HINTS[detectedHint]);
+        if (!isAIActive && !errorState.hasError) {
+          setModeState('HELPFUL');
+        }
+        lastActivityTimeRef.current = Date.now();
+      }
+    };
+
+    const handleMouseOut = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const hintKey = target.closest('[data-bee-hint]')?.getAttribute('data-bee-hint');
+      const testId = target.closest('[data-testid]')?.getAttribute('data-testid');
+      
+      if (hintKey || testId) {
+        // Delay clearing hint for smoother UX
+        setTimeout(() => {
+          setCurrentHint(null);
+          if (!isAIActive && !errorState.hasError && mode === 'HELPFUL') {
+            setModeState('IDLE');
+          }
+        }, 500);
+      }
+    };
+
+    document.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('mouseout', handleMouseOut);
+    
+    return () => {
+      document.removeEventListener('mouseover', handleMouseOver);
+      document.removeEventListener('mouseout', handleMouseOut);
+    };
+  }, [isAIActive, errorState.hasError, mode]);
+
   // USER CLICKS: React to document clicks
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      // Don't react to clicks on the bee itself
       const target = e.target as HTMLElement;
       if (target.closest('[data-testid="floating-queen-bee"]')) return;
-      
-      // Don't react if AI is active or there's an error
       if (isAIActive || errorState.hasError) return;
       
-      // Track click count for excitement
       clickCountRef.current += 1;
       setRecentClicks(clickCountRef.current);
+      lastActivityTimeRef.current = Date.now();
       
-      // Show curious reaction
-      setModeState('CURIOUS');
+      // Show EXCITED if many rapid clicks
+      if (clickCountRef.current > 5) {
+        setModeState('EXCITED');
+      } else {
+        setModeState('CURIOUS');
+      }
       setLastActivity('clicking');
       
-      // Reset after brief curiosity
       if (activityTimeoutRef.current) {
         clearTimeout(activityTimeoutRef.current);
       }
@@ -306,9 +449,8 @@ export function QueenBeeProvider({
           setModeState('IDLE');
           setLastActivity('idle');
         }
-      }, 1000);
+      }, 1500);
       
-      // Reset click count after 3 seconds of no clicks
       if (clickResetTimeoutRef.current) {
         clearTimeout(clickResetTimeoutRef.current);
       }
@@ -325,15 +467,24 @@ export function QueenBeeProvider({
   // USER TYPING: React to keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't react if AI is active or there's an error
       if (isAIActive || errorState.hasError) return;
       
-      // Only react to actual character input (guard against undefined key)
       if (e.key && (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Enter')) {
-        setModeState('LISTENING');
+        lastActivityTimeRef.current = Date.now();
+        
+        // Check if in code editor
+        const target = e.target as HTMLElement;
+        const isInCodeEditor = target.closest('.monaco-editor') || 
+                               target.closest('[data-testid*="code"]') ||
+                               target.closest('textarea');
+        
+        if (isInCodeEditor) {
+          setModeState('FOCUSED');
+        } else {
+          setModeState('LISTENING');
+        }
         setLastActivity('typing');
         
-        // Reset after brief listening
         if (activityTimeoutRef.current) {
           clearTimeout(activityTimeoutRef.current);
         }
@@ -350,20 +501,19 @@ export function QueenBeeProvider({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isAIActive, errorState.hasError]);
 
-  // USER SCROLLING: React to scroll events
+  // USER SCROLLING
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout | null = null;
     
     const handleScroll = () => {
-      // Don't react if AI is active or there's an error
       if (isAIActive || errorState.hasError) return;
       
-      // Only trigger if not already in loading/thinking state
+      lastActivityTimeRef.current = Date.now();
+      
       if (mode !== 'LOADING' && mode !== 'THINKING') {
         setLastActivity('scrolling');
       }
       
-      // Debounce scroll end detection
       if (scrollTimeout) {
         clearTimeout(scrollTimeout);
       }
@@ -381,7 +531,7 @@ export function QueenBeeProvider({
     };
   }, [mode, isAIActive, errorState.hasError]);
 
-  // GLOBAL ERROR LISTENER: Catch unhandled errors
+  // GLOBAL ERROR LISTENER
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
       triggerError(event.message || 'An unexpected error occurred');
@@ -401,21 +551,17 @@ export function QueenBeeProvider({
     };
   }, [triggerError]);
 
-  // Random animation cycling for guests (when not reacting to user)
+  // Random cycling for guests when idle
   useEffect(() => {
     if (!isGuest || isAIActive || errorState.hasError || isPageLoading) return;
-    
-    // Only cycle if truly idle
     if (lastActivity !== 'idle') return;
 
-    // Cycle through animations randomly every 4-8 seconds
     const cycleAnimation = () => {
       const randomIndex = Math.floor(Math.random() * GUEST_CYCLE_MODES.length);
       setModeState(GUEST_CYCLE_MODES[randomIndex]);
     };
 
-    // Set up interval with random timing
-    const getRandomInterval = () => 4000 + Math.random() * 4000; // 4-8 seconds
+    const getRandomInterval = () => 4000 + Math.random() * 4000;
     
     let timeoutId: NodeJS.Timeout;
     const scheduleNext = () => {
@@ -428,16 +574,16 @@ export function QueenBeeProvider({
     };
     
     scheduleNext();
-
     return () => clearTimeout(timeoutId);
   }, [isGuest, isAIActive, errorState.hasError, isPageLoading, lastActivity]);
 
-  // Cleanup on unmount
+  // Cleanup
   useEffect(() => {
     return () => {
       if (modeTimeoutRef.current) clearTimeout(modeTimeoutRef.current);
       if (activityTimeoutRef.current) clearTimeout(activityTimeoutRef.current);
       if (clickResetTimeoutRef.current) clearTimeout(clickResetTimeoutRef.current);
+      if (inactivityTimerRef.current) clearInterval(inactivityTimerRef.current);
     };
   }, []);
 
@@ -461,6 +607,10 @@ export function QueenBeeProvider({
         isPageLoading,
         lastActivity,
         recentClicks,
+        currentHint,
+        setCurrentHint,
+        inactivityTime,
+        triggerCelebration,
       }}
     >
       {children}
@@ -481,10 +631,9 @@ export function useQueenBee() {
 
 /**
  * Hook to connect queen bee to AI activity
- * Call this from components that interact with AI
  */
 export function useQueenBeeAI() {
-  const { setMode, setIsAIActive, setIsGuest, triggerError } = useQueenBee();
+  const { setMode, setIsAIActive, setIsGuest, triggerError, triggerCelebration } = useQueenBee();
 
   const onUserTyping = useCallback(() => {
     setIsGuest(false);
@@ -514,7 +663,6 @@ export function useQueenBeeAI() {
 
   const onAISuccess = useCallback(() => {
     setMode('SUCCESS');
-    // Return to idle after 3 seconds
     setTimeout(() => {
       setMode('IDLE');
       setIsAIActive(false);
@@ -540,6 +688,10 @@ export function useQueenBeeAI() {
     setMode('LOADING');
   }, [setMode, setIsAIActive]);
 
+  const onCelebrate = useCallback(() => {
+    triggerCelebration();
+  }, [triggerCelebration]);
+
   return {
     onUserTyping,
     onAIThinking,
@@ -551,5 +703,6 @@ export function useQueenBeeAI() {
     onSwarmMode,
     onIdle,
     onLoading,
+    onCelebrate,
   };
 }
