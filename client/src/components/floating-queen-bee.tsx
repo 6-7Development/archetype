@@ -149,7 +149,7 @@ function getModeGlow(mode: QueenBeeMode): string {
   }
 }
 
-// Worker bee component
+// Realistic Worker Bee Component with Swarm AI
 interface WorkerBeeProps {
   id: number;
   targetX: number;
@@ -162,65 +162,271 @@ interface WorkerBeeProps {
 
 function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: WorkerBeeProps) {
   const [pos, setPos] = useState({ x: queenX, y: queenY });
-  const delay = id * 40;
+  const [velocity, setVelocity] = useState({ x: 0, y: 0 });
+  const [wingRotation, setWingRotation] = useState(0);
+  const [behavior, setBehavior] = useState<'chase' | 'swarm' | 'evade' | 'formation'>('chase');
+  const posRef = useRef({ x: queenX, y: queenY });
+  const velRef = useRef({ x: 0, y: 0 });
+  const timeRef = useRef(0);
   
   // Different behavior based on mode
   const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || mode === 'ALERT';
   const isHappy = mode === 'CELEBRATING' || mode === 'SUCCESS' || mode === 'EXCITED';
   
+  // Swarm behavior - different bees have different roles
+  const role = id % 3; // 0: scout, 1: defender, 2: worker
+  const isScout = role === 0;
+  const isDefender = role === 1;
+  
+  // Update bee physics and behavior
   useEffect(() => {
     if (!isChasing) {
-      const timer = setTimeout(() => {
-        setPos({ x: queenX, y: queenY });
-      }, delay);
-      return () => clearTimeout(timer);
+      // Return to queen when not active
+      const newX = queenX + (Math.random() - 0.5) * 10;
+      const newY = queenY + (Math.random() - 0.5) * 10;
+      setPos({ x: newX, y: newY });
+      setVelocity({ x: 0, y: 0 });
+      return;
     }
     
-    const timer = setTimeout(() => {
-      const angle = Math.random() * Math.PI * 2;
-      const spread = isAngry ? 40 : isHappy ? 50 : 25;
-      setPos({
-        x: targetX + Math.cos(angle) * spread,
-        y: targetY + Math.sin(angle) * spread,
-      });
-    }, delay);
+    const interval = setInterval(() => {
+      timeRef.current += 1;
+      
+      // Determine behavior based on mode
+      let nextBehavior: typeof behavior = 'chase';
+      if (isAngry) nextBehavior = isDefender ? 'evade' : 'chase';
+      else if (isHappy) nextBehavior = 'swarm';
+      else nextBehavior = isScout ? 'chase' : 'formation';
+      setBehavior(nextBehavior);
+      
+      // Physics simulation for each behavior
+      const maxSpeed = isScout ? 4 : 2.5;
+      const acceleration = isDefender ? 0.25 : 0.15;
+      
+      let targetPos = { x: targetX, y: targetY };
+      
+      // Different flight patterns with organic movements
+      if (nextBehavior === 'chase') {
+        // Direct pursuit with smooth curves - add sine wave wobble
+        const wobble = Math.sin(timeRef.current / 8 + id) * 8;
+        const dx = targetPos.x - posRef.current.x + wobble;
+        const dy = targetPos.y - posRef.current.y;
+        const angle = Math.atan2(dy, dx);
+        velRef.current.x += Math.cos(angle) * acceleration;
+        velRef.current.y += Math.sin(angle) * acceleration;
+      } else if (nextBehavior === 'swarm') {
+        // Lissajous curve pattern + spiral for beautiful swarm choreography
+        const time = timeRef.current / 12;
+        const spiralAngle = time + id * (Math.PI / 4);
+        const spiralDist = 40 + Math.sin(timeRef.current / 25) * 20;
+        const lissajousX = Math.sin(time * 0.5 + id) * 15;
+        const lissajousY = Math.cos(time * 0.3 + id) * 15;
+        
+        targetPos.x = targetX + Math.cos(spiralAngle) * spiralDist + lissajousX;
+        targetPos.y = targetY + Math.sin(spiralAngle) * spiralDist + lissajousY;
+        
+        const dx = targetPos.x - posRef.current.x;
+        const dy = targetPos.y - posRef.current.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist > 1) {
+          velRef.current.x += (dx / dist) * acceleration * 0.75;
+          velRef.current.y += (dy / dist) * acceleration * 0.75;
+        }
+      } else if (nextBehavior === 'evade') {
+        // Chaotic evasion with random jitter
+        const baseAngle = (timeRef.current / 8 + id) * Math.PI;
+        const jitter = Math.sin(timeRef.current / 3 + id * 1.7) * 20;
+        const zigzag = Math.sin(timeRef.current / 4) * 40;
+        
+        targetPos.x = targetX + Math.cos(baseAngle) * 70 + zigzag + jitter;
+        targetPos.y = targetY + Math.sin(baseAngle) * 70 + Math.cos(timeRef.current / 6) * 20;
+        
+        const dx = targetPos.x - posRef.current.x;
+        const dy = targetPos.y - posRef.current.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist > 1) {
+          velRef.current.x += (dx / dist) * acceleration * 1.1;
+          velRef.current.y += (dy / dist) * acceleration * 1.1;
+        }
+      } else {
+        // Formation flight with breathing motion
+        const formationAngle = (id / 8) * Math.PI * 2;
+        const baseDist = 45;
+        const breathe = Math.sin(timeRef.current / 20) * 8;
+        const formationDist = baseDist + breathe;
+        
+        targetPos.x = targetX + Math.cos(formationAngle) * formationDist;
+        targetPos.y = targetY + Math.sin(formationAngle) * formationDist;
+        
+        const dx = targetPos.x - posRef.current.x;
+        const dy = targetPos.y - posRef.current.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist > 1) {
+          velRef.current.x += (dx / dist) * acceleration * 0.5;
+          velRef.current.y += (dy / dist) * acceleration * 0.5;
+        }
+      }
+      
+      // Collision avoidance - bees repel each other slightly
+      if (id > 0) {
+        const prevBeeOffset = 20; // approximate distance to check
+        const repulsionForce = 0.03;
+        velRef.current.x += (Math.random() - 0.5) * repulsionForce;
+        velRef.current.y += (Math.random() - 0.5) * repulsionForce;
+      }
+      
+      // Apply damping for realistic flight
+      const damping = 0.92;
+      velRef.current.x *= damping;
+      velRef.current.y *= damping;
+      
+      // Limit maximum speed
+      const speed = Math.sqrt(velRef.current.x ** 2 + velRef.current.y ** 2);
+      if (speed > maxSpeed) {
+        velRef.current.x = (velRef.current.x / speed) * maxSpeed;
+        velRef.current.y = (velRef.current.y / speed) * maxSpeed;
+      }
+      
+      // Update position
+      posRef.current.x += velRef.current.x;
+      posRef.current.y += velRef.current.y;
+      
+      setPos({ x: posRef.current.x, y: posRef.current.y });
+      setVelocity({ x: velRef.current.x, y: velRef.current.y });
+      
+      // Wing flapping based on speed
+      setWingRotation((prev) => (prev + 25 + speed * 10) % 360);
+    }, 30);
     
-    return () => clearTimeout(timer);
-  }, [targetX, targetY, queenX, queenY, isChasing, delay, isAngry, isHappy]);
+    return () => clearInterval(interval);
+  }, [targetX, targetY, queenX, queenY, isChasing, isAngry, isHappy, isScout, isDefender, id]);
 
-  const beeColor = isAngry ? 'from-red-400 to-red-600' : 
-                   isHappy ? 'from-pink-400 to-honey' : 
-                   'from-honey to-amber-600';
+  // Calculate bee heading
+  const heading = Math.atan2(velocity.y, velocity.x) * (180 / Math.PI);
+  
+  // Color based on role and mode
+  const beeColor = isAngry 
+    ? (isDefender ? '#FF3B3B' : '#FF6B6B')
+    : isHappy 
+      ? (isScout ? '#FFE66D' : '#FFB84D')
+      : (isScout ? '#F7B500' : '#E6A300');
+  
+  const wingOpacity = 0.6 + Math.sin(wingRotation * Math.PI / 180) * 0.3;
 
+  // Calculate tilt based on velocity
+  const tilt = Math.atan2(velocity.y, velocity.x) * 0.3;
+  
   return (
     <motion.div
       className="fixed pointer-events-none z-[99]"
+      style={{
+        left: pos.x,
+        top: pos.y,
+      }}
       animate={{
-        left: pos.x - 6,
-        top: pos.y - 6,
-        scale: isChasing ? [1, 1.3, 1] : 1,
-        rotate: isChasing ? [0, 15, -15, 0] : 0,
+        rotate: heading,
       }}
       transition={{
         type: 'spring',
-        stiffness: 180 - id * 15,
-        damping: 12 + id * 2,
-        mass: 0.4 + id * 0.08,
+        stiffness: 300,
+        damping: 20,
+        mass: 0.5,
       }}
     >
-      <div 
-        className={`w-3 h-3 rounded-full bg-gradient-to-br ${beeColor} 
-          shadow-sm border border-amber-700/30
-          ${isChasing ? 'animate-pulse' : ''}`}
-        style={{
-          boxShadow: isChasing 
-            ? `0 0 10px ${isAngry ? 'rgba(239,68,68,0.6)' : 'rgba(247,181,0,0.6)'}` 
-            : '0 1px 2px rgba(0,0,0,0.2)',
-        }}
-      >
-        <div className="absolute -left-1 top-0.5 w-1.5 h-1 bg-white/60 rounded-full transform -rotate-45" />
-        <div className="absolute -right-1 top-0.5 w-1.5 h-1 bg-white/60 rounded-full transform rotate-45" />
-      </div>
+      {/* Shadow */}
+      <svg width="20" height="12" viewBox="0 0 20 12" className="absolute opacity-30" style={{ filter: 'blur(1px)', transform: 'translateY(2px)' }}>
+        <ellipse cx="10" cy="9" rx="6" ry="1.5" fill="#000" />
+      </svg>
+      
+      <svg width="20" height="12" viewBox="0 0 20 12" className="drop-shadow-md relative" style={{ transform: `skewY(${tilt}rad)` }}>
+        {/* Left Wing */}
+        <ellipse
+          cx="6"
+          cy="3"
+          rx="5"
+          ry="3"
+          fill={beeColor}
+          opacity={wingOpacity * 0.8}
+          style={{
+            transformOrigin: '6px 6px',
+            transform: `rotateX(${Math.sin(wingRotation * Math.PI / 180) * 60}deg)`,
+          }}
+        />
+        
+        {/* Right Wing */}
+        <ellipse
+          cx="14"
+          cy="3"
+          rx="5"
+          ry="3"
+          fill={beeColor}
+          opacity={wingOpacity * 0.8}
+          style={{
+            transformOrigin: '14px 6px',
+            transform: `rotateX(${Math.sin(wingRotation * Math.PI / 180) * 60}deg)`,
+          }}
+        />
+        
+        {/* Thorax (middle body) */}
+        <ellipse
+          cx="10"
+          cy="6"
+          rx="4"
+          ry="3.5"
+          fill={beeColor}
+          stroke={isAngry ? '#8B0000' : '#333'}
+          strokeWidth="0.5"
+        />
+        
+        {/* Abdomen (back striped body) */}
+        <g>
+          <ellipse
+            cx="10"
+            cy="8.5"
+            rx="3.5"
+            ry="3"
+            fill={isAngry ? '#FF4444' : isHappy ? '#FFD700' : beeColor}
+            stroke={isAngry ? '#8B0000' : '#333'}
+            strokeWidth="0.5"
+          />
+          {/* Stripes */}
+          <line x1="7" y1="7.5" x2="13" y2="7.5" stroke={isAngry ? '#8B0000' : '#000'} strokeWidth="0.3" opacity="0.5" />
+          <line x1="6.5" y1="9" x2="13.5" y2="9" stroke={isAngry ? '#8B0000' : '#000'} strokeWidth="0.3" opacity="0.5" />
+        </g>
+        
+        {/* Head */}
+        <circle cx="10" cy="4" r="2" fill={beeColor} stroke={isAngry ? '#8B0000' : '#333'} strokeWidth="0.5" />
+        
+        {/* Eyes */}
+        <circle cx="8.5" cy="3.5" r="0.8" fill="#000" />
+        <circle cx="11.5" cy="3.5" r="0.8" fill="#000" />
+        <circle cx="8.7" cy="3.3" r="0.3" fill="#FFF" opacity="0.7" />
+        <circle cx="11.7" cy="3.3" r="0.3" fill="#FFF" opacity="0.7" />
+        
+        {/* Left Antenna */}
+        <line x1="8.5" y1="2.5" x2="7" y2="0.5" stroke="#333" strokeWidth="0.5" />
+        <circle cx="7" cy="0.5" r="0.3" fill="#333" />
+        
+        {/* Right Antenna */}
+        <line x1="11.5" y1="2.5" x2="13" y2="0.5" stroke="#333" strokeWidth="0.5" />
+        <circle cx="13" cy="0.5" r="0.3" fill="#333" />
+        
+        {/* Glow effect when chasing */}
+        {isChasing && (
+          <circle
+            cx="10"
+            cy="6"
+            r="10"
+            fill="none"
+            stroke={isAngry ? '#FF3B3B' : '#F7B500'}
+            strokeWidth="0.5"
+            opacity="0.4"
+          />
+        )}
+      </svg>
     </motion.div>
   );
 }
