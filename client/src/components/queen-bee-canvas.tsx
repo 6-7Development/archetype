@@ -629,41 +629,64 @@ class AgentBeeAnimation {
     ctx.strokeStyle = modeColor;
     ctx.lineWidth = 1;
     
-    // Santa Hat - also affected by head transforms
-    // LIMIT head transform effect on hat to prevent displacement
+    ctx.restore(); // End head section
+
+    // Santa Hat - drawn OUTSIDE head transform to prevent displacement
+    // Uses fresh transform context relative to body center, not head rotation
     if (this.isChristmas) {
       ctx.save();
-      const clampedHeadTilt = Math.max(-0.3, Math.min(0.3, headTilt)); // Clamp tilt effect
-      const clampedHeadRotation = Math.max(-0.4, Math.min(0.4, headRotation)); // Clamp rotation
-      ctx.translate(0, -size * 0.65 + clampedHeadTilt * size * 0.05); // Reduced tilt effect
-      ctx.rotate(-clampedHeadRotation * 0.15); // Reduced sway so hat stays on head
+      // Position hat at top of head (relative to body center which is at 0,0 in current transform)
+      // Head is at -size * 0.5, so hat sits above that
+      const hatY = -size * 0.5 - size * 0.35; // Position above head center
+      ctx.translate(0, hatY);
+      
+      // Very minimal tilt for natural look - NOT affected by head rotation
+      const gentleSway = Math.sin(this.state.time * 0.02) * 0.03;
+      ctx.rotate(gentleSway);
+      
+      // Undo body scale so hat maintains proper proportions
+      const { facingScaleX, bodyStretch, bodyDynamics } = this.state;
+      const breathScale = 1 + Math.sin(bodyDynamics.breathPhase * Math.PI * 2) * 0.02;
+      const dynamicStretch = bodyStretch * bodyDynamics.stretch * breathScale;
+      ctx.scale(dynamicStretch / facingScaleX, 1 / dynamicStretch); // Inverse of body scale
+      
+      // Draw Santa hat with proper sizing
+      const hatSize = size * 0.9; // Slightly smaller relative to bee
+      
+      // Red cone
       ctx.fillStyle = '#DC2626';
       ctx.beginPath();
-      ctx.moveTo(-size * 0.35, 0);
-      ctx.lineTo(size * 0.35, 0);
-      ctx.lineTo(0, -size * 0.8);
+      ctx.moveTo(-hatSize * 0.3, 0);
+      ctx.lineTo(hatSize * 0.3, 0);
+      ctx.lineTo(hatSize * 0.05, -hatSize * 0.5);
+      ctx.lineTo(-hatSize * 0.05, -hatSize * 0.5);
       ctx.closePath();
       ctx.fill();
       ctx.strokeStyle = '#991B1B';
-      ctx.lineWidth = size * 0.05;
+      ctx.lineWidth = hatSize * 0.03;
       ctx.stroke();
+      
+      // White fur trim at base
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
-      ctx.ellipse(0, 0, size * 0.38, size * 0.15, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, hatSize * 0.35, hatSize * 0.1, 0, 0, Math.PI * 2);
       ctx.fill();
-      const pompomY = -size * 0.75;
+      
+      // Golden pompom at tip
+      const pompomY = -hatSize * 0.5;
       ctx.fillStyle = '#FFD700';
       ctx.beginPath();
-      ctx.arc(0, pompomY, size * 0.12, 0, Math.PI * 2);
+      ctx.arc(0, pompomY, hatSize * 0.1, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      
+      // Highlight on pompom
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
       ctx.beginPath();
-      ctx.arc(-size * 0.04, pompomY - size * 0.04, size * 0.05, 0, Math.PI * 2);
+      ctx.arc(-hatSize * 0.03, pompomY - hatSize * 0.03, hatSize * 0.04, 0, Math.PI * 2);
       ctx.fill();
+      
       ctx.restore();
     }
-    
-    ctx.restore(); // End head section
 
     ctx.restore(); // End main bee transform
   }
