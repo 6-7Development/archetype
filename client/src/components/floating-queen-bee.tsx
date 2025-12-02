@@ -588,16 +588,15 @@ export function FloatingQueenBee() {
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
       
-      // Update worker handler with queen position and velocity
-      const qCenterX = config.position.x + dimension / 2;
-      const qCenterY = config.position.y + dimension / 2;
-      beeController.workers.updateQueen(qCenterX, qCenterY, beeVelocity.x, beeVelocity.y);
+      // WORKER LOOP: All queen position data comes from beeController.getQueenState()
+      // which is updated by the main animation loop. This eliminates React state timing issues.
       
       // Update cursor position for attack targeting
       beeController.workers.updateCursor(mousePos.x, mousePos.y);
       
-      // Update unity formation positions (follows queen during emotes)
-      beeController.unity.updateFormation(qCenterX, qCenterY, deltaTime);
+      // Update unity formation positions using the SHARED queen state
+      const queenState = beeController.getQueenState();
+      beeController.unity.updateFormation(queenState.x, queenState.y, deltaTime);
       
       // Update seasonal light patterns (Christmas light chase/wave/twinkle effects)
       beeController.season.updatePatterns(deltaTime);
@@ -605,8 +604,7 @@ export function FloatingQueenBee() {
       // Run independent physics update for each worker bee
       beeController.workers.update(deltaTime);
       
-      // Update emote workers (temporary formation bees)
-      beeController.emoteWorkers.updateQueen(qCenterX, qCenterY);
+      // Update emote workers physics (position already set in main loop)
       beeController.emoteWorkers.update(deltaTime);
       
       // Get render state (position, animation, attack status)
@@ -642,11 +640,11 @@ export function FloatingQueenBee() {
   useEffect(() => {
     if (!isMounted) return;
     
-    const qCenterX = config.position.x + dimension / 2;
-    const qCenterY = config.position.y + dimension / 2;
+    // Use the SHARED queen state instead of calculating from React state
+    const queenState = beeController.getQueenState();
     
     // Notify unity controller of mode change
-    beeController.unity.handleModeChange(mode, qCenterX, qCenterY);
+    beeController.unity.handleModeChange(mode, queenState.x, queenState.y);
     
     // EMOTE WORKER SPAWNING: Spawn temporary bees for formations
     // This doesn't disturb regular workers that might be attacking
@@ -669,7 +667,7 @@ export function FloatingQueenBee() {
       // When exiting emote mode, fade out emote bees
       beeController.despawnEmoteBees();
     }
-  }, [mode, isMounted, config.position, dimension, beeController]);
+  }, [mode, isMounted, beeController]);
 
   // Track mouse/touch position AND velocity for predictive evasion
   useEffect(() => {
@@ -853,19 +851,18 @@ export function FloatingQueenBee() {
       const clampedX = Math.max(minX, Math.min(maxX, result.position.x));
       const clampedY = Math.max(minY, Math.min(maxY, result.position.y));
       
+      // SINGLE SOURCE OF TRUTH: Update the shared queen state
+      // This syncs ALL handlers (workers, emoteWorkers, movement controller) in one call
+      beeController.setQueenState(clampedX, clampedY, result.velocity.x, result.velocity.y);
+      
       // Convert center position back to top-left for rendering
       const newX = clampedX - halfDim;
       const newY = clampedY - halfDim;
       
-      // Update position through context
+      // Update React state for rendering only
       updatePosition(newX, newY);
       setBeeVelocity(result.velocity);
       updateAutonomousVelocity(result.velocity);
-      
-      // Update worker handler with CLAMPED queen position (not the unclamped result)
-      // This ensures workers orbit around where the queen actually is, not where physics wanted it to be
-      beeController.workers.updateQueen(clampedX, clampedY, result.velocity.x, result.velocity.y);
-      beeController.emoteWorkers.updateQueen(clampedX, clampedY);
       
       // Update facing direction based on velocity
       const newFacing = beeController.direction.getFacing();

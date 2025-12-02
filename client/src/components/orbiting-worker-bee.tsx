@@ -96,11 +96,12 @@ export function OrbitingWorkerBee({
   trailPositions = [],
   velocity = { x: 0, y: 0 },
 }: OrbitingWorkerBeeProps) {
-  // Worker bees should be ~45% the size of the queen bee (queen is ~80-100px)
-  // Base size 20px makes workers appropriately smaller than queen
-  // MINIMUM SIZE: Enforce min 0.85 so workers never shrink too small to see
-  const clampedSize = Math.max(0.85, Math.min(1.3, size));
-  const baseSize = 20 * clampedSize;
+  // Worker bees should be substantial and visible - NOT tiny
+  // Base size 35px makes workers clearly visible as individual bees
+  // MINIMUM SIZE: Enforce min 1.0 so workers are never smaller than 35px
+  // Maximum size 1.4 allows for some variation but keeps them proportional
+  const clampedSize = Math.max(1.0, Math.min(1.4, size));
+  const baseSize = 35 * clampedSize; // 35-49px range
   const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || isAttacking;
   const isHappy = mode === 'EXCITED' || mode === 'HELPFUL' || mode === 'CELEBRATING';
   const isSleepy = mode === 'SLEEPY' || mode === 'RESTING';

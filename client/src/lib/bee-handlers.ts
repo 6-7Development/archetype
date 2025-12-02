@@ -2927,6 +2927,17 @@ export class SwarmUnityController {
 }
 
 // ============================================
+// SHARED QUEEN STATE - Single source of truth for all handlers
+// ============================================
+export interface QueenState {
+  x: number;        // Queen center X (clamped)
+  y: number;        // Queen center Y (clamped)
+  vx: number;       // Velocity X
+  vy: number;       // Velocity Y
+  dimension: number; // Queen dimension for orbit calculations
+}
+
+// ============================================
 // COMBINED BEE CONTROLLER
 // ============================================
 export class BeeController {
@@ -2942,6 +2953,17 @@ export class BeeController {
   public unity: SwarmUnityController;
   public headAim: HeadAimHandler;
   public bodyDynamics: BodyDynamicsHandler;
+  
+  // Shared queen state - THE SINGLE SOURCE OF TRUTH
+  // Updated by main animation loop AFTER clamping
+  // All worker/emote/unity handlers should read from this
+  private queenState: QueenState = {
+    x: 400,
+    y: 300,
+    vx: 0,
+    vy: 0,
+    dimension: 80,
+  };
 
   constructor() {
     this.direction = new DirectionHandler();
@@ -2958,10 +2980,35 @@ export class BeeController {
     this.bodyDynamics = new BodyDynamicsHandler();
   }
   
+  // SET THE SINGLE SOURCE OF TRUTH for queen position
+  // Call this from the main animation loop AFTER clamping
+  // All worker/emote/unity handlers will read from this
+  setQueenState(x: number, y: number, vx: number, vy: number): void {
+    this.queenState.x = x;
+    this.queenState.y = y;
+    this.queenState.vx = vx;
+    this.queenState.vy = vy;
+    
+    // Sync all handlers with the CLAMPED queen position
+    this.workers.updateQueen(x, y, vx, vy);
+    this.emoteWorkers.updateQueen(x, y);
+    this.movement.setPosition(x, y); // Keep movement controller in sync
+  }
+  
+  // Get the current queen state (for reading from handlers)
+  getQueenState(): QueenState {
+    return this.queenState;
+  }
+  
+  // Set queen dimension (for orbit calculations)
+  setQueenDimension(dimension: number): void {
+    this.queenState.dimension = dimension;
+  }
+  
   // Spawn emote bees for queen formation (doesn't disturb regular attacking workers)
   spawnEmoteBees(formation: EmoteFormation, count: number = 8): void {
-    const pos = this.movement.getPosition();
-    this.emoteWorkers.spawnForFormation(pos.x, pos.y, formation, count);
+    // Use the shared queen state instead of movement.getPosition()
+    this.emoteWorkers.spawnForFormation(this.queenState.x, this.queenState.y, formation, count);
   }
   
   // Despawn emote bees (fade out)
