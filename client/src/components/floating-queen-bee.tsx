@@ -839,20 +839,6 @@ export function FloatingQueenBee() {
             )}
           </AnimatePresence>
 
-          {/* Error overlay */}
-          <AnimatePresence>
-            {(mode === 'ERROR' || mode === 'CONFUSED') && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0.2, 0.5, 0.2] }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-                className="absolute inset-0 bg-red-500/30 rounded-full flex items-center justify-center"
-              >
-                <AlertTriangle className="w-5 h-5 text-red-500" />
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           {/* Celebrating confetti */}
           <AnimatePresence>
