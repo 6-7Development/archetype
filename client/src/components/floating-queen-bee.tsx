@@ -9,6 +9,9 @@
  * - Woosh trail effects during fast movement
  * - Triggers FRENZY mode when user gets too close (<50px)
  * - Seasonal themes (Christmas decorations!)
+ * - DIRECTIONAL FACING: Bee faces direction of movement (left/right/up/down)
+ * - TOUCH REACTIONS: Funny reactions when touched on mobile
+ * - CONTEXT-AWARE THOUGHTS: Thoughts based on project errors, activity, and advice
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -19,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChristmasDecorations } from './christmas-decorations';
+import { BeeController, type FacingState, type TouchReaction } from '@/lib/bee-handlers';
 
 // Seasonal Detection - Check if it's Christmas season (Nov 15 - Jan 5)
 function isChristmasSeason(): boolean {
@@ -548,6 +552,8 @@ export function FloatingQueenBee() {
   const [lastFrenzyTime, setLastFrenzyTime] = useState(0);
   const [currentThought, setCurrentThought] = useState('');
   const [showThought, setShowThought] = useState(false);
+  const [facing, setFacing] = useState<FacingState>('FRONT');
+  const [touchReaction, setTouchReaction] = useState<TouchReaction | null>(null);
   const thoughtTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -558,6 +564,13 @@ export function FloatingQueenBee() {
   const lastMousePosRef = useRef({ x: 0, y: 0, timestamp: Date.now() });
   const wanderAngleRef = useRef(Math.random() * Math.PI * 2);
   const canvasRef = useRef<any>(null);
+  
+  // BeeController for directional facing and touch reactions
+  const beeControllerRef = useRef<BeeController | null>(null);
+  if (!beeControllerRef.current) {
+    beeControllerRef.current = new BeeController();
+  }
+  const beeController = beeControllerRef.current;
   
   const NUM_WORKERS = swarmState.workerCount || 8;
   
@@ -692,6 +705,44 @@ export function FloatingQueenBee() {
         const touch = e.touches[0];
         lastMousePosRef.current = { x: touch.clientX, y: touch.clientY, timestamp: Date.now() };
         setMousePos({ x: touch.clientX, y: touch.clientY });
+        
+        // Check if touch is near the bee for funny reactions
+        const beeCenter = {
+          x: config.position.x + dimension / 2,
+          y: config.position.y + dimension / 2,
+        };
+        const touchDistance = Math.sqrt(
+          Math.pow(touch.clientX - beeCenter.x, 2) + 
+          Math.pow(touch.clientY - beeCenter.y, 2)
+        );
+        
+        // Trigger funny reaction if touching near the bee
+        if (touchDistance < dimension) {
+          const reaction = beeController.reaction.handleTouch(
+            touch.clientX, 
+            touch.clientY, 
+            beeCenter.x, 
+            beeCenter.y
+          );
+          setTouchReaction(reaction);
+          
+          // Show funny thought based on reaction
+          const reactionThoughts: Record<TouchReaction, string> = {
+            'GIGGLE': "Hehe! That tickles! 🐝",
+            'SPIN': "Wheee! Again!",
+            'SHAKE': "Hey! Stop poking me!",
+            'SURPRISED': "Oh! You startled me!",
+            'ZOOM_AWAY': "Can't catch me!",
+          };
+          setCurrentThought(reactionThoughts[reaction]);
+          setShowThought(true);
+          
+          if (thoughtTimeoutRef.current) clearTimeout(thoughtTimeoutRef.current);
+          thoughtTimeoutRef.current = setTimeout(() => {
+            setShowThought(false);
+            setTouchReaction(null);
+          }, 2000);
+        }
       }
     };
     
@@ -849,6 +900,10 @@ export function FloatingQueenBee() {
       updatePosition(clamped.x, clamped.y);
       setBeeVelocity({ x: velocity.x, y: velocity.y });
       updateAutonomousVelocity({ x: velocity.x, y: velocity.y });
+      
+      // Update facing direction based on velocity
+      const newFacing = beeController.direction.update(velocity.x, velocity.y);
+      setFacing(newFacing);
       
       if (speed > 3) {
         const newParticle: WooshParticle = {
@@ -1232,6 +1287,7 @@ export function FloatingQueenBee() {
               height={dimension * 0.95}
               velocity={beeVelocity}
               isChristmas={isChristmas}
+              facing={facing}
             />
           </div>
 
