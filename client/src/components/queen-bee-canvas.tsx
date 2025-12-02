@@ -1,10 +1,11 @@
 /**
  * Scout Queen Bee Animation - Canvas-based with multiple modes
- * Converts user's JavaScript implementation to React
+ * Supports directional facing (left, right, up, down) based on movement
  */
 
 import { useEffect, useRef, forwardRef } from "react";
 import { cn } from "@/lib/utils";
+import type { FacingState } from "@/lib/bee-handlers";
 
 export type BeeMode = "IDLE" | "LISTENING" | "TYPING" | "THINKING" | "CODING" | "BUILDING" | "SUCCESS" | "ERROR" | "SWARM" | "FRENZY";
 
@@ -15,6 +16,7 @@ interface QueenBeeCanvasProps {
   className?: string;
   velocity?: { x: number; y: number };
   isChristmas?: boolean;
+  facing?: FacingState;
 }
 
 class AgentBeeAnimation {
@@ -43,7 +45,7 @@ class AgentBeeAnimation {
         TYPING: "#38bdf8",
         SUCCESS: "#10b981",
         ERROR: "#ffd700",
-        FRENZY: "#ff1a1a", // Aggressive red for frenzy mode
+        FRENZY: "#ff1a1a",
       },
       workerCount: 8,
     };
@@ -59,6 +61,11 @@ class AgentBeeAnimation {
       smoothVelocity: { x: 0, y: 0 },
       bodyBend: 0,
       bodyStretch: 1,
+      facing: 'FRONT' as FacingState,
+      targetFacing: 'FRONT' as FacingState,
+      facingRotation: 0,
+      facingScaleX: 1,
+      facingTiltY: 0,
     };
 
     this.workers = [];
@@ -132,6 +139,40 @@ class AgentBeeAnimation {
     this.state.velocity = { x: vx, y: vy };
   }
 
+  setFacing(facing: FacingState) {
+    this.state.targetFacing = facing;
+  }
+
+  updateFacingAnimation() {
+    const { targetFacing, facing } = this.state;
+    
+    // Target values for each facing direction
+    const facingConfigs: Record<FacingState, { rotation: number; scaleX: number; tiltY: number }> = {
+      'FRONT': { rotation: 0, scaleX: 1, tiltY: 0 },
+      'LEFT': { rotation: -0.2, scaleX: -1, tiltY: 0 },
+      'RIGHT': { rotation: 0.2, scaleX: 1, tiltY: 0 },
+      'UP': { rotation: 0, scaleX: 1, tiltY: -0.15 },
+      'DOWN': { rotation: 0, scaleX: 1, tiltY: 0.15 },
+      'UP_LEFT': { rotation: -0.15, scaleX: -1, tiltY: -0.1 },
+      'UP_RIGHT': { rotation: 0.15, scaleX: 1, tiltY: -0.1 },
+      'DOWN_LEFT': { rotation: -0.15, scaleX: -1, tiltY: 0.1 },
+      'DOWN_RIGHT': { rotation: 0.15, scaleX: 1, tiltY: 0.1 },
+    };
+    
+    const target = facingConfigs[targetFacing] || facingConfigs['FRONT'];
+    const smoothing = 0.08; // Smooth interpolation
+    
+    // Smoothly interpolate towards target values
+    this.state.facingRotation += (target.rotation - this.state.facingRotation) * smoothing;
+    this.state.facingScaleX += (target.scaleX - this.state.facingScaleX) * smoothing;
+    this.state.facingTiltY += (target.tiltY - this.state.facingTiltY) * smoothing;
+    
+    // Update current facing when close enough
+    if (Math.abs(this.state.facingScaleX - target.scaleX) < 0.1) {
+      this.state.facing = targetFacing;
+    }
+  }
+
   updateRagdollPhysics() {
     const { velocity, smoothVelocity } = this.state;
     const smoothing = 0.15;
@@ -156,6 +197,7 @@ class AgentBeeAnimation {
   update() {
     this.state.time += 1;
     this.updateRagdollPhysics();
+    this.updateFacingAnimation();
     const s = this.state.scale;
     const mode = this.state.mode;
 
@@ -391,14 +433,19 @@ class AgentBeeAnimation {
     const ctx = this.ctx;
     ctx.save();
     
-    const { bodyBend, bodyStretch, smoothVelocity } = this.state;
+    const { bodyBend, bodyStretch, smoothVelocity, facingRotation, facingScaleX, facingTiltY } = this.state;
     const speed = Math.sqrt(smoothVelocity.x ** 2 + smoothVelocity.y ** 2);
     
+    // Smooth bobbing hover animation
     const hover = Math.sin(this.state.time * 0.05) * (size * 0.1);
-    ctx.translate(x, y + hover);
+    const facingHover = facingTiltY * size * 0.3; // Extra vertical offset when looking up/down
+    ctx.translate(x, y + hover + facingHover);
     
-    ctx.rotate(bodyBend);
-    ctx.scale(1 / bodyStretch, bodyStretch);
+    // Apply facing rotation (smooth transition when turning)
+    ctx.rotate(bodyBend + facingRotation);
+    
+    // Apply horizontal flip when facing left (smooth scale transition)
+    ctx.scale(facingScaleX / bodyStretch, bodyStretch);
     
     const dragTilt = Math.atan2(smoothVelocity.y, smoothVelocity.x) * 0.15;
     const wobble = speed > 2 ? Math.sin(this.state.time * 0.3) * speed * 0.02 : 0;
@@ -689,7 +736,7 @@ export interface QueenBeeCanvasHandle {
 }
 
 const QueenBeeCanvasComponent = forwardRef<QueenBeeCanvasHandle, QueenBeeCanvasProps>(
-  ({ mode = "IDLE", width = 100, height = 100, className, velocity = { x: 0, y: 0 }, isChristmas = false }, ref) => {
+  ({ mode = "IDLE", width = 100, height = 100, className, velocity = { x: 0, y: 0 }, isChristmas = false, facing = 'FRONT' }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animationRef = useRef<AgentBeeAnimation | null>(null);
@@ -719,6 +766,13 @@ const QueenBeeCanvasComponent = forwardRef<QueenBeeCanvasHandle, QueenBeeCanvasP
         animationRef.current.setVelocity(velocity.x, velocity.y);
       }
     }, [velocity.x, velocity.y]);
+
+    // Update facing direction for directional animation
+    useEffect(() => {
+      if (animationRef.current) {
+        animationRef.current.setFacing(facing);
+      }
+    }, [facing]);
 
     // Update Christmas hat state
     useEffect(() => {
