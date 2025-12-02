@@ -199,6 +199,7 @@ function HeroSection() {
           className="font-bold mb-4 sm:mb-6 leading-[1.1] tracking-tight"
           style={{ fontSize: "clamp(2.25rem, 7vw, 5rem)" }}
           data-testid={HERO.headline.testId}
+          data-snow-target="hero-title"
         >
           <span className={`bg-gradient-to-r ${THEME.gradients.primary} bg-clip-text text-transparent text-balance inline-block`}>
             {HERO.headline.text}
@@ -291,6 +292,7 @@ function PlatformSection() {
           <h2
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 text-foreground break-words"
             data-testid={PLATFORM_SECTION.testId}
+            data-snow-target="platform-title"
           >
             {PLATFORM_SECTION.title}
           </h2>
@@ -362,6 +364,7 @@ function FeaturesSection() {
           <h2
             className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 break-words"
             data-testid={FEATURES_SECTION.testId}
+            data-snow-target="features-title"
           >
             <span className={`bg-gradient-to-r ${THEME.gradients.primary} bg-clip-text text-transparent`}>
               {FEATURES_SECTION.title}
@@ -448,6 +451,7 @@ function CTASection() {
             <h2
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-5 sm:mb-6 break-words"
               data-testid={CTA_SECTION.headline.testId}
+              data-snow-target="cta-title"
             >
               <span className={`bg-gradient-to-r ${THEME.gradients.primary} bg-clip-text text-transparent`}>
                 {CTA_SECTION.headline.text}
