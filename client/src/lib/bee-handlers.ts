@@ -127,10 +127,10 @@ export class DirectionHandler {
 // ============================================
 export interface HeadAimState {
   rotation: number;      // Head rotation angle (-45 to +45 degrees)
-  tiltX: number;         // Head tilt left/right
-  tiltY: number;         // Head tilt up/down
-  blinkPhase: number;    // Blink animation phase
+  tilt: number;          // Head tilt up/down (combined from tiltY)
   lookIntensity: number; // How intently looking (0-1)
+  isBlinking: boolean;   // Whether currently in blink animation
+  blinkProgress: number; // Blink animation progress (0-1)
 }
 
 export class HeadAimHandler {
@@ -222,10 +222,10 @@ export class HeadAimHandler {
     
     return {
       rotation: this.currentRotation,
-      tiltX: this.currentTiltX,
-      tiltY: this.currentTiltY,
-      blinkPhase: this.blinkPhase,
+      tilt: this.currentTiltY,
       lookIntensity: this.lookIntensity,
+      isBlinking: this.blinkPhase > 0,
+      blinkProgress: this.blinkPhase,
     };
   }
   
@@ -240,10 +240,10 @@ export class HeadAimHandler {
   getState(): HeadAimState {
     return {
       rotation: this.currentRotation,
-      tiltX: this.currentTiltX,
-      tiltY: this.currentTiltY,
-      blinkPhase: this.blinkPhase,
+      tilt: this.currentTiltY,
       lookIntensity: this.lookIntensity,
+      isBlinking: this.blinkPhase > 0,
+      blinkProgress: this.blinkPhase,
     };
   }
 }
@@ -256,7 +256,7 @@ export interface BodyDynamicsState {
   stretch: number;       // Body stretch factor (1 = normal)
   bank: number;          // Banking on curves
   wobble: number;        // Micro-wobble for organic feel
-  breathe: number;       // Subtle breathing animation
+  breathPhase: number;   // Subtle breathing animation phase (0-1)
 }
 
 export class BodyDynamicsHandler {
@@ -318,14 +318,14 @@ export class BodyDynamicsHandler {
     
     const wobbleAmount = speed < 2 ? 0.8 : 0.3; // More wobble when slow
     const wobble = Math.sin(this.wobblePhase) * wobbleAmount;
-    const breathe = Math.sin(this.breathePhase) * 0.02 + 1;
+    const breatheNorm = (Math.sin(this.breathePhase) + 1) / 2; // Normalize to 0-1 range
     
     return {
       lean: this.lean,
       stretch: this.stretch,
       bank: this.bank,
       wobble: wobble,
-      breathe: breathe,
+      breathPhase: breatheNorm,
     };
   }
   
@@ -345,7 +345,7 @@ export class BodyDynamicsHandler {
       stretch: this.stretch,
       bank: this.bank,
       wobble: Math.sin(this.wobblePhase) * (this.stretch < 1.05 ? 0.8 : 0.3),
-      breathe: Math.sin(this.breathePhase) * 0.02 + 1,
+      breathPhase: (Math.sin(this.breathePhase) + 1) / 2, // Normalize to 0-1 range
     };
   }
 }
