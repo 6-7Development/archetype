@@ -1131,8 +1131,8 @@ export function FloatingQueenBee() {
         )}
       </AnimatePresence>
 
-      {/* CHRISTMAS: Festive Decorations - Bulbs, Wreaths, Ornaments */}
-      {isChristmas && <ChristmasDecorations enabled={isChristmas} bulbCount={25} wreathCount={6} />}
+      {/* CHRISTMAS: Festive Decorations - Corner Wreaths, Edge Bulbs, Subtle Ornaments */}
+      {isChristmas && <ChristmasDecorations enabled={isChristmas} />}
 
       {/* CHRISTMAS: Falling Snowflakes (only render on client after mount) */}
       {isChristmas && isMounted && snowflakes.map((flake) => (

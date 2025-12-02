@@ -1,152 +1,151 @@
 /**
- * Christmas Decorations Component
- * ==============================
- * Festive bulbs, wreaths, ornaments, and snow accumulation effects
- * Works across all pages with RBAC support
+ * Christmas Decorations Component - Optimized for Performance
+ * =========================================================
+ * Minimal, aesthetic placement like major websites (Netflix, Apple, Spotify)
+ * - Wreaths in corners (partially off-screen)
+ * - Sparse bulbs along edges
+ * - 4 ornaments max (placed subtly)
  */
 
 import { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
-const BULB_COLORS = ['#FF1744', '#F50057', '#D500F9', '#2979F3', '#00B0FF', '#00E5FF', '#1DE9B6', '#00E676', '#76FF03', '#FFD600', '#FFCA28', '#FFA726'];
+const BULB_COLORS = ['#FF1744', '#2979F3', '#00E676', '#FFD600', '#FF6E40', '#1DE9B6'];
 
 interface ChristmasBulb {
   id: number;
   x: number;
   y: number;
-  size: number;
-  delay: number;
-  duration: number;
   color: string;
-  brightness: number;
 }
 
 interface ChristmasDecorationsProps {
   enabled?: boolean;
-  bulbCount?: number;
-  wreathCount?: number;
   className?: string;
 }
 
-// Christmas Bulb Component
+// Minimal Christmas Bulb - CSS animation for performance
 function ChristmasBulb({ bulb }: { bulb: ChristmasBulb }) {
+  const keyframes = `
+    @keyframes bulb-flash-${bulb.id} {
+      0%, 100% { opacity: 0.4; box-shadow: 0 0 8px ${bulb.color}; }
+      50% { opacity: 1; box-shadow: 0 0 16px ${bulb.color}80; }
+    }
+  `;
+
   return (
-    <motion.div
-      className="fixed pointer-events-none rounded-full shadow-lg"
-      style={{
-        left: `${bulb.x}%`,
-        top: `${bulb.y}%`,
-        width: `${bulb.size}px`,
-        height: `${bulb.size}px`,
-        background: bulb.color,
-        zIndex: 80,
-      }}
-      animate={{
-        opacity: [0.3, 1, 0.3],
-        scale: [0.8, 1, 0.8],
-        boxShadow: [
-          `0 0 5px ${bulb.color}`,
-          `0 0 20px ${bulb.color}80`,
-          `0 0 5px ${bulb.color}`,
-        ],
-      }}
-      transition={{
-        duration: bulb.duration,
-        delay: bulb.delay,
-        repeat: Infinity,
-        ease: 'sine',
-      }}
-    />
+    <>
+      <style>{keyframes}</style>
+      <div
+        className="fixed pointer-events-none rounded-full"
+        style={{
+          left: `${bulb.x}%`,
+          top: `${bulb.y}%`,
+          width: '6px',
+          height: '6px',
+          background: bulb.color,
+          zIndex: 80,
+          animation: `bulb-flash-${bulb.id} 2s infinite ease-in-out`,
+        }}
+      />
+    </>
   );
 }
 
-// Wreath Component
-function ChristmasWreath() {
+// Corner Wreath - Positioned partially off-screen
+function CornerWreath({ corner }: { corner: 'tl' | 'tr' | 'bl' | 'br' }) {
+  const positions = {
+    tl: { top: '-20px', left: '-20px', rotate: 0 },
+    tr: { top: '-20px', right: '-20px', rotate: 45 },
+    bl: { bottom: '-20px', left: '-20px', rotate: -45 },
+    br: { bottom: '-20px', right: '-20px', rotate: 90 },
+  };
+
+  const pos = positions[corner];
+
   return (
     <motion.svg
-      className="pointer-events-none"
-      viewBox="0 0 100 100"
-      width="60"
-      height="60"
-      animate={{ rotate: [0, 5, -5, 0] }}
-      transition={{ duration: 4, repeat: Infinity }}
-      style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }}
+      className="fixed pointer-events-none"
+      viewBox="0 0 80 80"
+      width="80"
+      height="80"
+      animate={{ rotate: [pos.rotate, pos.rotate + 5, pos.rotate - 5, pos.rotate] }}
+      transition={{ duration: 6, repeat: Infinity, ease: 'ease-in-out' }}
+      style={{
+        ...pos,
+        zIndex: 75,
+        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
+      }}
     >
       {/* Wreath circle */}
-      <circle cx="50" cy="50" r="40" fill="none" stroke="#22863A" strokeWidth="12" opacity="0.8" />
-      <circle cx="50" cy="50" r="45" fill="none" stroke="#2E7D32" strokeWidth="2" opacity="0.5" />
-      
-      {/* Holly leaves - top */}
-      <path d="M 50 15 Q 55 18 60 20 Q 58 25 50 28 Q 42 25 40 20 Q 45 18 50 15" fill="#1B5E20" />
-      <path d="M 50 15 Q 60 12 70 15 Q 68 22 60 25 Q 55 18 50 15" fill="#2E7D32" />
-      
-      {/* Holly leaves - bottom */}
-      <path d="M 50 85 Q 55 82 60 80 Q 58 75 50 72 Q 42 75 40 80 Q 45 82 50 85" fill="#1B5E20" />
-      <path d="M 50 85 Q 60 88 70 85 Q 68 78 60 75 Q 55 82 50 85" fill="#2E7D32" />
-      
-      {/* Holly leaves - left */}
-      <path d="M 15 50 Q 18 55 20 60 Q 25 58 28 50 Q 25 42 20 40 Q 18 45 15 50" fill="#1B5E20" />
-      <path d="M 15 50 Q 12 60 15 70 Q 22 68 25 60 Q 18 55 15 50" fill="#2E7D32" />
-      
-      {/* Holly leaves - right */}
-      <path d="M 85 50 Q 82 55 80 60 Q 75 58 72 50 Q 75 42 80 40 Q 82 45 85 50" fill="#1B5E20" />
-      <path d="M 85 50 Q 88 60 85 70 Q 78 68 75 60 Q 82 55 85 50" fill="#2E7D32" />
-      
-      {/* Red berries */}
-      {[0, 60, 120, 180, 240, 300].map((angle) => (
-        <motion.circle
-          key={angle}
-          cx={50 + 32 * Math.cos((angle * Math.PI) / 180)}
-          cy={50 + 32 * Math.sin((angle * Math.PI) / 180)}
-          r="4"
-          fill="#DC2626"
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{
-            duration: 1.5,
-            delay: angle / 100,
-            repeat: Infinity,
-          }}
-        />
-      ))}
-      
-      {/* Gold bow */}
-      <circle cx="50" cy="20" r="8" fill="#FFD700" />
-      <rect x="42" y="25" width="4" height="12" fill="#FFD700" rx="2" />
-      <rect x="54" y="25" width="4" height="12" fill="#FFD700" rx="2" />
+      <circle cx="40" cy="40" r="32" fill="none" stroke="#22863A" strokeWidth="10" opacity="0.85" />
+      <circle cx="40" cy="40" r="36" fill="none" stroke="#2E7D32" strokeWidth="1.5" opacity="0.4" />
+
+      {/* Holly leaves - simplified */}
+      <path d="M 40 10 Q 45 12 50 14 Q 48 18 40 20 Q 32 18 30 14 Q 35 12 40 10" fill="#1B5E20" />
+      <path d="M 40 70 Q 45 68 50 66 Q 48 62 40 60 Q 32 62 30 66 Q 35 68 40 70" fill="#1B5E20" />
+      <path d="M 10 40 Q 12 45 14 50 Q 18 48 20 40 Q 18 32 14 30 Q 12 35 10 40" fill="#1B5E20" />
+      <path d="M 70 40 Q 68 45 66 50 Q 62 48 60 40 Q 62 32 66 30 Q 68 35 70 40" fill="#1B5E20" />
+
+      {/* Red berries - 4 points */}
+      {[0, 90, 180, 270].map((angle) => {
+        const rad = (angle * Math.PI) / 180;
+        return (
+          <circle
+            key={angle}
+            cx={40 + 28 * Math.cos(rad)}
+            cy={40 + 28 * Math.sin(rad)}
+            r="3.5"
+            fill="#DC2626"
+          />
+        );
+      })}
+
+      {/* Gold bow at top */}
+      <circle cx="40" cy="12" r="6" fill="#FFD700" />
+      <rect x="34" y="17" width="2.5" height="8" fill="#FFD700" rx="1" />
+      <rect x="46" y="17" width="2.5" height="8" fill="#FFD700" rx="1" />
     </motion.svg>
   );
 }
 
-// Ornament Component
-function ChristmasOrnament({ delay, x, y }: { delay: number; x: number; y: number }) {
-  const colors = ['#FF1744', '#2979F3', '#00E676', '#FFD600', '#FF6E40'];
-  const color = colors[Math.floor(delay * 10) % colors.length];
-  
+// Floating Ornament - 4 total, positioned in discrete locations
+function FloatingOrnament({ index }: { index: number }) {
+  const positions = [
+    { x: '8%', y: '15%' },
+    { x: '92%', y: '12%' },
+    { x: '5%', y: '82%' },
+    { x: '88%', y: '85%' },
+  ];
+
+  const colors = ['#FF1744', '#2979F3', '#00E676', '#FFD600'];
+  const pos = positions[index];
+  const color = colors[index % colors.length];
+
   return (
     <motion.div
       className="fixed pointer-events-none"
-      style={{ left: `${x}%`, top: `${y}%`, zIndex: 75 }}
+      style={{ left: pos.x, top: pos.y, zIndex: 75 }}
       animate={{
-        y: [0, -10, 0],
+        y: [0, -8, 0],
         rotate: [0, 360],
       }}
       transition={{
-        duration: 3 + delay,
-        delay: delay * 0.5,
+        duration: 4 + index * 0.3,
+        delay: index * 0.5,
         repeat: Infinity,
         repeatType: 'reverse',
       }}
     >
-      <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="28" height="36" viewBox="0 0 28 36" fill="none">
         {/* Cap */}
-        <rect x="10" y="0" width="12" height="4" fill="#FFD700" rx="1" />
+        <rect x="8" y="0" width="12" height="3.5" fill="#FFD700" rx="1" />
         {/* Ball */}
-        <circle cx="16" cy="20" r="12" fill={color} />
-        <circle cx="12" cy="16" r="3" fill="white" opacity="0.4" />
+        <circle cx="14" cy="18" r="10" fill={color} />
         {/* Shine */}
-        <ellipse cx="16" cy="18" rx="2" ry="3" fill="white" opacity="0.6" />
+        <circle cx="11" cy="15" r="2.5" fill="white" opacity="0.3" />
         {/* String */}
-        <line x1="16" y1="4" x2="16" y2="8" stroke="#FFD700" strokeWidth="1" />
+        <line x1="14" y1="3.5" x2="14" y2="7" stroke="#FFD700" strokeWidth="0.8" />
       </svg>
     </motion.div>
   );
@@ -154,96 +153,54 @@ function ChristmasOrnament({ delay, x, y }: { delay: number; x: number; y: numbe
 
 export function ChristmasDecorations({
   enabled = true,
-  bulbCount = 20,
-  wreathCount = 4,
   className = '',
 }: ChristmasDecorationsProps) {
-  // Generate stable bulb positions for SSR compatibility
+  // Generate sparse bulbs along edges only
   const bulbs = useMemo(() => {
     const positions: ChristmasBulb[] = [];
-    for (let i = 0; i < bulbCount; i++) {
+
+    // Top edge - 7 bulbs spaced out
+    for (let i = 0; i < 7; i++) {
       positions.push({
         id: i,
-        x: (i * 37.5) % 100, // Distribute across width
-        y: 5 + ((i * 13) % 80), // Distribute across height (mostly top/sides)
-        size: 8 + (i % 4) * 2, // Vary sizes: 8, 10, 12, 14px
-        delay: (i * 0.2) % 2,
-        duration: 1 + (i % 3) * 0.5, // 1, 1.5, or 2 seconds
+        x: 5 + i * 13,
+        y: 2,
         color: BULB_COLORS[i % BULB_COLORS.length],
-        brightness: 0.7 + (i % 3) * 0.15,
       });
     }
+
+    // Bottom edge - 7 bulbs spaced out
+    for (let i = 0; i < 7; i++) {
+      positions.push({
+        id: 7 + i,
+        x: 5 + i * 13,
+        y: 98,
+        color: BULB_COLORS[(i + 2) % BULB_COLORS.length],
+      });
+    }
+
     return positions;
-  }, [bulbCount]);
-
-  // Generate wreath positions
-  const wreaths = useMemo(() => {
-    const pos = [];
-    for (let i = 0; i < wreathCount; i++) {
-      pos.push({
-        id: i,
-        x: (i * 25) % 100,
-        y: i % 2 === 0 ? 10 : 85, // Top and bottom
-      });
-    }
-    return pos;
-  }, [wreathCount]);
-
-  // Generate ornament positions
-  const ornaments = useMemo(() => {
-    const pos = [];
-    for (let i = 0; i < 12; i++) {
-      pos.push({
-        id: i,
-        x: (i * 8.33) % 100,
-        y: 12 + ((i * 17) % 60),
-        delay: i * 0.1,
-      });
-    }
-    return pos;
   }, []);
 
   if (!enabled) return null;
 
   return (
     <div className={`fixed inset-0 pointer-events-none z-[75] ${className}`}>
-      <AnimatePresence>
-        {/* Christmas Bulbs - Flashing lights */}
-        <div className="absolute inset-0">
-          {bulbs.map((bulb) => (
-            <ChristmasBulb key={bulb.id} bulb={bulb} />
-          ))}
-        </div>
+      {/* Corner Wreaths */}
+      <CornerWreath corner="tl" />
+      <CornerWreath corner="tr" />
+      <CornerWreath corner="bl" />
+      <CornerWreath corner="br" />
 
-        {/* Wreaths */}
-        <div className="absolute inset-0">
-          {wreaths.map((wreath) => (
-            <motion.div
-              key={`wreath-${wreath.id}`}
-              className="absolute"
-              style={{
-                left: `${wreath.x}%`,
-                top: `${wreath.y}%`,
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              <ChristmasWreath />
-            </motion.div>
-          ))}
-        </div>
+      {/* Sparse Bulbs - Top and Bottom edges only */}
+      {bulbs.map((bulb) => (
+        <ChristmasBulb key={bulb.id} bulb={bulb} />
+      ))}
 
-        {/* Ornaments */}
-        <div className="absolute inset-0">
-          {ornaments.map((ornament) => (
-            <ChristmasOrnament
-              key={`ornament-${ornament.id}`}
-              delay={ornament.delay}
-              x={ornament.x}
-              y={ornament.y}
-            />
-          ))}
-        </div>
-      </AnimatePresence>
+      {/* 4 Ornaments in discrete positions */}
+      {[0, 1, 2, 3].map((index) => (
+        <FloatingOrnament key={`ornament-${index}`} index={index} />
+      ))}
     </div>
   );
 }
