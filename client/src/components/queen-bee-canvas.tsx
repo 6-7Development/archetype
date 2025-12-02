@@ -885,7 +885,7 @@ const QueenBeeCanvasComponent = forwardRef<QueenBeeCanvasHandle, QueenBeeCanvasP
     return (
       <div
         ref={containerRef}
-        className={cn("relative overflow-hidden", className)}
+        className={cn("relative overflow-visible", className)}
         style={{ width: `${width}px`, height: `${height}px`, background: 'transparent' }}
         data-testid="queen-bee-canvas"
       >

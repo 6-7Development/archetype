@@ -1153,7 +1153,7 @@ export function FloatingQueenBee() {
       {/* Main Queen Bee Container - Autonomous AI mascot, fully transparent, NON-INTERACTIVE */}
       <motion.div
         ref={containerRef}
-        className="fixed z-[100] select-none touch-none cursor-default pointer-events-none"
+        className="fixed z-[100] select-none touch-none cursor-default pointer-events-none overflow-visible"
         style={{
           left: config.position.x,
           top: config.position.y,
@@ -1162,6 +1162,7 @@ export function FloatingQueenBee() {
           background: 'transparent',
           border: 'none',
           boxShadow: 'none',
+          overflow: 'visible',
         }}
         animate={{
           scale: isEvading ? 1.12 : mode === 'SLEEPY' ? 0.95 : isFrenzyMode ? 1.15 : 1,
@@ -1203,9 +1204,9 @@ export function FloatingQueenBee() {
           )}
         </AnimatePresence>
 
-        {/* Main container - FULLY TRANSPARENT, NO BACKGROUND, NO BOX SHADOW */}
+        {/* Main container - FULLY TRANSPARENT, NO BACKGROUND, NO BOX SHADOW, OVERFLOW VISIBLE for wings */}
         <div 
-          className="relative w-full h-full pointer-events-none"
+          className="relative w-full h-full pointer-events-none overflow-visible"
           style={{
             background: 'transparent',
             border: 'none',
@@ -1214,12 +1215,12 @@ export function FloatingQueenBee() {
           }}
         >
           {/* Queen Bee Canvas - FULLY TRANSPARENT overlay, larger for better visibility */}
-          <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'transparent' }}>
+          <div className="absolute inset-0 flex items-center justify-center overflow-visible" style={{ background: 'transparent' }}>
             <QueenBeeCanvas
               ref={canvasRef}
               mode={canvasMode}
-              width={dimension * 0.95}
-              height={dimension * 0.95}
+              width={dimension * 1.3}
+              height={dimension * 1.3}
               velocity={beeVelocity}
               isChristmas={isChristmas}
               facing={facing}

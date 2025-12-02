@@ -100,9 +100,9 @@ export interface QueenBeeConfig {
 // Desktop (md): 96px - matches common chatbot avatars
 // Large (lg): 112px - seasonal flair without dominating UI
 export const SIZE_DIMENSIONS = {
-  sm: 72,   // Mobile: readable, low footprint
-  md: 96,   // Desktop: industry-standard chatbot size
-  lg: 112,  // Large desktop: clear seasonal details
+  sm: 100,   // Mobile: readable, low footprint
+  md: 140,   // Desktop: larger for better visibility
+  lg: 180,   // Large desktop: clear seasonal details with room for wings
 };
 
 // Error state tracking
