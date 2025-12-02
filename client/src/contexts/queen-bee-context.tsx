@@ -31,7 +31,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { useLocation } from 'wouter';
 
-// All possible queen bee emotional states
+// All possible queen bee emotional states (21 total)
 export type QueenBeeMode = 
   | 'IDLE'        // Default resting state
   | 'LISTENING'   // User is typing/interacting
@@ -50,7 +50,10 @@ export type QueenBeeMode =
   | 'SLEEPY'      // User inactive
   | 'CELEBRATING' // Big achievement
   | 'CONFUSED'    // Error or issue
-  | 'FOCUSED';    // User working on code
+  | 'FOCUSED'     // User working on code
+  | 'FRENZY'      // Red mode - bees attacking/aggressive swarm
+  | 'HUNTING'     // Bees actively chasing user
+  | 'RESTING';    // Calm after activity ends
 
 // Interactive hint types
 export interface InteractiveHint {
@@ -104,6 +107,24 @@ export interface ErrorState {
   timestamp: number;
 }
 
+// Swarm state for coordinated worker bee behavior
+export interface SwarmState {
+  isActive: boolean;
+  intensity: number; // 0-1 scale of swarm intensity
+  workerCount: number; // How many workers are visible
+  isFrenzy: boolean; // Red/aggressive mode
+  startTime: number;
+}
+
+// Default swarm state
+const DEFAULT_SWARM_STATE: SwarmState = {
+  isActive: false,
+  intensity: 0,
+  workerCount: 0,
+  isFrenzy: false,
+  startTime: 0,
+};
+
 // Context state interface
 interface QueenBeeContextState {
   mode: QueenBeeMode;
@@ -123,13 +144,19 @@ interface QueenBeeContextState {
   isPageLoading: boolean;
   lastActivity: string;
   recentClicks: number;
-  // New: Interactive hints
+  // Interactive hints
   currentHint: InteractiveHint | null;
   setCurrentHint: (hint: InteractiveHint | null) => void;
-  // New: Inactivity tracking
+  // Inactivity tracking
   inactivityTime: number;
-  // New: Celebration trigger
+  // Celebration trigger
   triggerCelebration: () => void;
+  // Swarm management - Worker bee lifecycle
+  swarmState: SwarmState;
+  triggerSwarm: (options?: { frenzy?: boolean; workerCount?: number; duration?: number }) => void;
+  endSwarm: () => void;
+  triggerHunting: () => void;
+  triggerFrenzy: () => void;
 }
 
 // Get default position
@@ -197,6 +224,10 @@ export function QueenBeeProvider({
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastActivityTimeRef = useRef(Date.now());
   const hintClearTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIX: Track hint clearing timeout
+  const swarmTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Swarm auto-end timeout
+  
+  // Swarm state for worker bee lifecycle
+  const [swarmState, setSwarmState] = useState<SwarmState>(DEFAULT_SWARM_STATE);
 
   // Clamp position to viewport
   const clampPosition = useCallback((x: number, y: number): { x: number; y: number } => {
@@ -259,6 +290,84 @@ export function QueenBeeProvider({
       setModeState('IDLE');
     }, 3000);
   }, []);
+
+  // SWARM MANAGEMENT: Trigger swarm with worker bees
+  const triggerSwarm = useCallback((options?: { frenzy?: boolean; workerCount?: number; duration?: number }) => {
+    const { frenzy = false, workerCount = 8, duration = 5000 } = options || {};
+    
+    // Clear any existing swarm timeout
+    if (swarmTimeoutRef.current) {
+      clearTimeout(swarmTimeoutRef.current);
+    }
+    
+    // Activate swarm
+    setSwarmState({
+      isActive: true,
+      intensity: frenzy ? 1 : 0.7,
+      workerCount,
+      isFrenzy: frenzy,
+      startTime: Date.now(),
+    });
+    
+    // Set appropriate mode
+    setModeState(frenzy ? 'FRENZY' : 'SWARM');
+    lastActivityTimeRef.current = Date.now();
+    
+    // Auto-end swarm after duration
+    swarmTimeoutRef.current = setTimeout(() => {
+      setSwarmState(prev => ({
+        ...prev,
+        isActive: false,
+        intensity: 0,
+        isFrenzy: false,
+      }));
+      setModeState('RESTING');
+      
+      // Transition to idle after brief rest
+      setTimeout(() => {
+        setModeState('IDLE');
+      }, 1500);
+    }, duration);
+  }, []);
+
+  // End swarm immediately
+  const endSwarm = useCallback(() => {
+    if (swarmTimeoutRef.current) {
+      clearTimeout(swarmTimeoutRef.current);
+    }
+    
+    // Smooth transition: active → resting → idle
+    setSwarmState(prev => ({
+      ...prev,
+      isActive: false,
+      intensity: 0,
+      isFrenzy: false,
+    }));
+    setModeState('RESTING');
+    
+    setTimeout(() => {
+      setModeState('IDLE');
+    }, 1000);
+  }, []);
+
+  // Trigger hunting mode (bees actively chasing)
+  const triggerHunting = useCallback(() => {
+    setSwarmState(prev => ({
+      ...prev,
+      isActive: true,
+      intensity: 0.5,
+      workerCount: 6,
+      isFrenzy: false,
+      startTime: Date.now(),
+    }));
+    setModeState('HUNTING');
+    lastActivityTimeRef.current = Date.now();
+  }, []);
+
+  // Trigger frenzy mode (aggressive red swarm)
+  const triggerFrenzy = useCallback(() => {
+    triggerSwarm({ frenzy: true, workerCount: 8, duration: 4000 });
+  }, [triggerSwarm]);
 
   // Load saved config
   useEffect(() => {
@@ -707,6 +816,11 @@ export function QueenBeeProvider({
         setCurrentHint,
         inactivityTime,
         triggerCelebration,
+        swarmState,
+        triggerSwarm,
+        endSwarm,
+        triggerHunting,
+        triggerFrenzy,
       }}
     >
       {children}
