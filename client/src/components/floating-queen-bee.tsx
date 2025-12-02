@@ -251,7 +251,7 @@ function getModeGlow(mode: QueenBeeMode): string {
   }
 }
 
-// Realistic Worker Bee Component with Swarm AI
+// Realistic Worker Bee Component with Swarm AI - Proportional to queen size
 interface WorkerBeeProps {
   id: number;
   targetX: number;
@@ -262,11 +262,14 @@ interface WorkerBeeProps {
   mode: QueenBeeMode;
 }
 
+// Worker orbit distance proportional to queen (uses context dimension)
+const WORKER_ORBIT_BASE = 28; // Base orbit distance
+
 function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: WorkerBeeProps) {
-  // FIX: Initialize position near queen with offset based on ID for visual spread - increased distance for visibility
+  // Initialize position near queen with offset based on ID - proportional orbit
   const initialOffset = useMemo(() => ({
-    x: Math.cos(id * (Math.PI / 4)) * 35,
-    y: Math.sin(id * (Math.PI / 4)) * 35,
+    x: Math.cos(id * (Math.PI / 4)) * WORKER_ORBIT_BASE,
+    y: Math.sin(id * (Math.PI / 4)) * WORKER_ORBIT_BASE,
   }), [id]);
   
   const [pos, setPos] = useState({ x: queenX + initialOffset.x, y: queenY + initialOffset.y });
@@ -299,9 +302,12 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
   // Update bee physics and behavior
   useEffect(() => {
     if (!isChasing) {
-      // FIX: Return to near queen position (not random spots) - use consistent offset based on bee ID - increased distance
-      const returnX = queenX + Math.cos(id * (Math.PI / 4)) * 40;
-      const returnY = queenY + Math.sin(id * (Math.PI / 4)) * 40;
+      // Return to near queen position with figure-8 hover pattern
+      const hoverTime = Date.now() / 1000;
+      const hoverX = Math.sin(hoverTime * 0.8 + id) * 6;
+      const hoverY = Math.cos(hoverTime * 1.2 + id * 0.7) * 4;
+      const returnX = queenX + Math.cos(id * (Math.PI / 4)) * WORKER_ORBIT_BASE + hoverX;
+      const returnY = queenY + Math.sin(id * (Math.PI / 4)) * WORKER_ORBIT_BASE + hoverY;
       
       // Smoothly move back to queen instead of teleporting
       const dx = returnX - posRef.current.x;
@@ -348,12 +354,12 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
         velRef.current.x += Math.cos(angle) * acceleration;
         velRef.current.y += Math.sin(angle) * acceleration;
       } else if (nextBehavior === 'swarm') {
-        // Lissajous curve pattern + spiral for beautiful swarm choreography
+        // Lissajous curve pattern + spiral for beautiful swarm choreography - proportional
         const time = timeRef.current / 20;
         const spiralAngle = time + id * (Math.PI / 4);
-        const spiralDist = 50 + Math.sin(timeRef.current / 40) * 20;
-        const lissajousX = Math.sin(time * 0.5 + id) * 12;
-        const lissajousY = Math.cos(time * 0.3 + id) * 12;
+        const spiralDist = WORKER_ORBIT_BASE * 1.5 + Math.sin(timeRef.current / 40) * 12;
+        const lissajousX = Math.sin(time * 0.5 + id) * 8;
+        const lissajousY = Math.cos(time * 0.3 + id) * 8;
         
         targetPos.x = targetX + Math.cos(spiralAngle) * spiralDist + lissajousX;
         targetPos.y = targetY + Math.sin(spiralAngle) * spiralDist + lissajousY;
@@ -367,13 +373,13 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
           velRef.current.y += (dy / dist) * acceleration * 0.95;
         }
       } else if (nextBehavior === 'evade') {
-        // Chaotic evasion with fast random jitter
+        // Chaotic evasion with fast random jitter - proportional distances
         const baseAngle = (timeRef.current / 10 + id) * Math.PI;
-        const jitter = Math.sin(timeRef.current / 2.5 + id * 1.7) * 25;
-        const zigzag = Math.sin(timeRef.current / 3.5) * 50;
+        const jitter = Math.sin(timeRef.current / 2.5 + id * 1.7) * 15;
+        const zigzag = Math.sin(timeRef.current / 3.5) * 30;
         
-        targetPos.x = targetX + Math.cos(baseAngle) * 80 + zigzag + jitter;
-        targetPos.y = targetY + Math.sin(baseAngle) * 80 + Math.cos(timeRef.current / 5) * 25;
+        targetPos.x = targetX + Math.cos(baseAngle) * WORKER_ORBIT_BASE * 2 + zigzag + jitter;
+        targetPos.y = targetY + Math.sin(baseAngle) * WORKER_ORBIT_BASE * 2 + Math.cos(timeRef.current / 5) * 15;
         
         const dx = targetPos.x - posRef.current.x;
         const dy = targetPos.y - posRef.current.y;
@@ -384,10 +390,10 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
           velRef.current.y += (dy / dist) * acceleration * 1.2;
         }
       } else {
-        // Formation flight with breathing motion
+        // Formation flight with breathing motion - proportional
         const formationAngle = (id / 8) * Math.PI * 2;
-        const baseDist = 50;
-        const breathe = Math.sin(timeRef.current / 30) * 10;
+        const baseDist = WORKER_ORBIT_BASE * 1.4;
+        const breathe = Math.sin(timeRef.current / 30) * 6;
         const formationDist = baseDist + breathe;
         
         targetPos.x = targetX + Math.cos(formationAngle) * formationDist;
@@ -456,25 +462,26 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
     <motion.div
       className="fixed pointer-events-none z-[101]"
       style={{
-        left: pos.x,
-        top: pos.y,
+        left: pos.x - 8,
+        top: pos.y - 6,
       }}
       animate={{
         rotate: heading,
       }}
       transition={{
         type: 'spring',
-        stiffness: 300,
-        damping: 20,
-        mass: 0.5,
+        stiffness: 200,
+        damping: 15,
+        mass: 0.3,
       }}
     >
-      {/* Shadow */}
-      <svg width="20" height="12" viewBox="0 0 20 12" className="absolute opacity-30" style={{ filter: 'blur(1px)', transform: 'translateY(2px)' }}>
-        <ellipse cx="10" cy="9" rx="6" ry="1.5" fill="#000" />
+      {/* Shadow - smaller proportional */}
+      <svg width="16" height="10" viewBox="0 0 20 12" className="absolute opacity-20" style={{ filter: 'blur(1px)', transform: 'translateY(2px) scale(0.8)' }}>
+        <ellipse cx="10" cy="9" rx="5" ry="1.2" fill="#000" />
       </svg>
       
-      <svg width="20" height="12" viewBox="0 0 20 12" className="drop-shadow-md relative" style={{ transform: `skewY(${tilt}rad)` }}>
+      {/* Worker bee body - 55% of queen size */}
+      <svg width="16" height="10" viewBox="0 0 20 12" className="drop-shadow-sm relative" style={{ transform: `skewY(${tilt * 0.8}rad)` }}>
         {/* Left Wing */}
         <ellipse
           cx="6"
@@ -1180,17 +1187,34 @@ export function FloatingQueenBee() {
         <FallingSnowflake key={flake.id} {...flake} windowHeight={windowDimensions.height} />
       ))}
 
-      {/* Worker Bees - Smooth lifecycle with AnimatePresence */}
-      <AnimatePresence>
+      {/* Worker Bees - Smooth lifecycle with proper spawn/despawn animations */}
+      <AnimatePresence mode="popLayout">
         {!isMobile && workersVisible && (
           <>
             {[...Array(NUM_WORKERS)].map((_, i) => (
               <motion.div
                 key={`worker-${i}`}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0, transition: { duration: 0.5 } }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
+                initial={{ opacity: 0, scale: 0.3, y: 20 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1, 
+                  y: 0,
+                  transition: { 
+                    duration: 0.4, 
+                    delay: i * 0.08,
+                    ease: [0.34, 1.56, 0.64, 1]
+                  }
+                }}
+                exit={{ 
+                  opacity: 0, 
+                  scale: 0.2, 
+                  y: -15,
+                  transition: { 
+                    duration: 0.35, 
+                    delay: i * 0.03,
+                    ease: "easeInOut"
+                  }
+                }}
               >
                 <WorkerBee
                   id={i}

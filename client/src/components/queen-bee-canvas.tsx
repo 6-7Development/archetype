@@ -273,7 +273,7 @@ class AgentBeeAnimation {
       const wx = cx + worker.currentX;
       const wy = cy + worker.currentY;
 
-      this.drawRealWorker(wx, wy, s * 0.04, modeColor, worker);
+      this.drawRealWorker(wx, wy, s * 0.075, modeColor, worker);
 
       if (this.state.mode === "THINKING") {
         this.ctx.strokeStyle = `rgba(${this.hexToRgb(modeColor)}, 0.15)`;
