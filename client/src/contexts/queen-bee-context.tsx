@@ -93,15 +93,15 @@ export interface QueenBeeConfig {
   isVisible: boolean;
 }
 
-// Size dimensions - Industry-standard mascot sizes (like Slack, Zendesk, chatbots)
-// Sized to be visible but not intrusive, matching typical website companion mascots
-// Mobile (sm): 56px - compact for small screens
-// Desktop (md): 72px - standard mascot size  
-// Large (lg): 88px - slightly larger for big displays
+// Size dimensions - Compact mascot sizes (details visible, non-intrusive)
+// Seasonal themes orchestrated by AI brain via SeasonalHandler
+// Mobile (sm): 40px - minimal footprint
+// Desktop (md): 48px - compact but details visible
+// Large (lg): 56px - slightly larger for clarity
 export const SIZE_DIMENSIONS = {
-  sm: 56,   // Mobile: compact, non-intrusive
-  md: 72,   // Desktop: standard website mascot size
-  lg: 88,   // Large desktop: slightly larger for visibility
+  sm: 40,   // Mobile: minimal, details still visible
+  md: 48,   // Desktop: compact mascot with clear details
+  lg: 56,   // Large desktop: optimal detail visibility
 };
 
 // Error state tracking
