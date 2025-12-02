@@ -101,6 +101,7 @@ export function SnowPiles({ enabled = true, maxPiles = 8 }: SnowPilesProps) {
     
     const advancePhases = () => {
       let changed = false;
+      const prevLength = pilesRef.current.length;
       pilesRef.current = pilesRef.current
         .map(p => {
           if (p.phase < 3) {
@@ -111,7 +112,7 @@ export function SnowPiles({ enabled = true, maxPiles = 8 }: SnowPilesProps) {
         })
         .filter(p => p.phase < 4);
       
-      if (changed || pilesRef.current.length !== piles.length) {
+      if (changed || pilesRef.current.length !== prevLength) {
         setPiles([...pilesRef.current]);
       }
     };
