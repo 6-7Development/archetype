@@ -838,14 +838,16 @@ export function FloatingQueenBee() {
       
       // HARD CLAMP: Ensure queen stays within viewport bounds
       // This is the final safety net - queen must NEVER escape visible area
-      const hatPadding = 50; // Extra top padding for Santa hat
-      const edgePadding = 30; // Padding from screen edges
+      // Use UNIFORM padding for all edges to prevent asymmetric displacement
       const halfDim = dimension / 2;
+      const hatHeight = dimension * 0.6; // Hat extends above head by ~60% of dimension
+      const spriteTopPadding = hatHeight + 10; // Total top clearance needed
+      const uniformPadding = Math.max(spriteTopPadding, 50); // At least 50px all sides for consistency
       
-      const minX = halfDim + edgePadding;
-      const maxX = windowDimensions.width - halfDim - edgePadding;
-      const minY = halfDim + hatPadding + edgePadding;
-      const maxY = windowDimensions.height - halfDim - edgePadding;
+      const minX = halfDim + uniformPadding;
+      const maxX = windowDimensions.width - halfDim - uniformPadding;
+      const minY = halfDim + spriteTopPadding; // Extra top padding for hat
+      const maxY = windowDimensions.height - halfDim - uniformPadding;
       
       // Clamp the center position
       const clampedX = Math.max(minX, Math.min(maxX, result.position.x));
