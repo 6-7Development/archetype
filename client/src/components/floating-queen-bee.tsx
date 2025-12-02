@@ -615,6 +615,7 @@ export function FloatingQueenBee() {
   const animationFrameRef = useRef<number | null>(null);
   const lastMousePosRef = useRef({ x: 0, y: 0, timestamp: Date.now() });
   const wanderAngleRef = useRef(Math.random() * Math.PI * 2);
+  const canvasRef = useRef<any>(null);
   
   const NUM_WORKERS = swarmState.workerCount || 8;
   
@@ -789,10 +790,12 @@ export function FloatingQueenBee() {
         }
       } else if (emotionalState === 'EVADING' || emotionalState === 'ALERT') {
         newEmotionalState = 'CELEBRATING';
+        canvasRef.current?.resetRagdoll?.();
         setTimeout(() => setEmotionalState('RESTING'), 2000);
         setTimeout(() => setEmotionalState('IDLE'), 4000);
       } else if (emotionalState === 'FRENZY' && now - lastFrenzyTime > 4000) {
         newEmotionalState = 'RESTING';
+        canvasRef.current?.resetRagdoll?.();
       } else if (emotionalState !== 'CELEBRATING' && emotionalState !== 'RESTING') {
         newEmotionalState = 'IDLE';
       }
@@ -1228,6 +1231,7 @@ export function FloatingQueenBee() {
           {/* Queen Bee Canvas - larger for better holiday animation visibility */}
           <div className="absolute inset-0 flex items-center justify-center">
             <QueenBeeCanvas
+              ref={canvasRef}
               mode={canvasMode}
               width={dimension * 0.95}
               height={dimension * 0.95}

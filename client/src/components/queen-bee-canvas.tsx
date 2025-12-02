@@ -3,7 +3,7 @@
  * Converts user's JavaScript implementation to React
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 export type BeeMode = "IDLE" | "LISTENING" | "TYPING" | "THINKING" | "CODING" | "BUILDING" | "SUCCESS" | "ERROR" | "SWARM" | "FRENZY";
@@ -118,6 +118,12 @@ class AgentBeeAnimation {
       w.targetRadius = 0.35;
       w.targetTilt = 0;
     });
+  }
+
+  resetRagdoll() {
+    this.state.bodyBend = 0;
+    this.state.bodyStretch = 1;
+    this.state.smoothVelocity = { x: 0, y: 0 };
   }
 
   setVelocity(vx: number, vy: number) {
@@ -670,55 +676,72 @@ class AgentBeeAnimation {
   }
 }
 
-export function QueenBeeCanvas({
-  mode = "IDLE",
-  width = 100,
-  height = 100,
-  className,
-  velocity = { x: 0, y: 0 },
-}: QueenBeeCanvasProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<AgentBeeAnimation | null>(null);
-
-  useEffect(() => {
-    if (!containerRef.current || !canvasRef.current) return;
-
-    animationRef.current = new AgentBeeAnimation(
-      containerRef.current,
-      canvasRef.current
-    );
-    animationRef.current.setMode(mode);
-
-    return () => {
-      animationRef.current?.destroy();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (animationRef.current) {
-      animationRef.current.setMode(mode);
-    }
-  }, [mode]);
-
-  useEffect(() => {
-    if (animationRef.current) {
-      animationRef.current.setVelocity(velocity.x, velocity.y);
-    }
-  }, [velocity.x, velocity.y]);
-
-  return (
-    <div
-      ref={containerRef}
-      className={cn("relative overflow-hidden", className)}
-      style={{ width: `${width}px`, height: `${height}px` }}
-      data-testid="queen-bee-canvas"
-    >
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full"
-        data-testid="bee-canvas-element"
-      />
-    </div>
-  );
+export interface QueenBeeCanvasHandle {
+  resetRagdoll: () => void;
 }
+
+const QueenBeeCanvasComponent = forwardRef<QueenBeeCanvasHandle, QueenBeeCanvasProps>(
+  ({ mode = "IDLE", width = 100, height = 100, className, velocity = { x: 0, y: 0 } }, ref) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const animationRef = useRef<AgentBeeAnimation | null>(null);
+
+    useEffect(() => {
+      if (!containerRef.current || !canvasRef.current) return;
+
+      animationRef.current = new AgentBeeAnimation(
+        containerRef.current,
+        canvasRef.current
+      );
+      animationRef.current.setMode(mode);
+
+      return () => {
+        animationRef.current?.destroy();
+      };
+    }, []);
+
+    useEffect(() => {
+      if (animationRef.current) {
+        animationRef.current.setMode(mode);
+      }
+    }, [mode]);
+
+    useEffect(() => {
+      if (animationRef.current) {
+        animationRef.current.setVelocity(velocity.x, velocity.y);
+      }
+    }, [velocity.x, velocity.y]);
+
+    // Expose resetRagdoll via ref
+    useEffect(() => {
+      if (ref && animationRef.current) {
+        if (typeof ref === 'function') {
+          ref({ resetRagdoll: () => animationRef.current?.resetRagdoll() });
+        } else {
+          ref.current = {
+            resetRagdoll: () => animationRef.current?.resetRagdoll(),
+          };
+        }
+      }
+    }, [ref]);
+
+    return (
+      <div
+        ref={containerRef}
+        className={cn("relative overflow-hidden", className)}
+        style={{ width: `${width}px`, height: `${height}px`, background: 'transparent' }}
+        data-testid="queen-bee-canvas"
+      >
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full"
+          style={{ background: 'transparent' }}
+          data-testid="bee-canvas-element"
+        />
+      </div>
+    );
+  }
+);
+
+QueenBeeCanvasComponent.displayName = 'QueenBeeCanvas';
+export const QueenBeeCanvas = QueenBeeCanvasComponent;
