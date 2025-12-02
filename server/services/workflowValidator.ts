@@ -52,10 +52,22 @@ interface WorkflowConfirmations {
   commitExecuted: boolean;
 }
 
+/**
+ * Configuration options for WorkflowValidator
+ */
+export interface WorkflowValidatorOptions {
+  enabled?: boolean;
+  strictMode?: boolean;  // If true, BLOCKS disallowed tools; if false, only logs warnings
+  detectDirectCodeEdits?: boolean;  // If true, detects code blocks in responses
+  maxIterationsWithoutPhase?: number;
+}
+
 export class WorkflowValidator {
   private currentPhase: WorkflowPhase = 'assess';
   private phaseHistory: PhaseHistoryEntry[] = [];
   private enabled: boolean = true;
+  private strictMode: boolean = false;  // NEW: Optional strict enforcement
+  private detectDirectCodeEdits: boolean = true;  // NEW: Code edit detection
   private context: WorkflowContext = {};
   private planSkipJustification: string | null = null;
   private confirmations: WorkflowConfirmations = {
@@ -68,11 +80,103 @@ export class WorkflowValidator {
   private iterationsSincePhaseChange = 0;
   private maxIterationsWithoutPhase = 2;
   private blockToolsUntilPhaseAnnouncement = false;
+  private directCodeEditViolations: string[] = [];  // NEW: Track code edit violations
 
-  constructor(initialPhase: WorkflowPhase = 'assess', enabled: boolean = true) {
+  constructor(initialPhase: WorkflowPhase = 'assess', options: WorkflowValidatorOptions | boolean = true) {
     this.currentPhase = initialPhase;
-    this.enabled = enabled;
+    
+    // Support legacy boolean parameter for backwards compatibility
+    if (typeof options === 'boolean') {
+      this.enabled = options;
+    } else {
+      this.enabled = options.enabled ?? true;
+      this.strictMode = options.strictMode ?? false;
+      this.detectDirectCodeEdits = options.detectDirectCodeEdits ?? true;
+      this.maxIterationsWithoutPhase = options.maxIterationsWithoutPhase ?? 2;
+    }
+    
     this.recordPhaseTransition(initialPhase);
+  }
+
+  /**
+   * NEW: Enable or disable strict mode at runtime
+   */
+  setStrictMode(strict: boolean): void {
+    this.strictMode = strict;
+    console.log(`[WORKFLOW-VALIDATOR] Strict mode ${strict ? 'ENABLED' : 'DISABLED'}`);
+  }
+
+  /**
+   * NEW: Check if strict mode is enabled
+   */
+  isStrictMode(): boolean {
+    return this.strictMode;
+  }
+
+  /**
+   * NEW: Detect direct code edits in response text (outside tool use)
+   * Returns array of detected code block languages/types
+   */
+  detectDirectCodeEdits(responseText: string): string[] {
+    if (!this.detectDirectCodeEdits || !responseText) return [];
+    
+    const violations: string[] = [];
+    
+    // Pattern 1: Markdown code blocks with language specifier that look like file content
+    const codeBlockPattern = /```(\w+)?\n([\s\S]*?)```/g;
+    let match;
+    
+    while ((match = codeBlockPattern.exec(responseText)) !== null) {
+      const language = match[1] || 'unknown';
+      const content = match[2];
+      
+      // Check if this looks like actual file content (not just examples)
+      const fileIndicators = [
+        /^(import|export|const|let|var|function|class|interface|type)\s/m,  // JS/TS
+        /^(def |class |import |from |async def )/m,  // Python
+        /^(package |import |func |type |struct )/m,  // Go
+        /^(use |fn |pub |mod |struct |impl )/m,  // Rust
+        /^(<!DOCTYPE|<html|<head|<body)/im,  // HTML
+        /^(@|\.|#|:root)/m,  // CSS
+      ];
+      
+      const looksLikeFileContent = fileIndicators.some(pattern => pattern.test(content));
+      
+      if (looksLikeFileContent && content.length > 100) {
+        violations.push(`${language} code block (${content.length} chars)`);
+      }
+    }
+    
+    // Pattern 2: Inline file path + content patterns
+    const filePathPattern = /(?:create|update|modify|write)\s+(?:file\s+)?[`"]?([a-zA-Z0-9_\-./]+\.(ts|tsx|js|jsx|py|go|rs|css|html|json))[`"]?\s*:?\s*```/gi;
+    while ((match = filePathPattern.exec(responseText)) !== null) {
+      violations.push(`Direct file edit: ${match[1]}`);
+    }
+    
+    this.directCodeEditViolations = violations;
+    
+    if (violations.length > 0) {
+      console.warn(`[WORKFLOW-VALIDATOR] ⚠️ Direct code edits detected: ${violations.join(', ')}`);
+      if (this.strictMode) {
+        console.error(`[WORKFLOW-VALIDATOR] ❌ STRICT MODE: Direct code edits BLOCKED`);
+      }
+    }
+    
+    return violations;
+  }
+
+  /**
+   * NEW: Get detected code edit violations
+   */
+  getDirectCodeEditViolations(): string[] {
+    return [...this.directCodeEditViolations];
+  }
+
+  /**
+   * NEW: Clear code edit violations
+   */
+  clearDirectCodeEditViolations(): void {
+    this.directCodeEditViolations = [];
   }
 
   /**
@@ -258,18 +362,23 @@ export class WorkflowValidator {
   }
 
   /**
-   * Validate tool call based on current phase (PASSIVE MONITORING MODE)
-   * Logs violations but NEVER blocks tools - lets Scout work naturally
+   * Validate tool call based on current phase
+   * In PASSIVE mode (default): Logs violations but allows tools
+   * In STRICT mode: Blocks disallowed tools and returns {allowed: false}
    */
   validateToolCall(toolName: string, phase?: WorkflowPhase): PhaseValidationResult {
     if (!this.enabled) return { allowed: true };
 
     const currentPhase = phase || this.currentPhase;
 
-    // PASSIVE: Warn about missing phase announcement but don't block
+    // Handle missing phase announcement
     if (this.blockToolsUntilPhaseAnnouncement) {
-      console.warn(`[WORKFLOW-VALIDATOR] ⚠️ No phase announcement for ${this.iterationsSincePhaseChange} iterations (passive warning)`);
-      // Don't block - let it continue
+      const message = `No phase announcement for ${this.iterationsSincePhaseChange} iterations`;
+      if (this.strictMode) {
+        console.error(`[WORKFLOW-VALIDATOR] ❌ STRICT: ${message} - BLOCKING tool ${toolName}`);
+        return { allowed: false, reason: message };
+      }
+      console.warn(`[WORKFLOW-VALIDATOR] ⚠️ ${message} (passive warning)`);
     }
 
     // Define read-only tools for monitoring
@@ -293,15 +402,19 @@ export class WorkflowValidator {
       'update_task',
     ];
 
-    // PASSIVE: Log phase violations but allow tools
+    // Check ASSESS phase read-only constraint
     if (currentPhase === 'assess') {
       const isReadOnly = ASSESS_READ_ONLY_TOOLS.some(pattern => 
         toolName === pattern || toolName.startsWith(pattern)
       );
       
       if (!isReadOnly) {
-        console.warn(`[WORKFLOW-VALIDATOR] ⚠️ Tool ${toolName} used in ASSESS phase (expected read-only) - passive warning, allowing execution`);
-        // Don't block - just log and continue
+        const message = `Tool ${toolName} used in ASSESS phase (expected read-only)`;
+        if (this.strictMode) {
+          console.error(`[WORKFLOW-VALIDATOR] ❌ STRICT: ${message} - BLOCKING`);
+          return { allowed: false, reason: message };
+        }
+        console.warn(`[WORKFLOW-VALIDATOR] ⚠️ ${message} - passive warning, allowing execution`);
       }
     }
 
@@ -377,7 +490,7 @@ export class WorkflowValidator {
 
     const rules = phaseToolRules[currentPhase];
 
-    // PASSIVE: Check allow list and log violations but don't block
+    // Check allow list - block in strict mode, warn otherwise
     if (rules.allowed) {
       const isAllowed = rules.allowed.some(pattern => {
         if (pattern.includes('(')) {
@@ -387,12 +500,17 @@ export class WorkflowValidator {
       });
 
       if (!isAllowed) {
-        console.warn(`[WORKFLOW-VALIDATOR] ⚠️ Tool ${toolName} not in ${currentPhase} allowed list - passive warning, allowing execution`);
+        const message = `Tool ${toolName} not in ${currentPhase} allowed list`;
+        if (this.strictMode) {
+          console.error(`[WORKFLOW-VALIDATOR] ❌ STRICT: ${message} - BLOCKING`);
+          return { allowed: false, reason: message };
+        }
+        console.warn(`[WORKFLOW-VALIDATOR] ⚠️ ${message} - passive warning, allowing execution`);
         // Don't block - just log and continue
       }
     }
 
-    // PASSIVE: Check disallow list and log violations but don't block
+    // Check disallow list - block in strict mode, warn otherwise
     if (rules.disallowed) {
       const isDisallowed = rules.disallowed.some(pattern => {
         if (pattern.includes('(')) {
@@ -402,12 +520,16 @@ export class WorkflowValidator {
       });
 
       if (isDisallowed) {
-        console.warn(`[WORKFLOW-VALIDATOR] ⚠️ Tool ${toolName} is disallowed in ${currentPhase} phase - passive warning, allowing execution`);
-        // Don't block - just log and continue
+        const message = `Tool ${toolName} is disallowed in ${currentPhase} phase`;
+        if (this.strictMode) {
+          console.error(`[WORKFLOW-VALIDATOR] ❌ STRICT: ${message} - BLOCKING`);
+          return { allowed: false, reason: message };
+        }
+        console.warn(`[WORKFLOW-VALIDATOR] ⚠️ ${message} - passive warning, allowing execution`);
       }
     }
 
-    // ALWAYS allow tools - passive monitoring only
+    // Allow tool execution (passive monitoring allows all, strict mode blocks above)
     return { allowed: true };
   }
 
