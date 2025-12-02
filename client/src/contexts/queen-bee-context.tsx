@@ -95,13 +95,13 @@ export interface QueenBeeConfig {
 
 // Size dimensions - Compact mascot sizes (details visible, non-intrusive)
 // Seasonal themes orchestrated by AI brain via SeasonalHandler
-// Mobile (sm): 40px - minimal footprint
-// Desktop (md): 48px - compact but details visible
-// Large (lg): 56px - slightly larger for clarity
+// Mobile (sm): 52px - small but clear
+// Desktop (md): 64px - balanced visibility
+// Large (lg): 72px - comfortable detail viewing
 export const SIZE_DIMENSIONS = {
-  sm: 40,   // Mobile: minimal, details still visible
-  md: 48,   // Desktop: compact mascot with clear details
-  lg: 56,   // Large desktop: optimal detail visibility
+  sm: 52,   // Mobile: small but clear details
+  md: 64,   // Desktop: balanced mascot size
+  lg: 72,   // Large desktop: comfortable visibility
 };
 
 // Error state tracking
