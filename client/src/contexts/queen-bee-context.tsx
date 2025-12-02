@@ -328,8 +328,8 @@ export function QueenBeeProvider({
       // Don't react if AI is active or there's an error
       if (isAIActive || errorState.hasError) return;
       
-      // Only react to actual character input
-      if (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Enter') {
+      // Only react to actual character input (guard against undefined key)
+      if (e.key && (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Enter')) {
         setModeState('LISTENING');
         setLastActivity('typing');
         
