@@ -39,7 +39,7 @@ class AgentBeeAnimation {
         LISTENING: "#a855f7",
         TYPING: "#38bdf8",
         SUCCESS: "#10b981",
-        ERROR: "#ef4444",
+        ERROR: "#ffd700",
       },
       workerCount: 8,
     };

@@ -12,7 +12,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { QueenBeeCanvas, BeeMode } from './queen-bee-canvas';
 import { useQueenBee, SIZE_DIMENSIONS, QueenBeeMode } from '@/contexts/queen-bee-context';
-import { X, GripVertical, AlertTriangle, RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, XCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText } from 'lucide-react';
+import { X, GripVertical, RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -60,7 +60,7 @@ function getModeColor(mode: QueenBeeMode): string {
     case 'CODING': return 'bg-green-400';
     case 'BUILDING': return 'bg-orange-400';
     case 'SUCCESS': return 'bg-mint animate-bounce';
-    case 'ERROR': return 'bg-red-500 animate-pulse';
+    case 'ERROR': return 'bg-honey animate-pulse';
     case 'ALERT': return 'bg-yellow-500 animate-pulse';
     case 'SWARM': return 'bg-honey animate-pulse';
     case 'LOADING': return 'bg-blue-400';
@@ -129,7 +129,7 @@ function getModeGlow(mode: QueenBeeMode): string {
   switch (mode) {
     case 'ERROR':
     case 'CONFUSED':
-      return 'ring-2 ring-red-500/50 ring-offset-2 ring-offset-background';
+      return '';
     case 'ALERT':
       return 'ring-2 ring-yellow-500/50 ring-offset-1 ring-offset-background';
     case 'SUCCESS':
@@ -982,7 +982,7 @@ export function FloatingQueenBee() {
 
       {/* Floating Tooltip */}
       <AnimatePresence>
-        {(showTooltip || errorState.hasError || isDragging || currentHint) && (
+        {(showTooltip || isDragging || currentHint) && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -994,20 +994,7 @@ export function FloatingQueenBee() {
               transform: 'translateX(-50%)',
             }}
           >
-            {errorState.hasError ? (
-              <Badge 
-                variant="destructive" 
-                className="text-xs cursor-pointer shadow-lg"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  clearError();
-                }}
-              >
-                <XCircle className="w-3 h-3 mr-1" />
-                {errorState.message?.slice(0, 30) || 'Error'}
-                {(errorState.message?.length || 0) > 30 ? '...' : ''}
-              </Badge>
-            ) : currentHint ? (
+            {currentHint ? (
               <Badge 
                 variant="outline" 
                 className="text-xs shadow-md border-teal-500/40 bg-teal-500/10 text-teal-600 dark:text-teal-400"
@@ -1028,7 +1015,7 @@ export function FloatingQueenBee() {
                 variant="outline" 
                 className={`text-xs shadow-sm ${
                   mode === 'SUCCESS' || mode === 'CELEBRATING' ? 'border-green-500/30 bg-green-500/10 text-green-600' :
-                  mode === 'ERROR' || mode === 'CONFUSED' ? 'border-red-500/30 bg-red-500/10 text-red-600' :
+                  mode === 'ERROR' || mode === 'CONFUSED' ? 'border-honey/30 bg-honey/10 text-honey' :
                   mode === 'SWARM' || mode === 'EXCITED' ? 'border-honey/30 bg-honey/10 text-honey' :
                   mode === 'HELPFUL' ? 'border-teal-500/30 bg-teal-500/10 text-teal-600' :
                   mode === 'SLEEPY' ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-600' :
