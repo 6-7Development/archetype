@@ -581,9 +581,10 @@ class AgentBeeAnimation {
     ctx.translate(0, -size * 0.5);
     
     // Apply headAim: rotation (left/right look) and tilt (up/down look)
-    const headRotation = headAim.rotation * 0.5; // Scale down for subtle effect
+    // NOTE: headAim.rotation is in degrees (-45 to +45), convert to radians for canvas
+    const headRotationRad = (headAim.rotation * Math.PI / 180) * 0.5; // Scale down for subtle effect
     const headTilt = headAim.tilt * 0.3;
-    ctx.rotate(headRotation);
+    ctx.rotate(headRotationRad);
     
     // Head base
     ctx.fillStyle = "#0a0a0a";
@@ -597,7 +598,8 @@ class AgentBeeAnimation {
     ctx.fillStyle = "#fff";
     
     // Eye positions shift based on headAim rotation for "looking at" effect
-    const eyeShift = headAim.rotation * size * 0.08;
+    // NOTE: headAim.rotation is in degrees, normalize to small pixel shift
+    const eyeShift = (headAim.rotation / 45) * size * 0.08; // Normalize to -1 to +1 range
     const eyeVertShift = headAim.tilt * size * 0.05;
     
     // Blink animation - squash eyes vertically during blink
