@@ -979,11 +979,11 @@ export class MovementController {
     const halfDim = this.dimension / 2;
     // Match React layer's padding exactly: hatHeight = dim * 0.6, uniformPadding = max(hatHeight+10, 50)
     const hatHeight = this.dimension * 0.6;
-    // HIGH-ENERGY SAFE: Add extra padding during intense states to prevent escape
-    // CELEBRATE, EVADE (FRENZY) - body dynamics + high speeds can breach normal bounds
+    // MODERATE PADDING: Reduced from 50px to prevent center-bias oscillation
+    // MovementController is sole authority - React layer is backup only
     const isHighEnergy = this.state === 'CELEBRATE' || this.state === 'EVADE';
-    const emotePadding = isHighEnergy ? 50 : 0;
-    const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;
+    const emotePadding = isHighEnergy ? 20 : 0;  // Reduced from 50 to 20
+    const uniformPadding = Math.max(hatHeight + 10, 40) + emotePadding;  // Base reduced from 50 to 40
     
     // Calculate safe bounds (matching hard clamp in React layer)
     const minX = halfDim + uniformPadding;
@@ -1069,10 +1069,10 @@ export class MovementController {
         break;
         
       case 'CELEBRATE':
-        // Gentle bouncy pattern - reduced amplitude to prevent boundary escape
-        const celebTime = this.stateTimer * 0.003; // Slower oscillation
-        steering.x += Math.sin(celebTime * 2) * 0.3; // Reduced from 0.8
-        steering.y += Math.sin(celebTime * 3) * 0.15; // Reduced from 0.4, slower freq
+        // Very gentle bouncy pattern - minimal amplitude to prevent oscillation
+        const celebTime = this.stateTimer * 0.002; // Even slower oscillation
+        steering.x += Math.sin(celebTime * 2) * 0.15; // Reduced from 0.3 to 0.15
+        steering.y += Math.sin(celebTime * 3) * 0.08; // Reduced from 0.15 to 0.08
         break;
         
       case 'ALERT':
@@ -1121,11 +1121,11 @@ export class MovementController {
     // Calculate bounds FIRST for predictive clamping
     const halfDim = this.dimension / 2;
     const hatHeight = this.dimension * 0.6;
-    // HIGH-ENERGY SAFE: Add extra padding during intense states for body dynamics
-    // CELEBRATE, EVADE (FRENZY) - body dynamics + high speeds can breach normal bounds
+    // MODERATE PADDING: Reduced to prevent center-bias oscillation
+    // MovementController is sole authority - matching stayInBounds padding
     const isHighEnergy = this.state === 'CELEBRATE' || this.state === 'EVADE';
-    const emotePadding = isHighEnergy ? 50 : 0;
-    const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;
+    const emotePadding = isHighEnergy ? 20 : 0;  // Reduced from 50 to 20
+    const uniformPadding = Math.max(hatHeight + 10, 40) + emotePadding;  // Base reduced from 50 to 40
     const minX = halfDim + uniformPadding;
     const maxX = this.viewportSize.x - halfDim - uniformPadding;
     const minY = halfDim + hatHeight + 10 + emotePadding;
