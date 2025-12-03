@@ -1636,23 +1636,130 @@ export class IndependentWorkerHandler {
     const prevMode = this.queenMode;
     this.queenMode = mode;
     
+    // Check if exiting high-energy attack modes - CRITICAL for cleanup
+    const wasAttackMode = /FRENZY|HUNTING|SWARM/.test(prevMode);
+    const isAttackMode = /FRENZY|HUNTING|SWARM/.test(mode);
+    
+    // If exiting attack mode, immediately return all attacking workers
+    if (wasAttackMode && !isAttackMode) {
+      this.cancelAllAttacks();
+    }
+    
     // Trigger behavior changes based on mode
-    if (mode === 'FRENZY' || mode === 'HUNTING' || mode === 'SWARM') {
+    // All modes now get distinct visual responses from workers
+    if (isAttackMode) {
       this.triggerAttackMode();
-    } else if (mode === 'CELEBRATING' || mode === 'SUCCESS' || mode === 'EXCITED') {
+    } else if (mode === 'CELEBRATING' || mode === 'SUCCESS') {
+      this.triggerFormation('STAR');
+    } else if (mode === 'EXCITED' || mode === 'HELPFUL') {
       this.triggerFormation('CIRCLE');
     } else if (mode === 'SLEEPY' || mode === 'RESTING') {
       this.triggerSleepMode();
+    } else if (mode === 'THINKING' || mode === 'LOADING' || mode === 'CURIOUS') {
+      // Thinking/curious - workers slow down and orbit closer
+      this.triggerFocusedMode();
+    } else if (mode === 'ERROR' || mode === 'CONFUSED' || mode === 'ALERT') {
+      // Alert/error - workers scatter protectively
+      this.triggerAlertMode();
+    } else if (mode === 'CODING' || mode === 'BUILDING' || mode === 'TYPING' || mode === 'FOCUSED') {
+      // Work modes - workers orbit tightly in work formation
+      this.triggerWorkMode();
+    } else if (mode === 'LISTENING') {
+      // Listening - workers gather attentively
+      this.triggerListeningMode();
     } else if (prevMode !== mode) {
-      // Return to normal orbit behavior
+      // Default: return to normal orbit behavior and reset radius
       this.workers.forEach(w => {
-        if (w.behavior === 'FORMATION' || w.behavior === 'SLEEP') {
+        // Reset orbit radius to base for all workers when changing modes
+        w.targetOrbitRadius = this.baseOrbitRadius;
+        
+        if (w.behavior === 'FORMATION' || w.behavior === 'SLEEP' || w.behavior === 'ATTACK') {
           w.behavior = 'RETURN';
+          w.isAttacking = false;
+          w.attackTarget = null;
           w.behaviorTimer = 0;
         }
       });
       this.activeFormation = null;
     }
+    
+    // Always reset orbit radius when not in focused/work modes
+    const isFocusedMode = /THINKING|LOADING|CURIOUS|CODING|BUILDING|TYPING|FOCUSED/.test(mode);
+    if (!isFocusedMode) {
+      this.workers.forEach(w => {
+        w.targetOrbitRadius = this.baseOrbitRadius;
+      });
+    }
+  }
+  
+  // Focused mode - workers orbit closer and slower (thinking, curious)
+  private triggerFocusedMode(): void {
+    this.workers.forEach(w => {
+      w.behavior = 'ORBIT';
+      w.targetOrbitRadius = this.baseOrbitRadius * 0.7; // Closer orbit
+      w.behaviorTimer = 0;
+    });
+  }
+  
+  // Alert mode - workers spread out protectively (error, confused, alert)
+  private triggerAlertMode(): void {
+    this.activeFormation = null; // Direct formation slots, no named formation
+    this.formationProgress = 0;
+    
+    this.workers.forEach((w, i) => {
+      w.behavior = 'FORMATION';
+      // Spread out in protective arc above/around queen
+      const angle = (i / this.workers.length) * Math.PI - Math.PI / 2;
+      const radius = 70 + Math.random() * 20;
+      w.formationSlot = {
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius * 0.5, // Flattened arc
+      };
+      w.behaviorTimer = 0;
+    });
+  }
+  
+  // Work mode - tight focused orbit (coding, building, typing)
+  private triggerWorkMode(): void {
+    this.workers.forEach(w => {
+      w.behavior = 'ORBIT';
+      w.targetOrbitRadius = this.baseOrbitRadius * 0.6; // Very close orbit
+      w.behaviorTimer = 0;
+    });
+  }
+  
+  // Listening mode - workers gather attentively in front
+  private triggerListeningMode(): void {
+    this.activeFormation = 'CIRCLE';
+    this.formationProgress = 0;
+    
+    this.workers.forEach((w, i) => {
+      w.behavior = 'FORMATION';
+      // Semi-circle in front of queen
+      const angle = (i / this.workers.length) * Math.PI - Math.PI / 2;
+      const radius = 40;
+      w.formationSlot = {
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius + 20, // Below queen (in front)
+      };
+      w.behaviorTimer = 0;
+    });
+  }
+  
+  // Cancel all active attacks and return workers to orbit
+  private cancelAllAttacks(): void {
+    this.workers.forEach(w => {
+      if (w.behavior === 'ATTACK' || w.isAttacking) {
+        w.behavior = 'RETURN';
+        w.isAttacking = false;
+        w.attackTarget = null;
+        w.attackCooldown = 500; // Short cooldown to prevent immediate re-attack
+        w.behaviorTimer = 0;
+        // Reduce velocity to prevent overshooting during return
+        w.vx *= 0.5;
+        w.vy *= 0.5;
+      }
+    });
   }
   
   private triggerAttackMode(): void {
