@@ -5,11 +5,61 @@ import { executeWebSearch } from '../tools/web-search.ts';
 import { executeVisionAnalysis } from '../tools/vision-analyze.ts';
 import { isAuthenticated } from '../universalAuth.ts';
 import { checkUsageLimits } from '../usage-tracking.ts';
+import { scoutToolRegistry } from '../services/scoutToolRegistry.ts';
+import { SCOUT_TOOLS, SCOUT_AI_SERVICES } from '../config/scout-agent-config.ts';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-// All tool endpoints require authentication
+/**
+ * Get tool registry status (public endpoint for capabilities page)
+ * GET /api/tools/registry
+ */
+router.get('/registry', async (req, res) => {
+  try {
+    const tools = SCOUT_TOOLS.map(tool => {
+      const capability = scoutToolRegistry.checkToolCapability(tool.id);
+      return {
+        id: tool.id,
+        name: tool.name,
+        description: tool.description,
+        category: tool.category || 'general',
+        isAvailable: capability.isAvailable,
+        status: capability.reason || 'OK',
+        dependencies: capability.dependencies,
+        requiresAuth: tool.requiresAuth || false,
+        requiresDatabase: tool.requiresDatabase || false,
+        requiresAIService: tool.requiresAIService || null,
+      };
+    });
+
+    const aiServices = SCOUT_AI_SERVICES.map(service => ({
+      id: service.id,
+      name: service.name,
+      provider: service.provider,
+      status: process.env[service.apiKeyEnv] ? 'configured' : 'missing',
+      isRequired: service.status === 'required',
+    }));
+
+    const stats = scoutToolRegistry.getGlobalStats();
+
+    res.json({
+      tools,
+      aiServices,
+      stats: {
+        totalTools: tools.length,
+        availableTools: tools.filter(t => t.isAvailable).length,
+        totalCalls: stats.totalToolsCalls,
+        successRate: stats.successRate,
+      },
+    });
+  } catch (error: any) {
+    console.error('[TOOLS] Error getting registry:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// All other tool endpoints require authentication
 router.use(isAuthenticated);
 
 /**

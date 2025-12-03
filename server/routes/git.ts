@@ -93,32 +93,141 @@ router.get("/api/git/commit/:hash/file-diff", async (req, res) => {
   }
 });
 
-// Placeholder: Stage files (MVP - demo only)
+// Stage files for commit
 router.post("/api/git/stage", async (req, res) => {
   try {
     const { files } = req.body;
-    // In MVP, we just acknowledge the request
-    console.log('[GIT-API] Stage files (demo):', files);
-    res.json({ message: 'Files staged (demo mode)', files });
+    
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ error: 'Files array is required' });
+    }
+
+    await platformGitService.stageFiles(files);
+    console.log('[GIT-API] Files staged:', files);
+    res.json({ message: 'Files staged successfully', files });
   } catch (error: any) {
     console.error('[GIT-API] Error staging files:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Placeholder: Commit changes (MVP - demo only)
+// Commit staged changes
 router.post("/api/git/commit", async (req, res) => {
   try {
     const { message, author } = req.body;
-    // In MVP, we just acknowledge the commit
-    console.log('[GIT-API] Commit (demo):', { message, author });
+    
+    if (!message) {
+      return res.status(400).json({ error: 'Commit message is required' });
+    }
+
+    const authorInfo = author || { 
+      name: 'Scout Agent', 
+      email: 'scout@beehive.dev' 
+    };
+
+    const hash = await platformGitService.commit(message, authorInfo);
+    console.log('[GIT-API] Commit created:', { hash, message });
     res.json({ 
-      message: 'Commit created (demo mode)', 
-      hash: 'demo-' + Date.now(),
+      success: true,
+      hash,
+      message: 'Commit created successfully',
       commitMessage: message 
     });
   } catch (error: any) {
     console.error('[GIT-API] Error committing:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create a new branch
+router.post("/api/git/branch", async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Branch name is required' });
+    }
+
+    // Validate branch name format
+    const validBranchName = name.replace(/[^a-zA-Z0-9\-_\/]/g, '-');
+    await platformGitService.createBranch(validBranchName);
+    console.log('[GIT-API] Branch created:', validBranchName);
+    res.json({ 
+      success: true,
+      branch: validBranchName,
+      message: 'Branch created successfully' 
+    });
+  } catch (error: any) {
+    console.error('[GIT-API] Error creating branch:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Checkout a branch
+router.post("/api/git/checkout", async (req, res) => {
+  try {
+    const { branch } = req.body;
+    
+    if (!branch) {
+      return res.status(400).json({ error: 'Branch name is required' });
+    }
+
+    await platformGitService.checkoutBranch(branch);
+    console.log('[GIT-API] Checked out branch:', branch);
+    res.json({ 
+      success: true,
+      branch,
+      message: 'Checked out branch successfully' 
+    });
+  } catch (error: any) {
+    console.error('[GIT-API] Error checking out branch:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Stage all changes and commit (convenience endpoint for Scout)
+router.post("/api/git/stage-and-commit", async (req, res) => {
+  try {
+    const { message, author, files } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ error: 'Commit message is required' });
+    }
+
+    // Get current status to know what to stage
+    const status = await platformGitService.getStatus();
+    const filesToStage = files || [
+      ...status.modified,
+      ...status.added,
+      ...status.deleted,
+      ...status.untracked
+    ];
+
+    if (filesToStage.length === 0) {
+      return res.status(400).json({ error: 'No files to commit' });
+    }
+
+    // Stage files
+    await platformGitService.stageFiles(filesToStage);
+
+    // Commit
+    const authorInfo = author || { 
+      name: 'Scout Agent', 
+      email: 'scout@beehive.dev' 
+    };
+    const hash = await platformGitService.commit(message, authorInfo);
+
+    console.log('[GIT-API] Stage and commit completed:', { hash, files: filesToStage.length });
+    res.json({ 
+      success: true,
+      hash,
+      filesCommitted: filesToStage.length,
+      files: filesToStage,
+      message: 'Changes staged and committed successfully',
+      commitMessage: message 
+    });
+  } catch (error: any) {
+    console.error('[GIT-API] Error in stage-and-commit:', error);
     res.status(500).json({ error: error.message });
   }
 });

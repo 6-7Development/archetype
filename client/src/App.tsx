@@ -44,6 +44,9 @@ import Deployments from "@/pages/deployments";
 import DeploymentDetails from "@/pages/deployment-details";
 import ChatPage from "@/pages/chat";
 import ConsultationHistory from "@/pages/consultation-history";
+import JobHistory from "@/pages/job-history";
+import Credits from "@/pages/credits";
+import AgentCapabilities from "@/pages/agent-capabilities";
 import SwarmDashboard from "@/pages/swarm-dashboard";
 import Monitoring from "@/pages/monitoring";
 import Documentation from "@/pages/docs";
@@ -250,6 +253,26 @@ function Router() {
         </AppLayout>
       </Route>
       
+      {/* Job History - Scout autonomous work sessions */}
+      <Route path="/job-history">
+        <AppLayout>
+          <JobHistory />
+        </AppLayout>
+      </Route>
+      
+      {/* Credits & Billing */}
+      <Route path="/credits">
+        <AppLayout>
+          <Credits />
+        </AppLayout>
+      </Route>
+      
+      {/* Agent Capabilities - Tool registry and health */}
+      <Route path="/agent-capabilities">
+        <AppLayout>
+          <AgentCapabilities />
+        </AppLayout>
+      </Route>
 
       {/* Documentation & Legal */}
       <Route path="/docs">
