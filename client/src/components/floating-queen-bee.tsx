@@ -855,9 +855,17 @@ export function FloatingQueenBee() {
       const clampedX = Math.max(minX, Math.min(maxX, result.position.x));
       const clampedY = Math.max(minY, Math.min(maxY, result.position.y));
       
-      // SINGLE SOURCE OF TRUTH: Update the shared queen state
-      // This syncs ALL handlers (workers, emoteWorkers, movement controller) in one call
+      // Check if clamping was actually applied
+      const wasClamped = clampedX !== result.position.x || clampedY !== result.position.y;
+      
+      // SINGLE SOURCE OF TRUTH: Update the shared queen state for workers
       beeController.setQueenState(clampedX, clampedY, result.velocity.x, result.velocity.y);
+      
+      // Only sync movement controller position when clamping is applied
+      // This prevents physics state interference during normal movement
+      if (wasClamped) {
+        beeController.syncMovementPosition(clampedX, clampedY);
+      }
       
       // Convert center position back to top-left for rendering
       const newX = clampedX - halfDim;

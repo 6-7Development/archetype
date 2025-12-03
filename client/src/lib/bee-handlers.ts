@@ -2983,6 +2983,8 @@ export class BeeController {
   // SET THE SINGLE SOURCE OF TRUTH for queen position
   // Call this from the main animation loop AFTER clamping
   // All worker/emote/unity handlers will read from this
+  // NOTE: Do NOT call movement.setPosition here - let movement controller maintain its own physics state
+  // Only sync worker handlers with the clamped display position
   setQueenState(x: number, y: number, vx: number, vy: number): void {
     this.queenState.x = x;
     this.queenState.y = y;
@@ -2992,7 +2994,12 @@ export class BeeController {
     // Sync all handlers with the CLAMPED queen position
     this.workers.updateQueen(x, y, vx, vy);
     this.emoteWorkers.updateQueen(x, y);
-    this.movement.setPosition(x, y); // Keep movement controller in sync
+    // NOTE: Movement controller is NOT reset here to preserve physics state
+  }
+  
+  // Sync movement controller position with clamped value (call only when clamping applied)
+  syncMovementPosition(x: number, y: number): void {
+    this.movement.setPosition(x, y);
   }
   
   // Get the current queen state (for reading from handlers)
