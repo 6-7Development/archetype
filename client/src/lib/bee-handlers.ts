@@ -1322,10 +1322,7 @@ export class WorkerSwarmController {
 // INDEPENDENT WORKER BEE HANDLER
 // Per-bee physics, behaviors, attack, formations
 // ============================================
-export type WorkerBehavior = 'ORBIT' | 'IDLE_WANDER' | 'ATTACK' | 'FORMATION' | 'RETURN' | 'SLEEP';
-
-// Attack phase types for visual effects
-export type AttackPhase = 'IDLE' | 'WINDUP' | 'STRIKE' | 'RETURN' | 'COOLDOWN';
+export type WorkerBehavior = 'ORBIT' | 'IDLE_WANDER' | 'FORMATION' | 'RETURN' | 'SLEEP';
 
 export interface IndependentWorkerState {
   id: number;
@@ -1341,16 +1338,6 @@ export interface IndependentWorkerState {
   // Behavior
   behavior: WorkerBehavior;
   behaviorTimer: number;
-  // Attack
-  attackTarget: { x: number; y: number } | null;
-  attackCooldown: number;
-  isAttacking: boolean;
-  // Attack phase for animations
-  attackPhase: AttackPhase;
-  attackPhaseTimer: number;
-  // Return path for swoosh animation
-  returnPath: { startX: number; startY: number; controlX: number; controlY: number } | null;
-  returnProgress: number;
   // Formation slot
   formationSlot: { x: number; y: number } | null;
   // Animation
@@ -1358,8 +1345,6 @@ export interface IndependentWorkerState {
   wingPhase: number;
   energyLevel: number;
   phase: number; // Noise offset
-  // Trail effect for attack
-  trailPositions: Array<{ x: number; y: number; age: number }>;
 }
 
 // Formation patterns relative to queen center
@@ -1427,13 +1412,6 @@ export class IndependentWorkerHandler {
       targetOrbitRadius: radius,
       behavior: 'ORBIT',
       behaviorTimer: 0,
-      attackTarget: null,
-      attackCooldown: 0,
-      isAttacking: false,
-      attackPhase: 'IDLE',
-      attackPhaseTimer: 0,
-      returnPath: null,
-      returnProgress: 0,
       formationSlot: null,
       size: 0.85 + Math.random() * 0.25,  // 85-110% size (larger, visible bees)
       wingPhase: Math.random() * Math.PI * 2,
@@ -1493,20 +1471,9 @@ export class IndependentWorkerHandler {
     const prevMode = this.queenMode;
     this.queenMode = mode;
     
-    // Check if exiting high-energy attack modes - CRITICAL for cleanup
-    const wasAttackMode = /FRENZY|HUNTING|SWARM/.test(prevMode);
-    const isAttackMode = /FRENZY|HUNTING|SWARM/.test(mode);
-    
-    // If exiting attack mode, immediately return all attacking workers
-    if (wasAttackMode && !isAttackMode) {
-      this.cancelAllAttacks();
-    }
-    
     // Trigger behavior changes based on mode
     // All modes now get distinct visual responses from workers
-    if (isAttackMode) {
-      this.triggerAttackMode();
-    } else if (mode === 'CELEBRATING' || mode === 'SUCCESS') {
+    if (mode === 'CELEBRATING' || mode === 'SUCCESS') {
       this.triggerFormation('STAR');
     } else if (mode === 'EXCITED' || mode === 'HELPFUL') {
       this.triggerFormation('CIRCLE');
@@ -1530,10 +1497,8 @@ export class IndependentWorkerHandler {
         // Reset orbit radius to base for all workers when changing modes
         w.targetOrbitRadius = this.baseOrbitRadius;
         
-        if (w.behavior === 'FORMATION' || w.behavior === 'SLEEP' || w.behavior === 'ATTACK') {
+        if (w.behavior === 'FORMATION' || w.behavior === 'SLEEP') {
           w.behavior = 'RETURN';
-          w.isAttacking = false;
-          w.attackTarget = null;
           w.behaviorTimer = 0;
         }
       });
@@ -1603,35 +1568,6 @@ export class IndependentWorkerHandler {
     });
   }
   
-  // Cancel all active attacks and return workers to orbit
-  private cancelAllAttacks(): void {
-    this.workers.forEach(w => {
-      if (w.behavior === 'ATTACK' || w.isAttacking) {
-        w.behavior = 'RETURN';
-        w.isAttacking = false;
-        w.attackTarget = null;
-        w.attackCooldown = 500; // Short cooldown to prevent immediate re-attack
-        w.behaviorTimer = 0;
-        // Reduce velocity to prevent overshooting during return
-        w.vx *= 0.5;
-        w.vy *= 0.5;
-      }
-    });
-  }
-  
-  private triggerAttackMode(): void {
-    this.workers.forEach((w, i) => {
-      // Stagger attack starts for natural feel
-      setTimeout(() => {
-        if (w.attackCooldown <= 0 && this.queenMode.match(/FRENZY|HUNTING|SWARM/)) {
-          w.behavior = 'ATTACK';
-          w.isAttacking = true;
-          w.attackTarget = { x: this.cursorX, y: this.cursorY };
-          w.behaviorTimer = 0;
-        }
-      }, i * 100 + Math.random() * 150);
-    });
-  }
   
   private triggerFormation(type: FormationType): void {
     this.activeFormation = type;
@@ -1724,11 +1660,9 @@ export class IndependentWorkerHandler {
     
     this.workers.forEach((w, i) => {
       w.behaviorTimer += deltaTime;
-      w.attackCooldown = Math.max(0, w.attackCooldown - deltaTime);
-      
       // Update wing phase (faster when moving fast)
       const speed = Math.sqrt(w.vx ** 2 + w.vy ** 2);
-      w.wingPhase += (8 + speed * 0.8 + (w.isAttacking ? 5 : 0)) * dt;
+      w.wingPhase += (8 + speed * 0.8) * dt;
       
       // Calculate steering force based on behavior
       let steerX = 0;
@@ -1742,7 +1676,7 @@ export class IndependentWorkerHandler {
           steerY = orbitResult.y;
           
           // Random transition to idle wander
-          if (Math.random() < 0.001 && !this.queenMode.match(/FRENZY|HUNTING|SWARM|CELEBRATING/)) {
+          if (Math.random() < 0.001 && this.queenMode !== 'CELEBRATING') {
             w.behavior = 'IDLE_WANDER';
             w.behaviorTimer = 0;
           }
@@ -1758,32 +1692,6 @@ export class IndependentWorkerHandler {
           if (w.behaviorTimer > 2000 + Math.random() * 2000) {
             w.behavior = 'ORBIT';
             w.behaviorTimer = 0;
-          }
-          break;
-          
-        case 'ATTACK':
-          // Chase cursor - workers actively pursue the cursor position
-          if (w.attackTarget) {
-            const attackResult = this.calculateAttackSteering(w);
-            steerX = attackResult.x;
-            steerY = attackResult.y;
-            
-            // Update attack target to follow cursor
-            w.attackTarget = { x: this.cursorX, y: this.cursorY };
-            
-            // Return after 3-4 seconds OR if cursor is too far from queen (beyond attack range)
-            // Note: distToQueen check uses attackRangeMax (400px) not 200px
-            const distToQueen = Math.sqrt((w.x - this.queenX) ** 2 + (w.y - this.queenY) ** 2);
-            const attackTimeout = w.behaviorTimer > 3000 + Math.random() * 1000;
-            const tooFar = distToQueen > this.attackRangeMax;
-            
-            if (attackTimeout || tooFar) {
-              w.behavior = 'RETURN';
-              w.isAttacking = false;
-              w.attackTarget = null;
-              w.attackCooldown = 2000 + Math.random() * 1000;
-              w.behaviorTimer = 0;
-            }
           }
           break;
           
@@ -1847,7 +1755,7 @@ export class IndependentWorkerHandler {
       
       // Limit speed
       const currentSpeed = Math.sqrt(w.vx ** 2 + w.vy ** 2);
-      const maxSpd = w.isAttacking ? this.attackSpeed : (w.behavior === 'SLEEP' ? 1 : this.maxSpeed);
+      const maxSpd = w.behavior === 'SLEEP' ? 1 : this.maxSpeed;
       if (currentSpeed > maxSpd) {
         w.vx = (w.vx / currentSpeed) * maxSpd;
         w.vy = (w.vy / currentSpeed) * maxSpd;
@@ -1857,35 +1765,23 @@ export class IndependentWorkerHandler {
       w.x += w.vx;
       w.y += w.vy;
       
-      // Clamp to appropriate range based on behavior
+      // Clamp to orbit band
       const distToQueen = Math.sqrt((w.x - this.queenX) ** 2 + (w.y - this.queenY) ** 2);
-      
-      if (w.behavior === 'ATTACK') {
-        // During attack, allow bees to fly far but still clamp to max attack range
-        if (distToQueen > this.attackRangeMax) {
-          const angle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
-          w.x = this.queenX + Math.cos(angle) * this.attackRangeMax;
-          w.y = this.queenY + Math.sin(angle) * this.attackRangeMax;
-        }
-      } else {
-        // Normal orbit clamping when not attacking
-        if (distToQueen > this.orbitBandMax) {
-          const angle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
-          w.x = this.queenX + Math.cos(angle) * this.orbitBandMax;
-          w.y = this.queenY + Math.sin(angle) * this.orbitBandMax;
-        } else if (distToQueen < this.orbitBandMin && w.behavior !== 'FORMATION') {
-          const angle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
-          w.x = this.queenX + Math.cos(angle) * this.orbitBandMin;
-          w.y = this.queenY + Math.sin(angle) * this.orbitBandMin;
-        }
+      if (distToQueen > this.orbitBandMax) {
+        const angle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
+        w.x = this.queenX + Math.cos(angle) * this.orbitBandMax;
+        w.y = this.queenY + Math.sin(angle) * this.orbitBandMax;
+      } else if (distToQueen < this.orbitBandMin && w.behavior !== 'FORMATION') {
+        const angle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
+        w.x = this.queenX + Math.cos(angle) * this.orbitBandMin;
+        w.y = this.queenY + Math.sin(angle) * this.orbitBandMin;
       }
       
       // Update orbit angle based on position
       w.orbitAngle = Math.atan2(w.y - this.queenY, w.x - this.queenX);
       
       // Update energy level
-      w.energyLevel = 0.5 + Math.sin(this.time * 0.001 + w.phase) * 0.2 +
-                      (w.isAttacking ? 0.3 : 0) + (speed > 2 ? 0.1 : 0);
+      w.energyLevel = 0.5 + Math.sin(this.time * 0.001 + w.phase) * 0.2 + (speed > 2 ? 0.1 : 0);
     });
   }
   
@@ -1932,31 +1828,6 @@ export class IndependentWorkerHandler {
     const pullY = (orbitY - w.y) * 0.01;
     
     return { x: jitterX + pullX, y: jitterY + pullY };
-  }
-  
-  private calculateAttackSteering(w: IndependentWorkerState): { x: number; y: number } {
-    if (!w.attackTarget) return { x: 0, y: 0 };
-    
-    // Seek toward cursor with offset for natural spread
-    const offsetAngle = w.id * 0.5;
-    const spreadRadius = 20;
-    const targetX = w.attackTarget.x + Math.cos(offsetAngle) * spreadRadius;
-    const targetY = w.attackTarget.y + Math.sin(offsetAngle) * spreadRadius;
-    
-    const dx = targetX - w.x;
-    const dy = targetY - w.y;
-    const dist = Math.sqrt(dx ** 2 + dy ** 2);
-    
-    if (dist < 5) return { x: 0, y: 0 };
-    
-    // Strong steering force (6.0) for aggressive attack movement
-    // The further from target, the stronger the force (up to 6.0)
-    const force = Math.min(6, dist * 0.1);
-    
-    return {
-      x: (dx / dist) * force,
-      y: (dy / dist) * force,
-    };
   }
   
   private calculateArrivalSteering(w: IndependentWorkerState, targetX: number, targetY: number, slowRadius: number): { x: number; y: number } {
