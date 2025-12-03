@@ -823,23 +823,24 @@ export function FloatingQueenBee() {
     initialized: false,
   });
 
-  // REALISTIC BEE FLIGHT - Natural physics with gravity, thrust, and wing-beat bob
+  // REALISTIC BEE FLIGHT - Natural roaming with soft boundaries
   useEffect(() => {
     if (!isMounted) return;
     
     let lastTime = performance.now();
     const ATTACK_THRESHOLD = 80;
     
-    // FLIGHT PHYSICS CONSTANTS
-    const GRAVITY = 0.12;           // Downward pull
-    const THRUST = 0.25;            // Upward/directional force from wings
-    const DRAG = 0.94;              // Air resistance (1 = no drag)
-    const MAX_SPEED = 3;            // Maximum velocity
-    const WING_BOB_FREQ = 20;       // Wing beat frequency (Hz-ish)
-    const WING_BOB_AMP = 1.2;       // Vertical bob from wing beats
-    const HOME_RADIUS = 60;         // Stay within this distance from center
-    const TARGET_INTERVAL = 1200;   // Pick new target every N ms
-    const HOME_PULL = 0.15;         // Force pulling back to center
+    // FLIGHT PHYSICS - Tuned for natural bee movement
+    const THRUST = 0.18;            // Gentle thrust toward targets
+    const DRAG = 0.96;              // Light air resistance
+    const MAX_SPEED = 2.5;          // Comfortable cruising speed
+    const WING_BOB_FREQ = 18;       // Wing beat frequency
+    const WING_BOB_AMP = 1.0;       // Subtle vertical bob
+    const HOME_RADIUS = 120;        // Larger roaming area
+    const FREE_ZONE = 0.6;          // 60% of radius = NO pull zone
+    const SOFT_ZONE = 0.85;         // 85% = mild pull starts
+    const TARGET_INTERVAL = 2000;   // Pick new target every 2s
+    const JITTER = 0.3;             // Random movement per frame
     
     const flight = flightRef.current;
     
@@ -850,55 +851,41 @@ export function FloatingQueenBee() {
       const now = Date.now();
       const halfDim = dimension / 2;
       
-      // Get LIVE viewport dimensions every frame
-      const viewW = window.innerWidth;
-      const viewH = window.innerHeight;
-      const homeX = viewW / 2;
-      const homeY = viewH / 2;
+      // LIVE viewport center
+      const homeX = window.innerWidth / 2;
+      const homeY = window.innerHeight / 2;
       
-      // Initialize position at center on first frame
+      // Initialize at center once
       if (!flight.initialized) {
         flight.x = homeX;
         flight.y = homeY;
-        flight.targetX = homeX;
-        flight.targetY = homeY;
+        flight.targetX = homeX + 30;
+        flight.targetY = homeY - 20;
         flight.initialized = true;
       }
       
-      // Pick new random target within home circle
+      // Pick new wandering target within roaming area
       if (now > flight.nextTargetTime) {
         const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * HOME_RADIUS * 0.6;
+        const dist = HOME_RADIUS * (0.3 + Math.random() * 0.5); // 30-80% of radius
         flight.targetX = homeX + Math.cos(angle) * dist;
         flight.targetY = homeY + Math.sin(angle) * dist;
-        flight.nextTargetTime = now + TARGET_INTERVAL + Math.random() * 500;
+        flight.nextTargetTime = now + TARGET_INTERVAL + Math.random() * 1000;
       }
       
-      // Calculate direction to target
+      // Thrust toward target
       const dx = flight.targetX - flight.x;
       const dy = flight.targetY - flight.y;
       const distToTarget = Math.sqrt(dx * dx + dy * dy);
       
-      // Apply thrust toward target
-      if (distToTarget > 3) {
+      if (distToTarget > 5) {
         flight.vx += (dx / distToTarget) * THRUST * dt;
         flight.vy += (dy / distToTarget) * THRUST * dt;
       }
       
-      // Apply gravity and lift
-      flight.vy += GRAVITY * dt;
-      flight.vy -= GRAVITY * 1.05 * dt; // Slight net lift
-      
-      // Home circle boundary - progressive pull back
-      const homeDistX = flight.x - homeX;
-      const homeDistY = flight.y - homeY;
-      const homeDist = Math.sqrt(homeDistX * homeDistX + homeDistY * homeDistY);
-      
-      if (homeDist > HOME_RADIUS * 0.4) {
-        const pullStrength = Math.pow(homeDist / HOME_RADIUS, 2) * HOME_PULL;
-        flight.vx -= (homeDistX / Math.max(homeDist, 1)) * pullStrength * dt * 8;
-        flight.vy -= (homeDistY / Math.max(homeDist, 1)) * pullStrength * dt * 8;
-      }
+      // Add small random jitter for organic feel
+      flight.vx += (Math.random() - 0.5) * JITTER * dt;
+      flight.vy += (Math.random() - 0.5) * JITTER * dt;
       
       // Apply drag
       flight.vx *= DRAG;
@@ -915,20 +902,40 @@ export function FloatingQueenBee() {
       flight.x += flight.vx * dt;
       flight.y += flight.vy * dt;
       
-      // HARD CLAMP - Absolute boundary enforcement
-      const newHomeDistX = flight.x - homeX;
-      const newHomeDistY = flight.y - homeY;
-      const newHomeDist = Math.sqrt(newHomeDistX * newHomeDistX + newHomeDistY * newHomeDistY);
+      // Calculate distance from home
+      const homeDistX = flight.x - homeX;
+      const homeDistY = flight.y - homeY;
+      const homeDist = Math.sqrt(homeDistX * homeDistX + homeDistY * homeDistY);
+      const distRatio = homeDist / HOME_RADIUS;
       
-      if (newHomeDist > HOME_RADIUS) {
-        // Clamp position to edge of circle
-        flight.x = homeX + (newHomeDistX / newHomeDist) * HOME_RADIUS * 0.9;
-        flight.y = homeY + (newHomeDistY / newHomeDist) * HOME_RADIUS * 0.9;
-        // Kill outward velocity
-        const radialV = (flight.vx * newHomeDistX + flight.vy * newHomeDistY) / newHomeDist;
+      // PIECEWISE BOUNDARY - Only apply force outside free zone
+      if (distRatio > FREE_ZONE && homeDist > 1) {
+        let pullStrength = 0;
+        
+        if (distRatio < SOFT_ZONE) {
+          // Mild linear pull in soft zone (60-85%)
+          pullStrength = (distRatio - FREE_ZONE) / (SOFT_ZONE - FREE_ZONE) * 0.08;
+        } else if (distRatio < 1.0) {
+          // Stronger pull near edge (85-100%)
+          pullStrength = 0.08 + (distRatio - SOFT_ZONE) / (1.0 - SOFT_ZONE) * 0.15;
+        } else {
+          // Very strong pull if outside (shouldn't happen often)
+          pullStrength = 0.3;
+        }
+        
+        flight.vx -= (homeDistX / homeDist) * pullStrength * dt * 5;
+        flight.vy -= (homeDistY / homeDist) * pullStrength * dt * 5;
+      }
+      
+      // HARD CLAMP - Only if truly outside
+      if (homeDist > HOME_RADIUS) {
+        flight.x = homeX + (homeDistX / homeDist) * HOME_RADIUS * 0.95;
+        flight.y = homeY + (homeDistY / homeDist) * HOME_RADIUS * 0.95;
+        // Reflect velocity inward
+        const radialV = (flight.vx * homeDistX + flight.vy * homeDistY) / homeDist;
         if (radialV > 0) {
-          flight.vx -= (newHomeDistX / newHomeDist) * radialV;
-          flight.vy -= (newHomeDistY / newHomeDist) * radialV;
+          flight.vx -= (homeDistX / homeDist) * radialV * 1.5;
+          flight.vy -= (homeDistY / homeDist) * radialV * 1.5;
         }
       }
       
@@ -936,15 +943,15 @@ export function FloatingQueenBee() {
       flight.wingPhase += WING_BOB_FREQ * dt * 0.1;
       const wingBob = Math.sin(flight.wingPhase) * WING_BOB_AMP;
       
-      // Final CENTER position (with wing bob)
+      // Final position
       const queenX = flight.x;
       const queenY = flight.y + wingBob;
       
-      // Update direction from velocity for facing
+      // Update facing direction
       beeController.direction.update(flight.vx, flight.vy);
       setFacing(beeController.direction.getFacing());
       
-      // Update head aim (eyes follow cursor)
+      // Update head aim
       setHeadAim(beeController.headAim.update(
         deltaTime, queenX, queenY,
         mousePos.x, mousePos.y,
@@ -957,14 +964,14 @@ export function FloatingQueenBee() {
       // Update shared queen state for workers
       beeController.setQueenState(queenX, queenY, flight.vx, flight.vy);
       
-      // Convert CENTER to TOP-LEFT for rendering
+      // Render position (center -> top-left)
       updatePosition(queenX - halfDim, queenY - halfDim);
       
       // Update velocity state
       setBeeVelocity({ x: flight.vx, y: flight.vy });
       updateAutonomousVelocity({ x: flight.vx, y: flight.vy });
       
-      // Check cursor proximity for worker attack
+      // Worker attack trigger
       const cursorDist = Math.sqrt(
         Math.pow(mousePos.x - queenX, 2) + Math.pow(mousePos.y - queenY, 2)
       );
@@ -975,7 +982,7 @@ export function FloatingQueenBee() {
         setMode('SWARM');
       }
       
-      setIsHovering(speed < 1);
+      setIsHovering(speed < 0.8);
       animationFrameRef.current = requestAnimationFrame(animate);
     };
     
