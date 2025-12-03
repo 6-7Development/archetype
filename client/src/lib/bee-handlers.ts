@@ -727,6 +727,11 @@ export class MovementController {
     this.position = { x, y };
   }
 
+  zeroVelocity(): void {
+    this.velocity = { x: 0, y: 0 };
+    this.acceleration = { x: 0, y: 0 };
+  }
+
   setViewport(width: number, height: number): void {
     this.viewportSize = { x: width, y: height };
   }
@@ -972,28 +977,29 @@ export class MovementController {
   private stayInBounds(): Vector2 {
     const force = { x: 0, y: 0 };
     const halfDim = this.dimension / 2;
-    const hatPadding = 40; // Match the hard clamp padding for Santa hat
-    const edgePadding = 20; // Extra margin from screen edges
+    // Match React layer's padding exactly: hatHeight = dim * 0.6, uniformPadding = max(hatHeight+10, 50)
+    const hatHeight = this.dimension * 0.6;
+    const uniformPadding = Math.max(hatHeight + 10, 50);
     
-    // Calculate safe bounds (matching hard clamp)
-    const minX = halfDim + edgePadding;
-    const maxX = this.viewportSize.x - halfDim - edgePadding;
-    const minY = halfDim + hatPadding + edgePadding; // Extra top padding for hat
-    const maxY = this.viewportSize.y - halfDim - edgePadding;
+    // Calculate safe bounds (matching hard clamp in React layer)
+    const minX = halfDim + uniformPadding;
+    const maxX = this.viewportSize.x - halfDim - uniformPadding;
+    const minY = halfDim + hatHeight + 10; // Extra top padding for hat
+    const maxY = this.viewportSize.y - halfDim - uniformPadding;
     
     // Soft boundaries with increasing force - push back before hitting edge
-    const softZone = 60; // Start pushing back this far from edge
+    const softZone = 40; // Reduced from 60 for tighter control
     
     if (this.position.x < minX + softZone) {
-      force.x = (minX + softZone - this.position.x) * 0.08;
+      force.x = (minX + softZone - this.position.x) * 0.1; // Increased from 0.08
     } else if (this.position.x > maxX - softZone) {
-      force.x = (maxX - softZone - this.position.x) * 0.08;
+      force.x = (maxX - softZone - this.position.x) * 0.1;
     }
     
     if (this.position.y < minY + softZone) {
-      force.y = (minY + softZone - this.position.y) * 0.08;
+      force.y = (minY + softZone - this.position.y) * 0.1;
     } else if (this.position.y > maxY - softZone) {
-      force.y = (maxY - softZone - this.position.y) * 0.08;
+      force.y = (maxY - softZone - this.position.y) * 0.1;
     }
     
     return force;
@@ -1002,14 +1008,14 @@ export class MovementController {
   private pickNewWanderTarget(): void {
     // Pick a random point within the safe viewport area
     const halfDim = this.dimension / 2;
-    const hatPadding = 40; // Extra space for Santa hat
-    const edgePadding = 20; // Extra margin from screen edges
-    const softZone = 60; // Stay away from edges
+    const hatHeight = this.dimension * 0.6;
+    const uniformPadding = Math.max(hatHeight + 10, 50);
+    const softZone = 40; // Stay away from edges
     
-    const minX = halfDim + edgePadding + softZone;
-    const maxX = this.viewportSize.x - halfDim - edgePadding - softZone;
-    const minY = halfDim + hatPadding + edgePadding + softZone;
-    const maxY = this.viewportSize.y - halfDim - edgePadding - softZone;
+    const minX = halfDim + uniformPadding + softZone;
+    const maxX = this.viewportSize.x - halfDim - uniformPadding - softZone;
+    const minY = halfDim + hatHeight + 10 + softZone;
+    const maxY = this.viewportSize.y - halfDim - uniformPadding - softZone;
     
     this.targetPosition = {
       x: minX + Math.random() * Math.max(0, maxX - minX),
@@ -1124,9 +1130,9 @@ export class MovementController {
     this.velocity.x *= this.config.friction;
     this.velocity.y *= this.config.friction;
     
-    // Limit velocity
+    // Limit velocity - REDUCED speeds to prevent wild movement
     const velMag = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-    const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 2 
+    const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 1.3 // Reduced from 2x
                            : this.state === 'REST' ? this.config.maxSpeed * 0.2
                            : this.config.maxSpeed;
     if (velMag > maxSpeedForState) {
@@ -1139,16 +1145,16 @@ export class MovementController {
     this.position.y += this.velocity.y;
     
     // STRICT border constraints - queen bee must stay fully visible
-    // Use dimension + extra padding to account for accessories like Santa hat
+    // Use SAME padding as React layer to prevent conflicting clamping
     const halfDim = this.dimension / 2;
-    const hatPadding = 40; // Extra space for Santa hat and other decorations
-    const edgePadding = 20; // Extra margin from screen edges
+    const hatHeight = this.dimension * 0.6;
+    const uniformPadding = Math.max(hatHeight + 10, 50);
     
     // Clamp position so entire bee (including hat) stays in view
-    const minX = halfDim + edgePadding;
-    const maxX = this.viewportSize.x - halfDim - edgePadding;
-    const minY = halfDim + hatPadding + edgePadding; // Extra top padding for hat
-    const maxY = this.viewportSize.y - halfDim - edgePadding;
+    const minX = halfDim + uniformPadding;
+    const maxX = this.viewportSize.x - halfDim - uniformPadding;
+    const minY = halfDim + hatHeight + 10; // Extra top padding for hat
+    const maxY = this.viewportSize.y - halfDim - uniformPadding;
     
     this.position.x = Math.max(minX, Math.min(maxX, this.position.x));
     this.position.y = Math.max(minY, Math.min(maxY, this.position.y));
@@ -2998,8 +3004,10 @@ export class BeeController {
   }
   
   // Sync movement controller position with clamped value (call only when clamping applied)
+  // Also zeros velocity to prevent the controller from immediately moving back out of bounds
   syncMovementPosition(x: number, y: number): void {
     this.movement.setPosition(x, y);
+    this.movement.zeroVelocity(); // Critical: prevent velocity from pushing back out
   }
   
   // Get the current queen state (for reading from handlers)
