@@ -928,8 +928,16 @@ export function FloatingQueenBee() {
       const py2 = Math.cos(time.t * FREQ_Y2 + 2.1) * RADIUS_Y * 0.3;
       
       // Combined position (center-based)
-      const queenX = centerX + px1 + px2;
-      const queenY = centerY + py1 + py2;
+      let queenX = centerX + px1 + px2;
+      let queenY = centerY + py1 + py2;
+      
+      // CLAMP CENTER position to viewport bounds BEFORE all other operations
+      if (typeof window !== 'undefined') {
+        const size = SIZE_DIMENSIONS[config.size];
+        const padding = 10;
+        queenX = Math.max(padding + halfDim, Math.min(queenX, window.innerWidth - halfDim - padding));
+        queenY = Math.max(HEADER_BUFFER + halfDim, Math.min(queenY, window.innerHeight - halfDim - padding));
+      }
       
       // Calculate velocity from position derivatives (for facing direction)
       const vx = Math.cos(time.t * FREQ_X) * FREQ_X * RADIUS_X +
@@ -955,14 +963,13 @@ export function FloatingQueenBee() {
       // Update body dynamics
       setBodyDynamics(beeController.bodyDynamics.update(deltaMs, vx, vy));
       
-      // Update shared queen state for workers to orbit
+      // Update shared queen state for workers to orbit (using CLAMPED position)
       beeController.setQueenState(queenX, finalY, vx, vy);
       
-      // Convert center to top-left for rendering and CLAMP to viewport
+      // Convert clamped center to top-left for rendering
       const renderX = queenX - halfDim;
       const renderY = finalY - halfDim;
-      const clampedPos = clampPosition(renderX, renderY);
-      updatePosition(clampedPos.x, clampedPos.y);
+      updatePosition(renderX, renderY);
       
       // Update velocity state for other systems
       setBeeVelocity({ x: vx * 0.1, y: vy * 0.1 });
