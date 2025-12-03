@@ -2715,7 +2715,9 @@ export type SwarmSyncPhase = 'PATROL' | 'UNITY_TRANSIT' | 'UNITY_ACTIVE' | 'DISP
 // These modes cause workers to form up around the queen
 const EMOTE_MODES = [
   'EXCITED', 'ERROR', 'CONFUSED', 'HELPFUL', 'CELEBRATING', 
-  'THINKING', 'LOADING', 'SLEEPY', 'FOCUSED', 'SUCCESS'
+  'THINKING', 'LOADING', 'SLEEPY', 'FOCUSED', 'SUCCESS',
+  'LISTENING', 'RESTING', 'CURIOUS', 'ALERT', 'TYPING', 
+  'CODING', 'BUILDING'
 ] as const;
 
 const IDLE_MODES = ['IDLE', 'ROAM'] as const;
@@ -2790,6 +2792,37 @@ export class SwarmUnityController {
     return IDLE_MODES.includes(mode as typeof IDLE_MODES[number]) || mode === 'ROAM';
   }
   
+  // Formation families group modes with similar visual patterns
+  // Switching within a family doesn't regenerate formation (prevents glitches)
+  private getFormationFamily(mode: string): string {
+    switch (mode) {
+      case 'EXCITED':
+      case 'CELEBRATING':
+      case 'SUCCESS':
+        return 'CELEBRATION'; // Tight ring, pulsing
+      case 'ERROR':
+      case 'CONFUSED':
+      case 'ALERT':
+        return 'PROTECTIVE'; // Wide protective arc
+      case 'THINKING':
+      case 'LOADING':
+      case 'LISTENING':
+        return 'CONTEMPLATIVE'; // Medium ring, slow rotation
+      case 'SLEEPY':
+      case 'RESTING':
+        return 'COZY'; // Tight cluster, breathing
+      case 'TYPING':
+      case 'CODING':
+      case 'BUILDING':
+        return 'WORK'; // Close formation, slow rotation
+      case 'HELPFUL':
+      case 'FOCUSED':
+      case 'CURIOUS':
+      default:
+        return 'NEUTRAL'; // Standard ring
+    }
+  }
+  
   // Called when queen mode changes
   handleModeChange(newMode: string, queenX: number, queenY: number): void {
     const wasEmote = this.isEmoteMode(this.currentEmoteMode);
@@ -2802,8 +2835,26 @@ export class SwarmUnityController {
       // Exiting emote mode - start disperse
       this.startDisperse();
     } else if (isEmote && newMode !== this.currentEmoteMode) {
-      // Changing between emote modes - refresh formation
-      this.refreshFormation(newMode, queenX, queenY);
+      // Changing between emote modes
+      // DEBOUNCE: Only refresh formation if switching to a different formation family
+      // This prevents glitches during rapid mode changes within the same family
+      const oldFamily = this.getFormationFamily(this.currentEmoteMode);
+      const newFamily = this.getFormationFamily(newMode);
+      
+      // Refresh formation when:
+      // 1. Switching between different formation families (e.g., CONTEMPLATIVE → WORK)
+      // 2. Phase is PATROL or DISPERSING (first entry needs fresh formation targets)
+      // 3. Formation targets are empty (guarantees first-entry regeneration in edge cases)
+      const needsRefresh = oldFamily !== newFamily || 
+                           this.phase === 'PATROL' || 
+                           this.phase === 'DISPERSING' ||
+                           this.formationTargets.size === 0;
+      
+      if (needsRefresh) {
+        // Full refresh needed - regenerate formation targets
+        this.refreshFormation(newMode, queenX, queenY);
+      }
+      // Same family - just update mode, animation will smoothly transition via updateFormation
     }
     
     this.currentEmoteMode = newMode;
@@ -2871,16 +2922,33 @@ export class SwarmUnityController {
         break;
       case 'THINKING':
       case 'LOADING':
+      case 'LISTENING':
         radius = 60;
         angleOffset = Math.PI * 0.1;
         break;
       case 'SLEEPY':
+      case 'RESTING':
         radius = 50; // Cozy cluster
         scaleVariation = 0.2;
         break;
       case 'HELPFUL':
       case 'FOCUSED':
         radius = 65;
+        break;
+      case 'CURIOUS':
+        radius = 60;
+        angleOffset = Math.PI * 0.15; // Slightly offset, curious look
+        break;
+      case 'ALERT':
+        radius = 68; // Protective spread
+        scaleVariation = 0.12;
+        break;
+      case 'TYPING':
+      case 'CODING':
+      case 'BUILDING':
+        radius = 55; // Work mode - close formation
+        angleOffset = Math.PI * 0.05;
+        scaleVariation = 0.08;
         break;
     }
     
@@ -2919,15 +2987,31 @@ export class SwarmUnityController {
         break;
       case 'ERROR':
       case 'CONFUSED':
-        radius = 70;
+      case 'ALERT':
+        // PROTECTIVE family - wide arc with oscillating offset
+        radius = mode === 'ALERT' 
+          ? 68 + Math.sin(this.emoteClock * 0.012) * 4  // Quick pulse for alert
+          : 70;
         angleOffset = Math.PI * 0.25 + Math.sin(this.emoteClock * 0.008) * 0.1;
         break;
       case 'THINKING':
       case 'LOADING':
+      case 'LISTENING':
         angleOffset = this.emoteClock * 0.001; // Slow rotation
         break;
       case 'SLEEPY':
+      case 'RESTING':
         radius = 50 + Math.sin(this.emoteClock * 0.003) * 3; // Gentle breathing
+        break;
+      case 'CURIOUS':
+        radius = 60;
+        angleOffset = Math.PI * 0.15 + Math.sin(this.emoteClock * 0.005) * 0.08; // Subtle curiosity shift
+        break;
+      case 'TYPING':
+      case 'CODING':
+      case 'BUILDING':
+        radius = 55;
+        angleOffset = this.emoteClock * 0.0005; // Very slow rotation during work
         break;
     }
     

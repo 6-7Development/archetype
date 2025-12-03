@@ -538,6 +538,20 @@ export function FloatingQueenBee() {
     if (lastProcessedModeRef.current.mode === mode && now - lastProcessedModeRef.current.timestamp < 100) {
       return;
     }
+    
+    // HIGH-ENERGY MODE EXIT: Reset velocity when transitioning from aggressive modes
+    // This prevents post-FRENZY/SWARM/HUNTING erratic boundary oscillation
+    const HIGH_ENERGY_MODES = ['FRENZY', 'SWARM', 'HUNTING'];
+    const wasHighEnergy = HIGH_ENERGY_MODES.includes(lastProcessedModeRef.current.mode);
+    const isHighEnergy = HIGH_ENERGY_MODES.includes(mode);
+    
+    if (wasHighEnergy && !isHighEnergy) {
+      // Transitioning from high-energy to calm mode - zero velocity and sync position
+      const queenState = beeController.getQueenState();
+      beeController.movement.zeroVelocity();
+      beeController.syncMovementPosition(queenState.x, queenState.y);
+    }
+    
     lastProcessedModeRef.current = { mode, timestamp: now };
     
     // Map QueenBeeMode to MovementState - strictly one-way, no setMode calls
@@ -927,10 +941,14 @@ export function FloatingQueenBee() {
         setEmotionalState(newEmotionalState);
       }
       
-      // Handle FRENZY timeout
+      // Handle FRENZY timeout - critical: zero velocity to prevent erratic boundary oscillation
       if (emotionalState === 'FRENZY' && now - lastFrenzyTime > 4000) {
         setEmotionalState('RESTING');
         beeController.movement.forceState('REST');
+        // CRITICAL FIX: Zero velocity and sync position to stop high-energy momentum
+        // This prevents the queen from bouncing/oscillating after FRENZY ends
+        beeController.movement.zeroVelocity();
+        beeController.syncMovementPosition(clampedX, clampedY);
         canvasRef.current?.resetRagdoll?.();
       }
       
@@ -1307,7 +1325,7 @@ export function FloatingQueenBee() {
               formationX={worker.x}
               formationY={worker.y}
               formationAngle={0}
-              emotePhase="UNITY_ACTIVE"
+              emotePhase={beeController.unity.getEmotePhase()}
               transitionProgress={1}
             />
           );
