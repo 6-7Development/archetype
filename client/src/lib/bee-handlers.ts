@@ -2938,6 +2938,121 @@ export interface QueenState {
 }
 
 // ============================================
+// TOOL-TO-EMOTE MAPPING SYSTEM
+// ============================================
+// Scout tool names mapped to queen emotional reactions
+export type ScoutToolName = 
+  | 'read_file' | 'write_file' | 'edit_file' | 'delete_file'
+  | 'glob' | 'grep' | 'search_codebase' | 'ls'
+  | 'execute_sql' | 'check_database_status' | 'create_postgresql_database'
+  | 'web_search' | 'web_fetch'
+  | 'suggest_deploy' | 'suggest_rollback'
+  | 'get_latest_lsp_diagnostics' | 'refresh_all_logs'
+  | 'packager_tool' | 'programming_language_install_tool'
+  | 'restart_workflow' | 'bash'
+  | 'architect' | 'start_subagent'
+  | 'user_query' | 'mark_completed_and_get_feedback'
+  | 'vision_analysis' | 'browser_test';
+
+// Emote states that tools can trigger (subset of QueenBeeMode)
+export type ToolEmoteMode = 
+  | 'SAVING' | 'SEARCHING' | 'DB_QUERY' | 'NET_REQUEST'
+  | 'DEPLOYING' | 'ROLLBACK' | 'DEBUGGING' | 'REVIEWING'
+  | 'BUILDING' | 'CODING' | 'THINKING'
+  | 'FRUSTRATED' | 'SCARED' | 'PANIC'
+  | 'SUCCESS' | 'ERROR' | 'VICTORY' | 'DELIGHT';
+
+// Tool category for grouped behavior
+export type ToolCategory = 
+  | 'file_ops'      // File read/write/edit
+  | 'search'        // Code search, glob, grep
+  | 'database'      // SQL, DB operations
+  | 'network'       // Web search, fetch
+  | 'deploy'        // Deploy, rollback
+  | 'debug'         // LSP, logs, diagnostics
+  | 'build'         // Packages, languages
+  | 'system'        // Bash, workflow
+  | 'ai'            // Architect, subagent
+  | 'interaction';  // User query, feedback
+
+// Tool result for emote triggering
+export interface ToolResult {
+  toolName: ScoutToolName;
+  success: boolean;
+  duration?: number;        // How long the operation took (ms)
+  isDestructive?: boolean;  // Was this a delete/drop operation
+  errorCode?: string;       // Specific error type
+}
+
+// Mapping of tools to their emote reactions
+const TOOL_EMOTE_MAP: Record<ScoutToolName, { 
+  start: ToolEmoteMode; 
+  success: ToolEmoteMode; 
+  failure: ToolEmoteMode;
+  category: ToolCategory;
+}> = {
+  // File Operations
+  'read_file':    { start: 'SEARCHING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'file_ops' },
+  'write_file':   { start: 'SAVING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'file_ops' },
+  'edit_file':    { start: 'CODING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'file_ops' },
+  'delete_file':  { start: 'SCARED', success: 'SUCCESS', failure: 'ERROR', category: 'file_ops' },
+  
+  // Search Operations
+  'glob':            { start: 'SEARCHING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'search' },
+  'grep':            { start: 'SEARCHING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'search' },
+  'search_codebase': { start: 'SEARCHING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'search' },
+  'ls':              { start: 'SEARCHING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'search' },
+  
+  // Database Operations
+  'execute_sql':              { start: 'DB_QUERY', success: 'SUCCESS', failure: 'ERROR', category: 'database' },
+  'check_database_status':    { start: 'DB_QUERY', success: 'SUCCESS', failure: 'ERROR', category: 'database' },
+  'create_postgresql_database': { start: 'BUILDING', success: 'VICTORY', failure: 'PANIC', category: 'database' },
+  
+  // Network Operations
+  'web_search': { start: 'NET_REQUEST', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'network' },
+  'web_fetch':  { start: 'NET_REQUEST', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'network' },
+  
+  // Deploy Operations
+  'suggest_deploy':   { start: 'DEPLOYING', success: 'VICTORY', failure: 'PANIC', category: 'deploy' },
+  'suggest_rollback': { start: 'ROLLBACK', success: 'SUCCESS', failure: 'PANIC', category: 'deploy' },
+  
+  // Debug Operations
+  'get_latest_lsp_diagnostics': { start: 'DEBUGGING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'debug' },
+  'refresh_all_logs':           { start: 'DEBUGGING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'debug' },
+  
+  // Build Operations
+  'packager_tool':                  { start: 'BUILDING', success: 'SUCCESS', failure: 'ERROR', category: 'build' },
+  'programming_language_install_tool': { start: 'BUILDING', success: 'SUCCESS', failure: 'ERROR', category: 'build' },
+  
+  // System Operations
+  'restart_workflow': { start: 'BUILDING', success: 'SUCCESS', failure: 'ERROR', category: 'system' },
+  'bash':             { start: 'THINKING', success: 'SUCCESS', failure: 'ERROR', category: 'system' },
+  
+  // AI Operations
+  'architect':      { start: 'REVIEWING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'ai' },
+  'start_subagent': { start: 'THINKING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'ai' },
+  
+  // Interaction Operations
+  'user_query':                  { start: 'THINKING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'interaction' },
+  'mark_completed_and_get_feedback': { start: 'DELIGHT', success: 'VICTORY', failure: 'ERROR', category: 'interaction' },
+  
+  // Vision/Testing Operations
+  'vision_analysis': { start: 'REVIEWING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'ai' },
+  'browser_test':    { start: 'DEBUGGING', success: 'SUCCESS', failure: 'FRUSTRATED', category: 'debug' },
+};
+
+// Get the emote mapping for a tool
+export function getToolEmoteMapping(toolName: string): typeof TOOL_EMOTE_MAP[ScoutToolName] | null {
+  return TOOL_EMOTE_MAP[toolName as ScoutToolName] || null;
+}
+
+// Get tool category
+export function getToolCategory(toolName: string): ToolCategory | null {
+  const mapping = TOOL_EMOTE_MAP[toolName as ScoutToolName];
+  return mapping?.category || null;
+}
+
+// ============================================
 // COMBINED BEE CONTROLLER
 // ============================================
 export class BeeController {
@@ -3121,6 +3236,159 @@ export class BeeController {
   // Remove obstacle
   removeObstacle(id: string): void {
     this.movement.removeObstacle(id);
+  }
+
+  // ============================================
+  // TOOL-TO-EMOTE TRIGGER SYSTEM
+  // ============================================
+  // Track consecutive failures for PANIC escalation
+  private failureCount: number = 0;
+  private lastToolTime: number = 0;
+  private currentToolEmote: ToolEmoteMode | null = null;
+  
+  // Listeners for emote changes (to be called by UI components)
+  private emoteListeners: Array<(emote: ToolEmoteMode, toolName: string, phase: 'start' | 'end') => void> = [];
+  
+  // Register a listener for emote changes
+  onToolEmote(listener: (emote: ToolEmoteMode, toolName: string, phase: 'start' | 'end') => void): () => void {
+    this.emoteListeners.push(listener);
+    return () => {
+      const idx = this.emoteListeners.indexOf(listener);
+      if (idx >= 0) this.emoteListeners.splice(idx, 1);
+    };
+  }
+  
+  // Notify all listeners
+  private notifyEmoteChange(emote: ToolEmoteMode, toolName: string, phase: 'start' | 'end'): void {
+    for (const listener of this.emoteListeners) {
+      try {
+        listener(emote, toolName, phase);
+      } catch (e) {
+        console.error('[BeeController] Emote listener error:', e);
+      }
+    }
+  }
+  
+  // Trigger emote when a tool STARTS executing
+  triggerToolStart(toolName: string): ToolEmoteMode | null {
+    const mapping = getToolEmoteMapping(toolName);
+    if (!mapping) return null;
+    
+    this.currentToolEmote = mapping.start;
+    this.lastToolTime = Date.now();
+    this.notifyEmoteChange(mapping.start, toolName, 'start');
+    
+    return mapping.start;
+  }
+  
+  // Trigger emote when a tool FINISHES
+  triggerToolEnd(result: ToolResult): ToolEmoteMode {
+    const mapping = getToolEmoteMapping(result.toolName);
+    const now = Date.now();
+    
+    // Reset failure count if it's been a while since last tool (5 seconds)
+    if (now - this.lastToolTime > 5000) {
+      this.failureCount = 0;
+    }
+    
+    let emote: ToolEmoteMode;
+    
+    if (result.success) {
+      // Success - reset failure count
+      this.failureCount = 0;
+      emote = mapping?.success || 'SUCCESS';
+      
+      // Check for special victory conditions
+      if (mapping?.category === 'deploy' && result.success) {
+        emote = 'VICTORY';
+      }
+    } else {
+      // Failure - increment count
+      this.failureCount++;
+      
+      // Escalate to PANIC after 3+ failures
+      if (this.failureCount >= 3) {
+        emote = 'PANIC';
+      } else if (result.isDestructive) {
+        emote = 'SCARED';
+      } else {
+        emote = mapping?.failure || 'ERROR';
+      }
+    }
+    
+    this.currentToolEmote = emote;
+    this.lastToolTime = now;
+    this.notifyEmoteChange(emote, result.toolName, 'end');
+    
+    return emote;
+  }
+  
+  // Trigger VICTORY state (deploy success, major achievement)
+  triggerVictory(duration: number = 5000): void {
+    this.failureCount = 0;
+    this.currentToolEmote = 'VICTORY';
+    this.notifyEmoteChange('VICTORY', 'victory', 'start');
+    
+    // Also trigger celebration in movement controller
+    this.movement.triggerCelebration(duration);
+    
+    // Clear after duration
+    setTimeout(() => {
+      if (this.currentToolEmote === 'VICTORY') {
+        this.currentToolEmote = null;
+        this.notifyEmoteChange('SUCCESS', 'victory', 'end');
+      }
+    }, duration);
+  }
+  
+  // Trigger DELIGHT state (user praise, positive feedback)
+  triggerDelight(duration: number = 3000): void {
+    this.currentToolEmote = 'DELIGHT';
+    this.notifyEmoteChange('DELIGHT', 'delight', 'start');
+    
+    // Clear after duration
+    setTimeout(() => {
+      if (this.currentToolEmote === 'DELIGHT') {
+        this.currentToolEmote = null;
+        this.notifyEmoteChange('SUCCESS', 'delight', 'end');
+      }
+    }, duration);
+  }
+  
+  // Trigger PANIC state (multiple failures, critical error)
+  triggerPanic(duration: number = 4000): void {
+    this.currentToolEmote = 'PANIC';
+    this.notifyEmoteChange('PANIC', 'panic', 'start');
+    
+    // Clear after duration
+    setTimeout(() => {
+      if (this.currentToolEmote === 'PANIC') {
+        this.currentToolEmote = null;
+        this.failureCount = 0;
+        this.notifyEmoteChange('FRUSTRATED', 'panic', 'end');
+      }
+    }, duration);
+  }
+  
+  // Get current tool emote state
+  getCurrentToolEmote(): ToolEmoteMode | null {
+    return this.currentToolEmote;
+  }
+  
+  // Get current failure count
+  getFailureCount(): number {
+    return this.failureCount;
+  }
+  
+  // Reset failure tracking
+  resetFailures(): void {
+    this.failureCount = 0;
+  }
+  
+  // Check if in a negative emotional state
+  isDistressed(): boolean {
+    const distressedStates: ToolEmoteMode[] = ['FRUSTRATED', 'SCARED', 'PANIC', 'ERROR'];
+    return this.currentToolEmote !== null && distressedStates.includes(this.currentToolEmote);
   }
 
   getAnimationState(): {
