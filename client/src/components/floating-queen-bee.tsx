@@ -927,18 +927,9 @@ export function FloatingQueenBee() {
       const px2 = Math.sin(time.t * FREQ_X2 + 1.5) * RADIUS_X * 0.3;
       const py2 = Math.cos(time.t * FREQ_Y2 + 2.1) * RADIUS_Y * 0.3;
       
-      // Combined position (center-based)
-      let queenX = centerX + px1 + px2;
-      let queenY = centerY + py1 + py2;
-      
-      // CLAMP CENTER position to viewport bounds BEFORE all other operations
-      // This prevents the queen from escaping while preserving Lissajous movement
-      if (typeof window !== 'undefined') {
-        const topPadding = 60; // Header buffer
-        const edgePadding = 10;
-        queenX = Math.max(edgePadding + halfDim, Math.min(queenX, window.innerWidth - halfDim - edgePadding));
-        queenY = Math.max(topPadding + halfDim, Math.min(queenY, window.innerHeight - halfDim - edgePadding));
-      }
+      // Combined position (center-based) - UNCLAMPED for physics/worker orbits
+      const queenX = centerX + px1 + px2;
+      const queenY = centerY + py1 + py2;
       
       // Calculate velocity from position derivatives (for facing direction)
       const vx = Math.cos(time.t * FREQ_X) * FREQ_X * RADIUS_X +
@@ -964,12 +955,21 @@ export function FloatingQueenBee() {
       // Update body dynamics
       setBodyDynamics(beeController.bodyDynamics.update(deltaMs, vx, vy));
       
-      // Update shared queen state for workers to orbit (using CLAMPED position)
+      // Update shared queen state for workers to orbit (using physics position)
       beeController.setQueenState(queenX, finalY, vx, vy);
       
-      // Convert clamped center to top-left for rendering
-      const renderX = queenX - halfDim;
-      const renderY = finalY - halfDim;
+      // Convert center to top-left for rendering, with safety clamp for display only
+      let renderX = queenX - halfDim;
+      let renderY = finalY - halfDim;
+      
+      // Safety clamp on RENDER position only - doesn't affect physics/workers
+      // Uses generous padding to allow full Lissajous movement while catching edge cases
+      if (typeof window !== 'undefined') {
+        const safetyPadding = 20;
+        renderX = Math.max(safetyPadding, Math.min(renderX, window.innerWidth - dimension - safetyPadding));
+        renderY = Math.max(safetyPadding, Math.min(renderY, window.innerHeight - dimension - safetyPadding));
+      }
+      
       updatePosition(renderX, renderY);
       
       // Update velocity state for other systems
