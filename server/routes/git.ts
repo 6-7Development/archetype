@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { platformGitService } from "../services/gitService";
+import { isAuthenticated, isAdmin } from '../universalAuth.ts';
 
 const router = Router();
+
+// Apply authentication to all Git routes
+router.use(isAuthenticated);
 
 // Get commit history for platform repo
 router.get("/api/git/history", async (req, res) => {
@@ -93,8 +97,8 @@ router.get("/api/git/commit/:hash/file-diff", async (req, res) => {
   }
 });
 
-// Stage files for commit
-router.post("/api/git/stage", async (req, res) => {
+// Stage files for commit (Admin only)
+router.post("/api/git/stage", isAdmin, async (req, res) => {
   try {
     const { files } = req.body;
     
@@ -111,8 +115,8 @@ router.post("/api/git/stage", async (req, res) => {
   }
 });
 
-// Commit staged changes
-router.post("/api/git/commit", async (req, res) => {
+// Commit staged changes (Admin only)
+router.post("/api/git/commit", isAdmin, async (req, res) => {
   try {
     const { message, author } = req.body;
     
@@ -139,8 +143,8 @@ router.post("/api/git/commit", async (req, res) => {
   }
 });
 
-// Create a new branch
-router.post("/api/git/branch", async (req, res) => {
+// Create a new branch (Admin only)
+router.post("/api/git/branch", isAdmin, async (req, res) => {
   try {
     const { name } = req.body;
     
@@ -163,8 +167,8 @@ router.post("/api/git/branch", async (req, res) => {
   }
 });
 
-// Checkout a branch
-router.post("/api/git/checkout", async (req, res) => {
+// Checkout a branch (Admin only)
+router.post("/api/git/checkout", isAdmin, async (req, res) => {
   try {
     const { branch } = req.body;
     
@@ -185,8 +189,8 @@ router.post("/api/git/checkout", async (req, res) => {
   }
 });
 
-// Stage all changes and commit (convenience endpoint for Scout)
-router.post("/api/git/stage-and-commit", async (req, res) => {
+// Stage all changes and commit (Admin only - convenience endpoint for Scout)
+router.post("/api/git/stage-and-commit", isAdmin, async (req, res) => {
   try {
     const { message, author, files } = req.body;
     

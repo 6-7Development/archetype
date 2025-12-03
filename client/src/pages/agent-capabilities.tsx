@@ -199,6 +199,7 @@ export default function AgentCapabilities() {
                     <div 
                       key={service.id}
                       className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                      data-testid={`service-card-${service.id}`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
@@ -250,11 +251,11 @@ export default function AgentCapabilities() {
                   const colorClass = categoryColors[category] || categoryColors.default;
                   
                   return (
-                    <div key={category}>
+                    <div key={category} data-testid={`category-${category}`}>
                       <div className="flex items-center gap-2 mb-3">
                         <CategoryIcon className="h-4 w-4" />
                         <h3 className="font-semibold capitalize">{category}</h3>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs" data-testid={`badge-category-count-${category}`}>
                           {tools.length} tools
                         </Badge>
                       </div>
@@ -267,7 +268,7 @@ export default function AgentCapabilities() {
                                 ? 'bg-card hover-elevate' 
                                 : 'bg-muted/50 opacity-60'
                             }`}
-                            data-testid={`tool-card-${tool.id}`}
+                            data-testid={`tool-card-${tool.id.replace(/\s+/g, '-').toLowerCase()}`}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
