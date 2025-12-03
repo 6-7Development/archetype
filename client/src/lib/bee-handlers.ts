@@ -3638,6 +3638,822 @@ export function calculateBodyWobble(preset: TransformationPreset, time: number):
 }
 
 // ============================================
+// PARTICLE OVERLAY SYSTEM
+// ============================================
+// Visual particle effects that surround the queen during different emotional states
+
+export type ParticleType = 
+  | 'sparkle'      // Golden/white stars - victory, delight, success
+  | 'honey_drop'   // Amber honey drops - saving, coding, building
+  | 'code_glyph'   // Floating code symbols - debugging, reviewing
+  | 'error_shard'  // Red angular shards - error, panic, frustrated
+  | 'heart'        // Pink hearts - delight, helpful
+  | 'question'     // Purple question marks - confused, searching
+  | 'lightning'    // Yellow bolts - alert, swarm, frenzy
+  | 'zzz'          // Gray Z's - sleepy, bored, resting
+  | 'gear'         // Blue gears - building, deploying
+  | 'database'     // Cyan cylinders - db_query
+  | 'network'      // Light blue nodes - net_request
+  | 'shield'       // Green shields - rollback, rate_limited
+  | 'star_burst'   // Multi-color burst - victory celebration;
+
+export interface Particle {
+  id: number;
+  type: ParticleType;
+  x: number;           // Position relative to queen center
+  y: number;
+  vx: number;          // Velocity
+  vy: number;
+  size: number;        // Base size (scaled by preset)
+  rotation: number;    // Rotation angle (degrees)
+  rotationSpeed: number; // Rotation speed (deg/s)
+  opacity: number;     // Current opacity (0-1)
+  life: number;        // Current life remaining (ms)
+  maxLife: number;     // Initial life (ms)
+  color: string;       // Primary color
+  scale: number;       // Current scale factor
+  character?: string;  // For text-based particles (code_glyph, question, zzz)
+}
+
+export interface ParticleEmitterConfig {
+  type: ParticleType;
+  rate: number;        // Particles per second
+  burst?: number;      // Burst count on spawn
+  lifetime: { min: number; max: number }; // Lifetime in ms
+  speed: { min: number; max: number };    // Initial speed
+  size: { min: number; max: number };     // Size range
+  spread: number;      // Emission cone angle (degrees, 360 = all directions)
+  direction: number;   // Base emission direction (degrees, 0 = up)
+  gravity: number;     // Downward acceleration (pixels/s²)
+  drag: number;        // Velocity decay (0-1, 1 = no decay)
+  colors: string[];    // Color palette to choose from
+  rotationSpeed: { min: number; max: number }; // Rotation speed range
+  fadeOut: number;     // Fade out duration as fraction of lifetime (0-1)
+}
+
+// Particle emitter configurations per emote state
+export const PARTICLE_CONFIGS: Record<string, ParticleEmitterConfig[]> = {
+  'SUCCESS': [
+    {
+      type: 'sparkle',
+      rate: 8,
+      lifetime: { min: 600, max: 1200 },
+      speed: { min: 30, max: 80 },
+      size: { min: 4, max: 10 },
+      spread: 360,
+      direction: 0,
+      gravity: -20,
+      drag: 0.98,
+      colors: ['#fbbf24', '#fcd34d', '#ffffff', '#4ade80'],
+      rotationSpeed: { min: 60, max: 180 },
+      fadeOut: 0.3,
+    }
+  ],
+  
+  'VICTORY': [
+    {
+      type: 'star_burst',
+      rate: 15,
+      burst: 20,
+      lifetime: { min: 1000, max: 2000 },
+      speed: { min: 60, max: 150 },
+      size: { min: 6, max: 14 },
+      spread: 360,
+      direction: 0,
+      gravity: -30,
+      drag: 0.96,
+      colors: ['#fbbf24', '#f59e0b', '#fcd34d', '#ffffff', '#a855f7'],
+      rotationSpeed: { min: 90, max: 270 },
+      fadeOut: 0.4,
+    },
+    {
+      type: 'sparkle',
+      rate: 10,
+      lifetime: { min: 800, max: 1500 },
+      speed: { min: 40, max: 100 },
+      size: { min: 3, max: 8 },
+      spread: 360,
+      direction: 0,
+      gravity: 0,
+      drag: 0.97,
+      colors: ['#ffffff', '#fef3c7'],
+      rotationSpeed: { min: 120, max: 300 },
+      fadeOut: 0.35,
+    }
+  ],
+  
+  'DELIGHT': [
+    {
+      type: 'heart',
+      rate: 6,
+      lifetime: { min: 800, max: 1400 },
+      speed: { min: 20, max: 50 },
+      size: { min: 6, max: 12 },
+      spread: 120,
+      direction: -90, // Up
+      gravity: -40,
+      drag: 0.98,
+      colors: ['#f472b6', '#ec4899', '#fb7185'],
+      rotationSpeed: { min: -30, max: 30 },
+      fadeOut: 0.4,
+    },
+    {
+      type: 'sparkle',
+      rate: 4,
+      lifetime: { min: 600, max: 1000 },
+      speed: { min: 30, max: 60 },
+      size: { min: 3, max: 7 },
+      spread: 360,
+      direction: 0,
+      gravity: -15,
+      drag: 0.97,
+      colors: ['#fbbf24', '#ffffff'],
+      rotationSpeed: { min: 60, max: 180 },
+      fadeOut: 0.3,
+    }
+  ],
+  
+  'SAVING': [
+    {
+      type: 'honey_drop',
+      rate: 4,
+      lifetime: { min: 1000, max: 1800 },
+      speed: { min: 10, max: 30 },
+      size: { min: 4, max: 8 },
+      spread: 60,
+      direction: 90, // Down
+      gravity: 40,
+      drag: 0.99,
+      colors: ['#f59e0b', '#d97706', '#fbbf24'],
+      rotationSpeed: { min: 0, max: 15 },
+      fadeOut: 0.3,
+    }
+  ],
+  
+  'CODING': [
+    {
+      type: 'code_glyph',
+      rate: 3,
+      lifetime: { min: 1500, max: 2500 },
+      speed: { min: 8, max: 20 },
+      size: { min: 10, max: 16 },
+      spread: 180,
+      direction: -90, // Up
+      gravity: -5,
+      drag: 0.99,
+      colors: ['#34d399', '#10b981', '#22c55e'],
+      rotationSpeed: { min: -10, max: 10 },
+      fadeOut: 0.4,
+    }
+  ],
+  
+  'BUILDING': [
+    {
+      type: 'gear',
+      rate: 3,
+      lifetime: { min: 1200, max: 2000 },
+      speed: { min: 15, max: 35 },
+      size: { min: 8, max: 14 },
+      spread: 270,
+      direction: -45,
+      gravity: 10,
+      drag: 0.98,
+      colors: ['#38bdf8', '#0ea5e9', '#60a5fa'],
+      rotationSpeed: { min: 30, max: 90 },
+      fadeOut: 0.35,
+    },
+    {
+      type: 'sparkle',
+      rate: 2,
+      lifetime: { min: 600, max: 1000 },
+      speed: { min: 20, max: 40 },
+      size: { min: 2, max: 5 },
+      spread: 360,
+      direction: 0,
+      gravity: 0,
+      drag: 0.97,
+      colors: ['#38bdf8', '#ffffff'],
+      rotationSpeed: { min: 60, max: 180 },
+      fadeOut: 0.3,
+    }
+  ],
+  
+  'DEBUGGING': [
+    {
+      type: 'code_glyph',
+      rate: 2,
+      lifetime: { min: 2000, max: 3000 },
+      speed: { min: 5, max: 15 },
+      size: { min: 12, max: 18 },
+      spread: 120,
+      direction: 0,
+      gravity: 0,
+      drag: 0.995,
+      colors: ['#fbbf24', '#f59e0b', '#d97706'],
+      rotationSpeed: { min: -5, max: 5 },
+      fadeOut: 0.5,
+    }
+  ],
+  
+  'REVIEWING': [
+    {
+      type: 'code_glyph',
+      rate: 2,
+      lifetime: { min: 1800, max: 2800 },
+      speed: { min: 8, max: 18 },
+      size: { min: 10, max: 15 },
+      spread: 150,
+      direction: -60,
+      gravity: -3,
+      drag: 0.99,
+      colors: ['#a78bfa', '#8b5cf6', '#c4b5fd'],
+      rotationSpeed: { min: -8, max: 8 },
+      fadeOut: 0.45,
+    }
+  ],
+  
+  'DEPLOYING': [
+    {
+      type: 'gear',
+      rate: 5,
+      lifetime: { min: 1000, max: 1800 },
+      speed: { min: 30, max: 70 },
+      size: { min: 6, max: 12 },
+      spread: 360,
+      direction: 0,
+      gravity: -20,
+      drag: 0.97,
+      colors: ['#8b5cf6', '#a855f7', '#c084fc'],
+      rotationSpeed: { min: 60, max: 180 },
+      fadeOut: 0.35,
+    },
+    {
+      type: 'sparkle',
+      rate: 6,
+      lifetime: { min: 800, max: 1400 },
+      speed: { min: 40, max: 90 },
+      size: { min: 4, max: 9 },
+      spread: 360,
+      direction: 0,
+      gravity: -15,
+      drag: 0.96,
+      colors: ['#fbbf24', '#ffffff', '#a855f7'],
+      rotationSpeed: { min: 90, max: 270 },
+      fadeOut: 0.3,
+    }
+  ],
+  
+  'ERROR': [
+    {
+      type: 'error_shard',
+      rate: 8,
+      burst: 12,
+      lifetime: { min: 600, max: 1200 },
+      speed: { min: 50, max: 120 },
+      size: { min: 5, max: 12 },
+      spread: 360,
+      direction: 0,
+      gravity: 80,
+      drag: 0.94,
+      colors: ['#ef4444', '#dc2626', '#f87171', '#fca5a5'],
+      rotationSpeed: { min: 120, max: 360 },
+      fadeOut: 0.25,
+    }
+  ],
+  
+  'FRUSTRATED': [
+    {
+      type: 'error_shard',
+      rate: 4,
+      lifetime: { min: 500, max: 900 },
+      speed: { min: 40, max: 80 },
+      size: { min: 4, max: 9 },
+      spread: 240,
+      direction: -90,
+      gravity: 50,
+      drag: 0.95,
+      colors: ['#f59e0b', '#ea580c', '#fb923c'],
+      rotationSpeed: { min: 90, max: 240 },
+      fadeOut: 0.3,
+    }
+  ],
+  
+  'SCARED': [
+    {
+      type: 'error_shard',
+      rate: 6,
+      lifetime: { min: 400, max: 800 },
+      speed: { min: 60, max: 100 },
+      size: { min: 3, max: 7 },
+      spread: 360,
+      direction: 0,
+      gravity: 20,
+      drag: 0.96,
+      colors: ['#eab308', '#facc15', '#fef08a'],
+      rotationSpeed: { min: 150, max: 400 },
+      fadeOut: 0.2,
+    }
+  ],
+  
+  'PANIC': [
+    {
+      type: 'error_shard',
+      rate: 15,
+      burst: 20,
+      lifetime: { min: 300, max: 700 },
+      speed: { min: 80, max: 180 },
+      size: { min: 4, max: 10 },
+      spread: 360,
+      direction: 0,
+      gravity: 100,
+      drag: 0.92,
+      colors: ['#dc2626', '#ef4444', '#f87171', '#fee2e2'],
+      rotationSpeed: { min: 200, max: 500 },
+      fadeOut: 0.2,
+    },
+    {
+      type: 'lightning',
+      rate: 3,
+      lifetime: { min: 200, max: 400 },
+      speed: { min: 0, max: 30 },
+      size: { min: 8, max: 16 },
+      spread: 360,
+      direction: 0,
+      gravity: 0,
+      drag: 0.99,
+      colors: ['#fef08a', '#fde047', '#facc15'],
+      rotationSpeed: { min: 0, max: 30 },
+      fadeOut: 0.1,
+    }
+  ],
+  
+  'SEARCHING': [
+    {
+      type: 'question',
+      rate: 2,
+      lifetime: { min: 1500, max: 2500 },
+      speed: { min: 10, max: 25 },
+      size: { min: 12, max: 18 },
+      spread: 180,
+      direction: -90,
+      gravity: -10,
+      drag: 0.99,
+      colors: ['#22d3ee', '#06b6d4', '#67e8f9'],
+      rotationSpeed: { min: -15, max: 15 },
+      fadeOut: 0.4,
+    }
+  ],
+  
+  'CONFUSED': [
+    {
+      type: 'question',
+      rate: 3,
+      lifetime: { min: 1200, max: 2000 },
+      speed: { min: 15, max: 35 },
+      size: { min: 14, max: 22 },
+      spread: 120,
+      direction: -90,
+      gravity: -15,
+      drag: 0.98,
+      colors: ['#c084fc', '#a855f7', '#d8b4fe'],
+      rotationSpeed: { min: -30, max: 30 },
+      fadeOut: 0.45,
+    }
+  ],
+  
+  'BORED': [
+    {
+      type: 'zzz',
+      rate: 0.5,
+      lifetime: { min: 2500, max: 4000 },
+      speed: { min: 5, max: 12 },
+      size: { min: 14, max: 20 },
+      spread: 60,
+      direction: -60,
+      gravity: -8,
+      drag: 0.995,
+      colors: ['#9ca3af', '#6b7280', '#d1d5db'],
+      rotationSpeed: { min: -5, max: 5 },
+      fadeOut: 0.5,
+    }
+  ],
+  
+  'SLEEPY': [
+    {
+      type: 'zzz',
+      rate: 0.8,
+      lifetime: { min: 3000, max: 5000 },
+      speed: { min: 3, max: 10 },
+      size: { min: 16, max: 24 },
+      spread: 45,
+      direction: -75,
+      gravity: -5,
+      drag: 0.998,
+      colors: ['#c4b5fd', '#a78bfa', '#ddd6fe'],
+      rotationSpeed: { min: -3, max: 3 },
+      fadeOut: 0.6,
+    }
+  ],
+  
+  'SWARM': [
+    {
+      type: 'lightning',
+      rate: 8,
+      lifetime: { min: 300, max: 600 },
+      speed: { min: 50, max: 120 },
+      size: { min: 6, max: 14 },
+      spread: 360,
+      direction: 0,
+      gravity: 0,
+      drag: 0.95,
+      colors: ['#f7b500', '#fbbf24', '#fde047'],
+      rotationSpeed: { min: 60, max: 180 },
+      fadeOut: 0.2,
+    },
+    {
+      type: 'sparkle',
+      rate: 5,
+      lifetime: { min: 500, max: 1000 },
+      speed: { min: 30, max: 70 },
+      size: { min: 3, max: 8 },
+      spread: 360,
+      direction: 0,
+      gravity: -10,
+      drag: 0.97,
+      colors: ['#fbbf24', '#ffffff'],
+      rotationSpeed: { min: 120, max: 360 },
+      fadeOut: 0.25,
+    }
+  ],
+  
+  'FRENZY': [
+    {
+      type: 'lightning',
+      rate: 12,
+      lifetime: { min: 200, max: 500 },
+      speed: { min: 80, max: 180 },
+      size: { min: 8, max: 18 },
+      spread: 360,
+      direction: 0,
+      gravity: 0,
+      drag: 0.93,
+      colors: ['#ef4444', '#f59e0b', '#fde047'],
+      rotationSpeed: { min: 120, max: 360 },
+      fadeOut: 0.15,
+    },
+    {
+      type: 'error_shard',
+      rate: 6,
+      lifetime: { min: 400, max: 800 },
+      speed: { min: 60, max: 140 },
+      size: { min: 4, max: 10 },
+      spread: 360,
+      direction: 0,
+      gravity: 60,
+      drag: 0.94,
+      colors: ['#ef4444', '#fb923c'],
+      rotationSpeed: { min: 180, max: 480 },
+      fadeOut: 0.2,
+    }
+  ],
+  
+  'DB_QUERY': [
+    {
+      type: 'database',
+      rate: 2,
+      lifetime: { min: 1200, max: 2000 },
+      speed: { min: 12, max: 28 },
+      size: { min: 8, max: 14 },
+      spread: 180,
+      direction: 0,
+      gravity: 15,
+      drag: 0.98,
+      colors: ['#6366f1', '#818cf8', '#a5b4fc'],
+      rotationSpeed: { min: 5, max: 20 },
+      fadeOut: 0.4,
+    }
+  ],
+  
+  'NET_REQUEST': [
+    {
+      type: 'network',
+      rate: 3,
+      lifetime: { min: 1000, max: 1800 },
+      speed: { min: 20, max: 50 },
+      size: { min: 6, max: 12 },
+      spread: 360,
+      direction: 0,
+      gravity: -8,
+      drag: 0.97,
+      colors: ['#0ea5e9', '#38bdf8', '#7dd3fc'],
+      rotationSpeed: { min: 15, max: 45 },
+      fadeOut: 0.35,
+    }
+  ],
+  
+  'ROLLBACK': [
+    {
+      type: 'shield',
+      rate: 2,
+      lifetime: { min: 1500, max: 2500 },
+      speed: { min: 8, max: 20 },
+      size: { min: 10, max: 16 },
+      spread: 120,
+      direction: -90,
+      gravity: -12,
+      drag: 0.99,
+      colors: ['#ea580c', '#f97316', '#fdba74'],
+      rotationSpeed: { min: -10, max: 10 },
+      fadeOut: 0.45,
+    }
+  ],
+  
+  'RATE_LIMITED': [
+    {
+      type: 'shield',
+      rate: 1,
+      lifetime: { min: 2000, max: 3500 },
+      speed: { min: 5, max: 12 },
+      size: { min: 12, max: 18 },
+      spread: 90,
+      direction: -90,
+      gravity: -5,
+      drag: 0.995,
+      colors: ['#64748b', '#94a3b8', '#cbd5e1'],
+      rotationSpeed: { min: -5, max: 5 },
+      fadeOut: 0.5,
+    }
+  ],
+  
+  'ALERT': [
+    {
+      type: 'lightning',
+      rate: 5,
+      lifetime: { min: 300, max: 600 },
+      speed: { min: 40, max: 100 },
+      size: { min: 6, max: 12 },
+      spread: 360,
+      direction: 0,
+      gravity: 0,
+      drag: 0.96,
+      colors: ['#fbbf24', '#f59e0b', '#fde047'],
+      rotationSpeed: { min: 60, max: 180 },
+      fadeOut: 0.2,
+    }
+  ],
+  
+  'HELPFUL': [
+    {
+      type: 'sparkle',
+      rate: 4,
+      lifetime: { min: 800, max: 1400 },
+      speed: { min: 20, max: 50 },
+      size: { min: 4, max: 9 },
+      spread: 360,
+      direction: 0,
+      gravity: -15,
+      drag: 0.98,
+      colors: ['#4ade80', '#22c55e', '#86efac'],
+      rotationSpeed: { min: 60, max: 180 },
+      fadeOut: 0.35,
+    }
+  ],
+  
+  'THINKING': [
+    {
+      type: 'sparkle',
+      rate: 1.5,
+      lifetime: { min: 1200, max: 2000 },
+      speed: { min: 8, max: 20 },
+      size: { min: 3, max: 6 },
+      spread: 180,
+      direction: -90,
+      gravity: -8,
+      drag: 0.99,
+      colors: ['#60a5fa', '#93c5fd', '#bfdbfe'],
+      rotationSpeed: { min: 30, max: 90 },
+      fadeOut: 0.4,
+    }
+  ],
+  
+  'CELEBRATING': [
+    {
+      type: 'star_burst',
+      rate: 10,
+      burst: 15,
+      lifetime: { min: 1200, max: 2200 },
+      speed: { min: 50, max: 130 },
+      size: { min: 5, max: 12 },
+      spread: 360,
+      direction: 0,
+      gravity: -25,
+      drag: 0.96,
+      colors: ['#a855f7', '#8b5cf6', '#fbbf24', '#ffffff', '#f472b6'],
+      rotationSpeed: { min: 90, max: 300 },
+      fadeOut: 0.4,
+    }
+  ],
+  
+  'EXCITED': [
+    {
+      type: 'sparkle',
+      rate: 6,
+      lifetime: { min: 600, max: 1100 },
+      speed: { min: 35, max: 75 },
+      size: { min: 4, max: 9 },
+      spread: 360,
+      direction: 0,
+      gravity: -20,
+      drag: 0.97,
+      colors: ['#fb923c', '#fbbf24', '#fde047', '#ffffff'],
+      rotationSpeed: { min: 90, max: 240 },
+      fadeOut: 0.3,
+    }
+  ],
+};
+
+// Get particle configurations for a mode
+export function getParticleConfigs(mode: string): ParticleEmitterConfig[] {
+  return PARTICLE_CONFIGS[mode] || [];
+}
+
+// CODE GLYPH CHARACTERS for code_glyph particle type
+const CODE_GLYPHS = [
+  '{', '}', '(', ')', '[', ']', '<', '>', '/', '\\',
+  '=', '+', '-', '*', '%', '&', '|', '!', '?', ':',
+  ';', '.', ',', '"', "'", '`', '#', '@', '$', '^',
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+  'A', 'B', 'C', 'D', 'E', 'F', 'x', 'y', 'z', 'n',
+];
+
+// Particle System Manager
+export class ParticleSystem {
+  private particles: Particle[] = [];
+  private nextId: number = 0;
+  private lastSpawnTime: Map<number, number> = new Map(); // configIndex -> lastTime
+  private currentConfigs: ParticleEmitterConfig[] = [];
+  private currentMode: string = '';
+  private burstTriggered: Set<number> = new Set();
+  
+  // Max particles to prevent performance issues
+  private readonly MAX_PARTICLES = 100;
+  
+  // Set new mode and trigger bursts
+  setMode(mode: string): void {
+    if (this.currentMode !== mode) {
+      this.currentMode = mode;
+      this.currentConfigs = getParticleConfigs(mode);
+      this.burstTriggered.clear();
+      this.lastSpawnTime.clear();
+    }
+  }
+  
+  // Update and spawn particles
+  update(deltaTime: number, queenX: number, queenY: number): void {
+    const now = performance.now();
+    
+    // Spawn new particles
+    for (let i = 0; i < this.currentConfigs.length; i++) {
+      const config = this.currentConfigs[i];
+      
+      // Handle burst on mode change
+      if (config.burst && !this.burstTriggered.has(i)) {
+        this.burstTriggered.add(i);
+        for (let b = 0; b < config.burst && this.particles.length < this.MAX_PARTICLES; b++) {
+          this.spawnParticle(config, queenX, queenY);
+        }
+      }
+      
+      // Regular rate-based spawning
+      const lastSpawn = this.lastSpawnTime.get(i) || 0;
+      const spawnInterval = 1000 / config.rate;
+      
+      if (now - lastSpawn >= spawnInterval && this.particles.length < this.MAX_PARTICLES) {
+        this.spawnParticle(config, queenX, queenY);
+        this.lastSpawnTime.set(i, now);
+      }
+    }
+    
+    // Update existing particles
+    const dtSeconds = deltaTime / 1000;
+    
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      
+      // Update life
+      p.life -= deltaTime;
+      if (p.life <= 0) {
+        this.particles.splice(i, 1);
+        continue;
+      }
+      
+      // Find config for gravity/drag (use type-based lookup)
+      const config = this.currentConfigs.find(c => c.type === p.type);
+      const gravity = config?.gravity || 0;
+      const drag = config?.drag || 0.98;
+      const fadeOut = config?.fadeOut || 0.3;
+      
+      // Apply physics
+      p.vy += gravity * dtSeconds;
+      p.vx *= Math.pow(drag, dtSeconds * 60);
+      p.vy *= Math.pow(drag, dtSeconds * 60);
+      
+      // Update position (relative to spawn point)
+      p.x += p.vx * dtSeconds;
+      p.y += p.vy * dtSeconds;
+      
+      // Update rotation
+      p.rotation += p.rotationSpeed * dtSeconds;
+      
+      // Update opacity (fade out at end of life)
+      const lifeRatio = p.life / p.maxLife;
+      if (lifeRatio < fadeOut) {
+        p.opacity = lifeRatio / fadeOut;
+      }
+      
+      // Update scale with subtle pulse
+      const pulsePhase = (now / 500) + p.id;
+      p.scale = 1 + Math.sin(pulsePhase) * 0.1;
+    }
+  }
+  
+  // Spawn a single particle
+  private spawnParticle(config: ParticleEmitterConfig, queenX: number, queenY: number): void {
+    // Random direction within spread cone
+    const spreadRad = (config.spread / 2) * (Math.PI / 180);
+    const baseRad = config.direction * (Math.PI / 180);
+    const angle = baseRad + (Math.random() - 0.5) * 2 * spreadRad;
+    
+    // Random speed and direction
+    const speed = config.speed.min + Math.random() * (config.speed.max - config.speed.min);
+    const vx = Math.cos(angle - Math.PI / 2) * speed;
+    const vy = Math.sin(angle - Math.PI / 2) * speed;
+    
+    // Random spawn position (slightly offset from center)
+    const spawnRadius = 15 + Math.random() * 20;
+    const spawnAngle = Math.random() * Math.PI * 2;
+    const x = Math.cos(spawnAngle) * spawnRadius;
+    const y = Math.sin(spawnAngle) * spawnRadius;
+    
+    // Random properties
+    const size = config.size.min + Math.random() * (config.size.max - config.size.min);
+    const color = config.colors[Math.floor(Math.random() * config.colors.length)];
+    const lifetime = config.lifetime.min + Math.random() * (config.lifetime.max - config.lifetime.min);
+    const rotationSpeed = config.rotationSpeed.min + Math.random() * (config.rotationSpeed.max - config.rotationSpeed.min);
+    
+    // Character for text-based particles
+    let character: string | undefined;
+    if (config.type === 'code_glyph') {
+      character = CODE_GLYPHS[Math.floor(Math.random() * CODE_GLYPHS.length)];
+    } else if (config.type === 'zzz') {
+      character = 'Z';
+    } else if (config.type === 'question') {
+      character = '?';
+    }
+    
+    const particle: Particle = {
+      id: this.nextId++,
+      type: config.type,
+      x,
+      y,
+      vx,
+      vy,
+      size,
+      rotation: Math.random() * 360,
+      rotationSpeed,
+      opacity: 1,
+      life: lifetime,
+      maxLife: lifetime,
+      color,
+      scale: 1,
+      character,
+    };
+    
+    this.particles.push(particle);
+  }
+  
+  // Get all current particles (for rendering)
+  getParticles(): Particle[] {
+    return this.particles;
+  }
+  
+  // Clear all particles
+  clear(): void {
+    this.particles = [];
+    this.burstTriggered.clear();
+    this.lastSpawnTime.clear();
+  }
+  
+  // Get particle count
+  getCount(): number {
+    return this.particles.length;
+  }
+}
+
+// Create singleton particle system
+export const particleSystem = new ParticleSystem();
+
+// ============================================
 // COMBINED BEE CONTROLLER
 // ============================================
 export class BeeController {
