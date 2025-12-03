@@ -492,12 +492,36 @@ export function FloatingQueenBee() {
     }
   }, [isMounted, windowDimensions, beeController, dimension]);
 
-  // Update MovementController viewport on resize
+  // Update MovementController viewport on resize AND clamp position immediately
   useEffect(() => {
-    if (isMounted) {
+    if (isMounted && windowDimensions.width > 0 && windowDimensions.height > 0) {
       beeController.movement.setViewport(windowDimensions.width, windowDimensions.height);
+      
+      // Immediately clamp queen to new bounds after resize
+      const halfDim = dimension / 2;
+      const hatHeight = dimension * 0.6;
+      const spriteTopPadding = hatHeight + 10;
+      const uniformPadding = Math.max(spriteTopPadding, 50);
+      
+      const minX = halfDim + uniformPadding;
+      const maxX = windowDimensions.width - halfDim - uniformPadding;
+      const minY = halfDim + spriteTopPadding;
+      const maxY = windowDimensions.height - halfDim - uniformPadding;
+      
+      // Get current position and clamp
+      const currentPos = beeController.movement.getPosition();
+      const clampedX = Math.max(minX, Math.min(maxX, currentPos.x));
+      const clampedY = Math.max(minY, Math.min(maxY, currentPos.y));
+      
+      // If position changed, sync the movement controller
+      if (clampedX !== currentPos.x || clampedY !== currentPos.y) {
+        beeController.syncMovementPosition(clampedX, clampedY);
+        beeController.setQueenState(clampedX, clampedY, 0, 0);
+        beeController.direction.update(0, 0); // Reset to FRONT facing
+        updatePosition(clampedX - halfDim, clampedY - halfDim);
+      }
     }
-  }, [windowDimensions, isMounted, beeController]);
+  }, [windowDimensions, isMounted, beeController, dimension, updatePosition]);
 
   // Wire AI brain events (mode changes) to movement state transitions
   // This maps the QueenBeeMode from context to MovementState in the physics controller
@@ -858,13 +882,21 @@ export function FloatingQueenBee() {
       // Check if clamping was actually applied
       const wasClamped = clampedX !== result.position.x || clampedY !== result.position.y;
       
+      // When clamped, the velocity is pointing toward the boundary (wrong direction for facing)
+      // Use zero velocity for facing calculation to keep bee facing forward
+      const effectiveVelocity = wasClamped 
+        ? { x: 0, y: 0 }  // Reset velocity when at boundary to face forward
+        : result.velocity;
+      
       // SINGLE SOURCE OF TRUTH: Update the shared queen state for workers
-      beeController.setQueenState(clampedX, clampedY, result.velocity.x, result.velocity.y);
+      beeController.setQueenState(clampedX, clampedY, effectiveVelocity.x, effectiveVelocity.y);
       
       // Only sync movement controller position when clamping is applied
       // This prevents physics state interference during normal movement
       if (wasClamped) {
         beeController.syncMovementPosition(clampedX, clampedY);
+        // Update direction with zero velocity to reset facing to FRONT
+        beeController.direction.update(0, 0);
       }
       
       // Convert center position back to top-left for rendering
@@ -873,10 +905,10 @@ export function FloatingQueenBee() {
       
       // Update React state for rendering only
       updatePosition(newX, newY);
-      setBeeVelocity(result.velocity);
-      updateAutonomousVelocity(result.velocity);
+      setBeeVelocity(effectiveVelocity);
+      updateAutonomousVelocity(effectiveVelocity);
       
-      // Update facing direction based on velocity
+      // Update facing direction based on velocity (now uses effective velocity)
       const newFacing = beeController.direction.getFacing();
       setFacing(newFacing);
       
