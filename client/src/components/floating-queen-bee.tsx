@@ -871,8 +871,9 @@ export function FloatingQueenBee() {
       
       // EMOTE-SAFE PADDING: During emotes (CELEBRATE), body dynamics cause lean/stretch
       // that can push the visual sprite outside bounds. Add extra margin for safety.
+      // 50px accounts for body dynamics + hat + safety margin to prevent any escape
       const isEmoteMode = result.state === 'CELEBRATE';
-      const emotePadding = isEmoteMode ? 25 : 0; // Extra padding during celebrations
+      const emotePadding = isEmoteMode ? 50 : 0; // Extra padding during celebrations
       const uniformPadding = Math.max(spriteTopPadding, 50) + emotePadding;
       
       const minX = halfDim + uniformPadding;

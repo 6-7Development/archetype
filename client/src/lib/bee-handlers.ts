@@ -980,7 +980,8 @@ export class MovementController {
     // Match React layer's padding exactly: hatHeight = dim * 0.6, uniformPadding = max(hatHeight+10, 50)
     const hatHeight = this.dimension * 0.6;
     // EMOTE-SAFE: Add extra padding during CELEBRATE to match React layer
-    const emotePadding = this.state === 'CELEBRATE' ? 25 : 0;
+    // 50px accounts for body dynamics (lean/stretch) + hat + safety margin
+    const emotePadding = this.state === 'CELEBRATE' ? 50 : 0;
     const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;
     
     // Calculate safe bounds (matching hard clamp in React layer)
@@ -1067,10 +1068,10 @@ export class MovementController {
         break;
         
       case 'CELEBRATE':
-        // Bouncy figure-8 pattern
-        const celebTime = this.stateTimer * 0.005;
-        steering.x += Math.sin(celebTime * 2) * 0.8;
-        steering.y += Math.sin(celebTime * 4) * 0.4;
+        // Gentle bouncy pattern - reduced amplitude to prevent boundary escape
+        const celebTime = this.stateTimer * 0.003; // Slower oscillation
+        steering.x += Math.sin(celebTime * 2) * 0.3; // Reduced from 0.8
+        steering.y += Math.sin(celebTime * 3) * 0.15; // Reduced from 0.4, slower freq
         break;
         
       case 'ALERT':
@@ -1120,7 +1121,8 @@ export class MovementController {
     const halfDim = this.dimension / 2;
     const hatHeight = this.dimension * 0.6;
     // EMOTE-SAFE: Add extra padding during CELEBRATE for body dynamics
-    const emotePadding = this.state === 'CELEBRATE' ? 25 : 0;
+    // 50px accounts for lean/stretch visuals + hat + safety margin
+    const emotePadding = this.state === 'CELEBRATE' ? 50 : 0;
     const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;
     const minX = halfDim + uniformPadding;
     const maxX = this.viewportSize.x - halfDim - uniformPadding;
@@ -1175,7 +1177,7 @@ export class MovementController {
     const velMag = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
     const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 1.2
                            : this.state === 'REST' ? this.config.maxSpeed * 0.15
-                           : this.state === 'CELEBRATE' ? this.config.maxSpeed * 0.8
+                           : this.state === 'CELEBRATE' ? this.config.maxSpeed * 0.5
                            : this.config.maxSpeed * 0.9;
     if (velMag > maxSpeedForState) {
       this.velocity.x = (this.velocity.x / velMag) * maxSpeedForState;
