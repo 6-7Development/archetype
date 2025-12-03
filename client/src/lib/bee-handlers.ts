@@ -979,11 +979,11 @@ export class MovementController {
     const halfDim = this.dimension / 2;
     // Match React layer's padding exactly: hatHeight = dim * 0.6, uniformPadding = max(hatHeight+10, 50)
     const hatHeight = this.dimension * 0.6;
-    // MODERATE PADDING: Reduced from 50px to prevent center-bias oscillation
-    // MovementController is sole authority - React layer is backup only
+    // INCREASED PADDING for high-energy modes - FRENZY must stay visible
+    // More padding = queen stays further from edges = more room to move within visible area
     const isHighEnergy = this.state === 'CELEBRATE' || this.state === 'EVADE';
-    const emotePadding = isHighEnergy ? 20 : 0;  // Reduced from 50 to 20
-    const uniformPadding = Math.max(hatHeight + 10, 40) + emotePadding;  // Base reduced from 50 to 40
+    const emotePadding = isHighEnergy ? 60 : 0;  // INCREASED from 20 to 60 for FRENZY containment
+    const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;  // Base increased from 40 to 50
     
     // Calculate safe bounds (matching hard clamp in React layer)
     const minX = halfDim + uniformPadding;
@@ -991,19 +991,22 @@ export class MovementController {
     const minY = halfDim + hatHeight + 10 + emotePadding; // Extra top padding for hat + emote
     const maxY = this.viewportSize.y - halfDim - uniformPadding;
     
-    // Soft boundaries with increasing force - push back before hitting edge
-    const softZone = 40; // Reduced from 60 for tighter control
+    // LARGER soft zone for high-energy modes - start pushing back sooner
+    const softZone = isHighEnergy ? 80 : 40; // DOUBLED for FRENZY containment
+    
+    // STRONGER boundary force for high-energy modes
+    const boundaryStrength = isHighEnergy ? 0.25 : 0.1; // INCREASED from 0.1
     
     if (this.position.x < minX + softZone) {
-      force.x = (minX + softZone - this.position.x) * 0.1; // Increased from 0.08
+      force.x = (minX + softZone - this.position.x) * boundaryStrength;
     } else if (this.position.x > maxX - softZone) {
-      force.x = (maxX - softZone - this.position.x) * 0.1;
+      force.x = (maxX - softZone - this.position.x) * boundaryStrength;
     }
     
     if (this.position.y < minY + softZone) {
-      force.y = (minY + softZone - this.position.y) * 0.1;
+      force.y = (minY + softZone - this.position.y) * boundaryStrength;
     } else if (this.position.y > maxY - softZone) {
-      force.y = (maxY - softZone - this.position.y) * 0.1;
+      force.y = (maxY - softZone - this.position.y) * boundaryStrength;
     }
     
     return force;
@@ -1121,11 +1124,11 @@ export class MovementController {
     // Calculate bounds FIRST for predictive clamping
     const halfDim = this.dimension / 2;
     const hatHeight = this.dimension * 0.6;
-    // MODERATE PADDING: Reduced to prevent center-bias oscillation
-    // MovementController is sole authority - matching stayInBounds padding
+    // INCREASED PADDING for high-energy modes - matching stayInBounds exactly
+    // FRENZY/EVADE uses larger padding to keep queen well within visible area
     const isHighEnergy = this.state === 'CELEBRATE' || this.state === 'EVADE';
-    const emotePadding = isHighEnergy ? 20 : 0;  // Reduced from 50 to 20
-    const uniformPadding = Math.max(hatHeight + 10, 40) + emotePadding;  // Base reduced from 50 to 40
+    const emotePadding = isHighEnergy ? 60 : 0;  // INCREASED from 20 to 60 for FRENZY containment
+    const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;  // Base increased from 40 to 50
     const minX = halfDim + uniformPadding;
     const maxX = this.viewportSize.x - halfDim - uniformPadding;
     const minY = halfDim + hatHeight + 10 + emotePadding;
@@ -1175,9 +1178,9 @@ export class MovementController {
     this.velocity.x *= this.config.friction;
     this.velocity.y *= this.config.friction;
     
-    // 6. LIMIT VELOCITY - gentler max speeds
+    // 6. LIMIT VELOCITY - gentler max speeds, especially for FRENZY/EVADE to stay in bounds
     const velMag = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-    const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 0.8  // Reduced from 1.2 to prevent escape
+    const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 0.5  // REDUCED from 0.8 to 0.5 for FRENZY containment
                            : this.state === 'REST' ? this.config.maxSpeed * 0.15
                            : this.state === 'CELEBRATE' ? this.config.maxSpeed * 0.5
                            : this.config.maxSpeed * 0.9;

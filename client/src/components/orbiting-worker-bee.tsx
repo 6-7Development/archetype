@@ -114,8 +114,12 @@ export function OrbitingWorkerBee({
   
   // Body colors - golden yellow with black stripes
   const bodyColor = isAngry ? (isAttacking ? '#FF3333' : '#eab308') : isHappy ? '#FFD700' : '#eab308';
-  const wingOpacity = 0.2 + wingFlutter * 0.3 + (isAttacking ? 0.15 : 0);
-  const glowIntensity = (energyLevel * 0.6 + (isAttacking ? 0.4 : 0));
+  // Wing opacity changes based on emotional state - more active wings during excited/angry modes
+  const emotionWingBoost = isHappy ? 0.1 : isAngry ? 0.12 : isThinking ? -0.05 : isSleepy ? -0.1 : 0;
+  const wingOpacity = 0.2 + wingFlutter * 0.3 + (isAttacking ? 0.15 : 0) + emotionWingBoost;
+  // Glow intensity reflects emotional energy - brighter during active emotions
+  const emotionGlowBoost = isHappy ? 0.25 : isAngry ? 0.3 : isThinking ? 0.1 : isSleepy ? -0.15 : 0;
+  const glowIntensity = Math.max(0, Math.min(1, (energyLevel * 0.6 + (isAttacking ? 0.4 : 0) + emotionGlowBoost)));
   
   // Attack phase visual effects
   const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2);
@@ -180,10 +184,29 @@ export function OrbitingWorkerBee({
   // Attacking workers maintain their normal opacity
   const formationOpacity = useFormation ? Math.min(1, baseOpacity + 0.3 * transitionProgress) : baseOpacity;
   
-  // Synchronized wing speed when in formation
-  // Attacking workers keep attack-speed wings
+  // EMOTION-BASED WING SPEED - Always applies based on queen's mode
+  // Workers reflect queen's emotional state even when orbiting (not just in formation)
+  // Formation mode gets stronger effect, regular orbit gets subtle effect
+  const baseEmotionWingSpeed = isAttacking ? 2.0  // Fast angry wings when attacking
+    : isHappy ? 1.5    // Excited fast fluttering
+    : isAngry ? 1.4    // Agitated wings
+    : isThinking ? 0.8 // Slower contemplative wings
+    : isSleepy ? 0.4   // Very slow relaxed wings
+    : 1.0;             // Normal speed
+  
+  // Synchronized wing speed - formation mode enhances the effect
   const syncedWingSpeed = useFormation 
-    ? (isHappy ? 1.5 : isAngry ? 1.3 : isSleepy ? 0.5 : 1) 
+    ? baseEmotionWingSpeed * 1.1  // Enhanced in formation
+    : baseEmotionWingSpeed;        // Base emotion speed always applies
+  
+  // EMOTION-BASED GLOW PULSE - Workers pulse with queen's emotions
+  // Creates visible breathing/pulsing effect that syncs across all workers
+  const emotionPulseRate = isHappy ? 0.004 : isAngry ? 0.005 : isThinking ? 0.002 : isSleepy ? 0.001 : 0.003;
+  const emotionPulse = Math.sin(Date.now() * emotionPulseRate) * 0.15;
+  
+  // EMOTION-BASED SCALE ANIMATION - subtle size oscillation based on mode
+  const emotionScale = isEmoting && !useFormation 
+    ? 1 + emotionPulse * (isHappy ? 0.08 : isAngry ? 0.06 : isSleepy ? 0.04 : 0.03)
     : 1;
 
   // Attack trail color - matches mode but more saturated
@@ -268,7 +291,7 @@ export function OrbitingWorkerBee({
         initial={{ opacity: 0, scale: 0 }}
         animate={{
           opacity: formationOpacity,
-          scale: isAttacking ? 1.15 * attackScale : formationScale,
+          scale: isAttacking ? 1.15 * attackScale : useFormation ? formationScale : emotionScale,
           rotate: isAttacking ? displayRotation + 180 : displayRotation,
         }}
         exit={{ opacity: 0, scale: 0 }}
