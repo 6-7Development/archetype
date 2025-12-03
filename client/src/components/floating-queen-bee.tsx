@@ -4,10 +4,9 @@
  * An autonomous queen bee that intelligently evades the user's cursor.
  * - No longer draggable - moves on its own using steering behaviors
  * - Predictive evasion: tracks cursor velocity to anticipate user movement
- * - Emotional state machine: IDLE, CURIOUS, ALERT, EVADING, FRENZY, CELEBRATING, RESTING
- * - Worker bees that chase cursor during swarm attacks
+ * - Emotional state machine: IDLE, CURIOUS, ALERT, EVADING, CELEBRATING, RESTING
+ * - Worker bees that orbit around queen
  * - Woosh trail effects during fast movement
- * - Triggers FRENZY mode when user gets too close (<50px)
  * - Seasonal themes (Christmas decorations!)
  * - DIRECTIONAL FACING: Bee faces direction of movement (left/right/up/down)
  * - TOUCH REACTIONS: Funny reactions when touched on mobile
@@ -60,7 +59,6 @@ const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
   'CELEBRATING': 'Merry celebration!',
   'CONFUSED': 'Tangled lights?',
   'FOCUSED': 'Wrapping focus!',
-  'FRENZY': 'Naughty list attack!',
   'HUNTING': 'Hunting for presents!',
   'RESTING': 'Warm by the fire...',
 };
@@ -137,8 +135,6 @@ function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
     case 'EXCITED':
     case 'HUNTING':
       return 'SWARM';
-    case 'FRENZY':
-      return 'FRENZY';
     case 'SLEEPY':
       return 'IDLE';
     default:
@@ -166,7 +162,6 @@ function getModeColor(mode: QueenBeeMode): string {
     case 'CELEBRATING': return 'bg-gradient-to-r from-pink-400 to-yellow-400';
     case 'CONFUSED': return 'bg-orange-500 animate-pulse';
     case 'FOCUSED': return 'bg-blue-500';
-    case 'FRENZY': return 'bg-red-500 animate-pulse';
     case 'HUNTING': return 'bg-orange-400 animate-pulse';
     case 'RESTING': return 'bg-green-300';
     default: return 'bg-gray-400';
@@ -193,7 +188,6 @@ function getModeLabel(mode: QueenBeeMode): string {
     case 'CELEBRATING': return 'Amazing!';
     case 'CONFUSED': return 'Hmm...';
     case 'FOCUSED': return 'Focused';
-    case 'FRENZY': return 'ATTACK!';
     case 'HUNTING': return 'Hunting...';
     case 'RESTING': return 'Resting...';
     default: return 'Hi!';
@@ -221,7 +215,6 @@ function getModeIcon(mode: QueenBeeMode): React.ReactNode {
     case 'CELEBRATING': return <PartyPopper className={iconClass} />;
     case 'CONFUSED': return null;
     case 'FOCUSED': return <Target className={iconClass} />;
-    case 'FRENZY': return <Zap className={`${iconClass} text-red-500`} />;
     case 'HUNTING': return <Target className={`${iconClass} animate-pulse`} />;
     case 'RESTING': return <Coffee className={iconClass} />;
     default: return <Hand className={iconClass} />;
@@ -243,8 +236,6 @@ function getModeGlow(mode: QueenBeeMode): string {
     case 'EXCITED':
     case 'HUNTING':
       return 'ring-2 ring-honey/40 ring-offset-1 ring-offset-background';
-    case 'FRENZY':
-      return 'ring-4 ring-red-500/60 ring-offset-2 ring-offset-background animate-pulse';
     case 'LOADING':
       return 'ring-1 ring-blue-400/30';
     case 'HELPFUL':
@@ -270,7 +261,7 @@ interface WooshParticle {
 }
 
 // Emotional state for autonomous movement
-type EmotionalState = 'IDLE' | 'CURIOUS' | 'ALERT' | 'EVADING' | 'FRENZY' | 'CELEBRATING' | 'RESTING';
+type EmotionalState = 'IDLE' | 'CURIOUS' | 'ALERT' | 'EVADING' | 'CELEBRATING' | 'RESTING';
 
 export function FloatingQueenBee() {
   const { 
@@ -290,7 +281,6 @@ export function FloatingQueenBee() {
     swarmState,
     triggerSwarm,
     endSwarm,
-    triggerFrenzy,
     autonomousVelocity,
     updateAutonomousVelocity,
   } = useQueenBee();
@@ -304,7 +294,6 @@ export function FloatingQueenBee() {
   const [beeVelocity, setBeeVelocity] = useState({ x: 0, y: 0 });
   const [workersVisible, setWorkersVisible] = useState(false);
   const [emotionalState, setEmotionalState] = useState<EmotionalState>('IDLE');
-  const [lastFrenzyTime, setLastFrenzyTime] = useState(0);
   const [currentThought, setCurrentThought] = useState('');
   const [showThought, setShowThought] = useState(false);
   const [facing, setFacing] = useState<FacingState>('FRONT');
@@ -540,8 +529,8 @@ export function FloatingQueenBee() {
     }
     
     // HIGH-ENERGY MODE EXIT: Reset velocity when transitioning from aggressive modes
-    // This prevents post-FRENZY/SWARM/HUNTING erratic boundary oscillation
-    const HIGH_ENERGY_MODES = ['FRENZY', 'SWARM', 'HUNTING'];
+    // This prevents post-SWARM/HUNTING erratic boundary oscillation
+    const HIGH_ENERGY_MODES = ['SWARM', 'HUNTING'];
     const wasHighEnergy = HIGH_ENERGY_MODES.includes(lastProcessedModeRef.current.mode);
     const isHighEnergy = HIGH_ENERGY_MODES.includes(mode);
     
@@ -572,7 +561,6 @@ export function FloatingQueenBee() {
       'SLEEPY': 'REST',
       'RESTING': 'REST',
       'SWARM': 'SWARM_ESCORT',
-      'FRENZY': 'EVADE',
       'HUNTING': 'CHASE',
       'CURIOUS': 'WANDER',
       'HELPFUL': 'WANDER',
@@ -605,7 +593,6 @@ export function FloatingQueenBee() {
       'SLEEPY': { recentActivity: 'idle', hasActiveErrors: false },
       'RESTING': { recentActivity: 'idle', hasActiveErrors: false },
       'SWARM': { recentActivity: 'swarming', buildStatus: 'running', hasActiveErrors: false },
-      'FRENZY': { recentActivity: 'frenzy', hasActiveErrors: false },
       'HUNTING': { recentActivity: 'hunting', hasActiveErrors: false },
       'CURIOUS': { recentActivity: 'exploring', hasActiveErrors: false },
       'HELPFUL': { recentActivity: 'helping', hasActiveErrors: false },
@@ -828,7 +815,6 @@ export function FloatingQueenBee() {
   useEffect(() => {
     if (!isMounted) return;
     
-    const FRENZY_THRESHOLD = 50;
     let lastTime = performance.now();
     
     // Map MovementState to EmotionalState
@@ -851,21 +837,6 @@ export function FloatingQueenBee() {
       
       const beeCenterX = config.position.x + dimension / 2;
       const beeCenterY = config.position.y + dimension / 2;
-      
-      // Check for FRENZY trigger (when user gets too close)
-      const dx = mousePos.x - beeCenterX;
-      const dy = mousePos.y - beeCenterY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const now = Date.now();
-      
-      if (distance < FRENZY_THRESHOLD && now - lastFrenzyTime > 6000) {
-        setLastFrenzyTime(now);
-        triggerFrenzy();
-        triggerSwarm({ frenzy: true, workerCount: 10, duration: 4000 });
-        setMode('FRENZY');
-        setEmotionalState('FRENZY');
-        beeController.movement.forceState('EVADE');
-      }
       
       // Run the physics-based movement update
       const result = beeController.updateAutonomous(
@@ -935,19 +906,8 @@ export function FloatingQueenBee() {
       
       // Update emotional state based on movement state
       const newEmotionalState = mapMovementToEmotional(result.state);
-      if (newEmotionalState !== emotionalState && emotionalState !== 'FRENZY') {
+      if (newEmotionalState !== emotionalState) {
         setEmotionalState(newEmotionalState);
-      }
-      
-      // Handle FRENZY timeout - critical: zero velocity to prevent erratic boundary oscillation
-      if (emotionalState === 'FRENZY' && now - lastFrenzyTime > 4000) {
-        setEmotionalState('RESTING');
-        beeController.movement.forceState('REST');
-        // CRITICAL FIX: Zero velocity and sync position to stop high-energy momentum
-        // This prevents the queen from bouncing/oscillating after FRENZY ends
-        beeController.movement.zeroVelocity();
-        beeController.syncMovementPosition(clampedX, clampedY);
-        canvasRef.current?.resetRagdoll?.();
       }
       
       // Create woosh trail when moving fast
@@ -967,7 +927,7 @@ export function FloatingQueenBee() {
       const HOVER_OFF_THRESHOLD = 0.8;
       const wasHovering = isHoveringRef.current;
       // Compute isEvading locally to avoid temporal dead zone issues
-      const currentlyEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT' || emotionalState === 'FRENZY';
+      const currentlyEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT';
       const shouldHover = wasHovering 
         ? result.speed < HOVER_OFF_THRESHOLD && !currentlyEvading  // Higher threshold to stop hovering
         : result.speed < HOVER_ON_THRESHOLD && !currentlyEvading;  // Lower threshold to start hovering
@@ -987,7 +947,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerFrenzy, triggerSwarm, setMode, beeController]);
+  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, updatePosition, updateAutonomousVelocity, triggerSwarm, setMode, beeController]);
 
   // Clean up old woosh particles
   useEffect(() => {
@@ -1082,16 +1042,12 @@ export function FloatingQueenBee() {
       workerFadeTimeoutRef.current = null;
     }
     
-    const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT' || emotionalState === 'FRENZY';
+    const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT';
     const shouldShowWorkers = swarmState.isActive || isMouseNearBee || isEvading || 
-      mode === 'SWARM' || mode === 'FRENZY' || mode === 'HUNTING' || mode === 'EXCITED';
+      mode === 'SWARM' || mode === 'HUNTING' || mode === 'EXCITED';
     
     if (shouldShowWorkers) {
       setWorkersVisible(true);
-      
-      if (swarmState.isFrenzy && !swarmState.isActive) {
-        triggerFrenzy();
-      }
     } else {
       workerFadeTimeoutRef.current = setTimeout(() => {
         setWorkersVisible(false);
@@ -1103,7 +1059,7 @@ export function FloatingQueenBee() {
         clearTimeout(workerFadeTimeoutRef.current);
       }
     };
-  }, [swarmState.isActive, swarmState.isFrenzy, isMouseNearBee, emotionalState, mode, triggerFrenzy]);
+  }, [swarmState.isActive, swarmState.isFrenzy, isMouseNearBee, emotionalState, mode]);
 
   // Auto-trigger hunting/swarm when user moves near queen
   useEffect(() => {
@@ -1129,14 +1085,11 @@ export function FloatingQueenBee() {
   const queenCenterX = config.position.x + dimension / 2;
   const queenCenterY = config.position.y + dimension / 2;
 
-  const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT' || emotionalState === 'FRENZY';
+  const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT';
   
-  // Determine if workers should chase based on swarm state and emotional state
+  // Determine if workers should show active behavior based on swarm state and emotional state
   const shouldWorkersChase = swarmState.isActive || isEvading || isMouseNearBee || 
-    mode === 'EXCITED' || mode === 'SWARM' || mode === 'FRENZY' || mode === 'HUNTING';
-  
-  // Determine frenzy styling for queen container
-  const isFrenzyMode = mode === 'FRENZY' || swarmState.isFrenzy || emotionalState === 'FRENZY';
+    mode === 'EXCITED' || mode === 'SWARM' || mode === 'HUNTING';
 
   return (
     <>
@@ -1345,16 +1298,14 @@ export function FloatingQueenBee() {
           overflow: 'visible',
         }}
         animate={{
-          scale: isEvading ? 1.12 : mode === 'SLEEPY' ? 0.95 : isFrenzyMode ? 1.15 : 1,
+          scale: isEvading ? 1.12 : mode === 'SLEEPY' ? 0.95 : 1,
           rotate: mode === 'ERROR' || mode === 'CONFUSED' 
             ? [0, -10, 10, -10, 10, 0] 
-            : isFrenzyMode
-              ? [0, -5, 5, -5, 5, 0]
-              : isEvading 
-                ? beeVelocity.x * 0.6 
-                : mode === 'SLEEPY' 
-                  ? [0, -3, 3, 0]
-                  : 0,
+            : isEvading 
+              ? beeVelocity.x * 0.6 
+              : mode === 'SLEEPY' 
+                ? [0, -3, 3, 0]
+                : 0,
           // HOVER BOB: Gentle up/down when stationary to prevent gliding appearance
           y: mode === 'SLEEPY' 
             ? [0, 3, 0] 
@@ -1365,9 +1316,9 @@ export function FloatingQueenBee() {
         transition={{
           scale: { type: 'spring', stiffness: 400, damping: 25 },
           rotate: { 
-            duration: isFrenzyMode ? 0.3 : mode === 'SLEEPY' ? 2 : 0.5, 
-            repeat: (mode === 'ERROR' || mode === 'CONFUSED' || mode === 'SLEEPY' || isFrenzyMode) ? Infinity : 0, 
-            repeatDelay: mode === 'SLEEPY' ? 0 : isFrenzyMode ? 0 : 1 
+            duration: mode === 'SLEEPY' ? 2 : 0.5, 
+            repeat: (mode === 'ERROR' || mode === 'CONFUSED' || mode === 'SLEEPY') ? Infinity : 0, 
+            repeatDelay: mode === 'SLEEPY' ? 0 : 1 
           },
           y: { 
             duration: mode === 'SLEEPY' ? 2 : isHovering ? 1.8 : 0.3, 
@@ -1675,16 +1626,12 @@ export function FloatingQueenBee() {
               <Badge 
                 variant="outline" 
                 className={`text-xs shadow-sm animate-pulse ${
-                  emotionalState === 'FRENZY'
-                    ? 'border-red-500/50 bg-red-500/10 text-red-600'
-                    : isChristmas 
-                      ? 'border-red-500/50 bg-red-500/10 text-red-600' 
-                      : 'border-honey/50 bg-honey/10 text-honey'
+                  isChristmas 
+                    ? 'border-red-500/50 bg-red-500/10 text-red-600' 
+                    : 'border-honey/50 bg-honey/10 text-honey'
                 }`}
               >
-                {emotionalState === 'FRENZY' ? (
-                  <><Zap className="w-3 h-3 mr-1" />ATTACK!</>
-                ) : isChristmas ? (
+                {isChristmas ? (
                   <><Star className="w-3 h-3 mr-1" />Flying through snow!</>
                 ) : (
                   <><Zap className="w-3 h-3 mr-1" />Catch me if you can!</>
