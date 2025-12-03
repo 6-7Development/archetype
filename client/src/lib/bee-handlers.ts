@@ -979,12 +979,14 @@ export class MovementController {
     const halfDim = this.dimension / 2;
     // Match React layer's padding exactly: hatHeight = dim * 0.6, uniformPadding = max(hatHeight+10, 50)
     const hatHeight = this.dimension * 0.6;
-    const uniformPadding = Math.max(hatHeight + 10, 50);
+    // EMOTE-SAFE: Add extra padding during CELEBRATE to match React layer
+    const emotePadding = this.state === 'CELEBRATE' ? 25 : 0;
+    const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;
     
     // Calculate safe bounds (matching hard clamp in React layer)
     const minX = halfDim + uniformPadding;
     const maxX = this.viewportSize.x - halfDim - uniformPadding;
-    const minY = halfDim + hatHeight + 10; // Extra top padding for hat
+    const minY = halfDim + hatHeight + 10 + emotePadding; // Extra top padding for hat + emote
     const maxY = this.viewportSize.y - halfDim - uniformPadding;
     
     // Soft boundaries with increasing force - push back before hitting edge
@@ -1117,10 +1119,12 @@ export class MovementController {
     // Calculate bounds FIRST for predictive clamping
     const halfDim = this.dimension / 2;
     const hatHeight = this.dimension * 0.6;
-    const uniformPadding = Math.max(hatHeight + 10, 50);
+    // EMOTE-SAFE: Add extra padding during CELEBRATE for body dynamics
+    const emotePadding = this.state === 'CELEBRATE' ? 25 : 0;
+    const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;
     const minX = halfDim + uniformPadding;
     const maxX = this.viewportSize.x - halfDim - uniformPadding;
-    const minY = halfDim + hatHeight + 10;
+    const minY = halfDim + hatHeight + 10 + emotePadding;
     const maxY = this.viewportSize.y - halfDim - uniformPadding;
     
     // 1. LIMIT STEERING with state-aware caps (tighter limits)

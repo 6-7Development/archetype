@@ -868,11 +868,16 @@ export function FloatingQueenBee() {
       const halfDim = dimension / 2;
       const hatHeight = dimension * 0.6; // Hat extends above head by ~60% of dimension
       const spriteTopPadding = hatHeight + 10; // Total top clearance needed
-      const uniformPadding = Math.max(spriteTopPadding, 50); // At least 50px all sides for consistency
+      
+      // EMOTE-SAFE PADDING: During emotes (CELEBRATE), body dynamics cause lean/stretch
+      // that can push the visual sprite outside bounds. Add extra margin for safety.
+      const isEmoteMode = result.state === 'CELEBRATE';
+      const emotePadding = isEmoteMode ? 25 : 0; // Extra padding during celebrations
+      const uniformPadding = Math.max(spriteTopPadding, 50) + emotePadding;
       
       const minX = halfDim + uniformPadding;
       const maxX = windowDimensions.width - halfDim - uniformPadding;
-      const minY = halfDim + spriteTopPadding; // Extra top padding for hat
+      const minY = halfDim + spriteTopPadding + emotePadding; // Extra top padding for hat + emote
       const maxY = windowDimensions.height - halfDim - uniformPadding;
       
       // Clamp the center position
@@ -891,12 +896,14 @@ export function FloatingQueenBee() {
       // SINGLE SOURCE OF TRUTH: Update the shared queen state for workers
       beeController.setQueenState(clampedX, clampedY, effectiveVelocity.x, effectiveVelocity.y);
       
-      // Only sync movement controller position when clamping is applied
-      // This prevents physics state interference during normal movement
-      if (wasClamped) {
+      // EMOTE VELOCITY DAMPING: During emotes, sync position every frame
+      // to prevent oscillation overshoot from sinusoidal steering forces
+      if (wasClamped || isEmoteMode) {
         beeController.syncMovementPosition(clampedX, clampedY);
-        // Update direction with zero velocity to reset facing to FRONT
-        beeController.direction.update(0, 0);
+        if (wasClamped) {
+          // Update direction with zero velocity to reset facing to FRONT
+          beeController.direction.update(0, 0);
+        }
       }
       
       // Convert center position back to top-left for rendering
