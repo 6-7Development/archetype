@@ -810,6 +810,19 @@ export function FloatingQueenBee() {
   const modeText = getModeLabel(mode);
   const modeIcon = getModeIcon(mode);
 
+  // FLIGHT STATE REF - Persists across re-renders, not reset by dependency changes
+  const flightRef = useRef({
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    targetX: 0,
+    targetY: 0,
+    nextTargetTime: 0,
+    wingPhase: 0,
+    initialized: false,
+  });
+
   // REALISTIC BEE FLIGHT - Natural physics with gravity, thrust, and wing-beat bob
   useEffect(() => {
     if (!isMounted) return;
@@ -817,46 +830,48 @@ export function FloatingQueenBee() {
     let lastTime = performance.now();
     const ATTACK_THRESHOLD = 80;
     
-    // Flight state - persistent across frames
-    const flight = {
-      x: windowDimensions.width / 2,
-      y: windowDimensions.height / 2,
-      vx: 0,
-      vy: 0,
-      targetX: windowDimensions.width / 2,
-      targetY: windowDimensions.height / 2,
-      nextTargetTime: 0,
-      wingPhase: 0,
-    };
-    
     // FLIGHT PHYSICS CONSTANTS
-    const GRAVITY = 0.15;           // Downward pull
-    const THRUST = 0.35;            // Upward/directional force from wings
-    const DRAG = 0.92;              // Air resistance (1 = no drag)
-    const MAX_SPEED = 4;            // Maximum velocity
-    const WING_BOB_FREQ = 25;       // Wing beat frequency (Hz-ish)
-    const WING_BOB_AMP = 1.5;       // Vertical bob from wing beats
-    const HOME_RADIUS = 70;         // Stay within this distance from center
-    const TARGET_INTERVAL = 800;    // Pick new target every N ms
-    const HOME_PULL = 0.08;         // Force pulling back to center
+    const GRAVITY = 0.12;           // Downward pull
+    const THRUST = 0.25;            // Upward/directional force from wings
+    const DRAG = 0.94;              // Air resistance (1 = no drag)
+    const MAX_SPEED = 3;            // Maximum velocity
+    const WING_BOB_FREQ = 20;       // Wing beat frequency (Hz-ish)
+    const WING_BOB_AMP = 1.2;       // Vertical bob from wing beats
+    const HOME_RADIUS = 60;         // Stay within this distance from center
+    const TARGET_INTERVAL = 1200;   // Pick new target every N ms
+    const HOME_PULL = 0.15;         // Force pulling back to center
     
-    const homeX = windowDimensions.width / 2;
-    const homeY = windowDimensions.height / 2;
+    const flight = flightRef.current;
     
     const animate = (currentTime: number) => {
-      const deltaTime = Math.min(currentTime - lastTime, 50); // Cap at 50ms
+      const deltaTime = Math.min(currentTime - lastTime, 50);
       lastTime = currentTime;
-      const dt = deltaTime / 16.67; // Normalize to ~60fps
+      const dt = deltaTime / 16.67;
       const now = Date.now();
       const halfDim = dimension / 2;
+      
+      // Get LIVE viewport dimensions every frame
+      const viewW = window.innerWidth;
+      const viewH = window.innerHeight;
+      const homeX = viewW / 2;
+      const homeY = viewH / 2;
+      
+      // Initialize position at center on first frame
+      if (!flight.initialized) {
+        flight.x = homeX;
+        flight.y = homeY;
+        flight.targetX = homeX;
+        flight.targetY = homeY;
+        flight.initialized = true;
+      }
       
       // Pick new random target within home circle
       if (now > flight.nextTargetTime) {
         const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * HOME_RADIUS * 0.7;
+        const dist = Math.random() * HOME_RADIUS * 0.6;
         flight.targetX = homeX + Math.cos(angle) * dist;
         flight.targetY = homeY + Math.sin(angle) * dist;
-        flight.nextTargetTime = now + TARGET_INTERVAL + Math.random() * 400;
+        flight.nextTargetTime = now + TARGET_INTERVAL + Math.random() * 500;
       }
       
       // Calculate direction to target
@@ -864,42 +879,25 @@ export function FloatingQueenBee() {
       const dy = flight.targetY - flight.y;
       const distToTarget = Math.sqrt(dx * dx + dy * dy);
       
-      // Apply thrust toward target (bee flies toward goal)
-      if (distToTarget > 5) {
-        const thrustX = (dx / distToTarget) * THRUST * dt;
-        const thrustY = (dy / distToTarget) * THRUST * dt;
-        flight.vx += thrustX;
-        flight.vy += thrustY;
+      // Apply thrust toward target
+      if (distToTarget > 3) {
+        flight.vx += (dx / distToTarget) * THRUST * dt;
+        flight.vy += (dy / distToTarget) * THRUST * dt;
       }
       
-      // Apply gravity (bee constantly fights to stay up)
+      // Apply gravity and lift
       flight.vy += GRAVITY * dt;
+      flight.vy -= GRAVITY * 1.05 * dt; // Slight net lift
       
-      // Apply lift from wing beats (counters gravity with some variance)
-      const lift = -GRAVITY * 1.1 * dt; // Slightly more than gravity
-      flight.vy += lift;
-      
-      // Home circle boundary - soft pull back to center
+      // Home circle boundary - progressive pull back
       const homeDistX = flight.x - homeX;
       const homeDistY = flight.y - homeY;
       const homeDist = Math.sqrt(homeDistX * homeDistX + homeDistY * homeDistY);
       
-      if (homeDist > HOME_RADIUS * 0.5) {
-        const pullStrength = ((homeDist - HOME_RADIUS * 0.5) / (HOME_RADIUS * 0.5)) * HOME_PULL;
-        flight.vx -= (homeDistX / homeDist) * pullStrength * dt * 10;
-        flight.vy -= (homeDistY / homeDist) * pullStrength * dt * 10;
-      }
-      
-      // Hard boundary - clamp velocity if too far out
-      if (homeDist > HOME_RADIUS) {
-        const radialV = (flight.vx * homeDistX + flight.vy * homeDistY) / homeDist;
-        if (radialV > 0) {
-          flight.vx -= (homeDistX / homeDist) * radialV * 1.2;
-          flight.vy -= (homeDistY / homeDist) * radialV * 1.2;
-        }
-        // Clamp position
-        flight.x = homeX + (homeDistX / homeDist) * HOME_RADIUS * 0.95;
-        flight.y = homeY + (homeDistY / homeDist) * HOME_RADIUS * 0.95;
+      if (homeDist > HOME_RADIUS * 0.4) {
+        const pullStrength = Math.pow(homeDist / HOME_RADIUS, 2) * HOME_PULL;
+        flight.vx -= (homeDistX / Math.max(homeDist, 1)) * pullStrength * dt * 8;
+        flight.vy -= (homeDistY / Math.max(homeDist, 1)) * pullStrength * dt * 8;
       }
       
       // Apply drag
@@ -917,66 +915,67 @@ export function FloatingQueenBee() {
       flight.x += flight.vx * dt;
       flight.y += flight.vy * dt;
       
-      // Wing beat bob (rapid vertical oscillation like a real bee)
+      // HARD CLAMP - Absolute boundary enforcement
+      const newHomeDistX = flight.x - homeX;
+      const newHomeDistY = flight.y - homeY;
+      const newHomeDist = Math.sqrt(newHomeDistX * newHomeDistX + newHomeDistY * newHomeDistY);
+      
+      if (newHomeDist > HOME_RADIUS) {
+        // Clamp position to edge of circle
+        flight.x = homeX + (newHomeDistX / newHomeDist) * HOME_RADIUS * 0.9;
+        flight.y = homeY + (newHomeDistY / newHomeDist) * HOME_RADIUS * 0.9;
+        // Kill outward velocity
+        const radialV = (flight.vx * newHomeDistX + flight.vy * newHomeDistY) / newHomeDist;
+        if (radialV > 0) {
+          flight.vx -= (newHomeDistX / newHomeDist) * radialV;
+          flight.vy -= (newHomeDistY / newHomeDist) * radialV;
+        }
+      }
+      
+      // Wing beat bob
       flight.wingPhase += WING_BOB_FREQ * dt * 0.1;
       const wingBob = Math.sin(flight.wingPhase) * WING_BOB_AMP;
       
-      // Final position with wing bob
+      // Final CENTER position (with wing bob)
       const queenX = flight.x;
       const queenY = flight.y + wingBob;
       
       // Update direction from velocity for facing
       beeController.direction.update(flight.vx, flight.vy);
-      const newFacing = beeController.direction.getFacing();
-      setFacing(newFacing);
+      setFacing(beeController.direction.getFacing());
       
       // Update head aim (eyes follow cursor)
-      const headAim = beeController.headAim.update(
-        deltaTime,
-        queenX,
-        queenY,
-        mousePos.x,
-        mousePos.y,
-        flight.vx,
-        flight.vy,
-        false
-      );
-      setHeadAim(headAim);
+      setHeadAim(beeController.headAim.update(
+        deltaTime, queenX, queenY,
+        mousePos.x, mousePos.y,
+        flight.vx, flight.vy, false
+      ));
       
       // Update body dynamics
-      const bodyDynamics = beeController.bodyDynamics.update(
-        deltaTime,
-        flight.vx,
-        flight.vy
-      );
-      setBodyDynamics(bodyDynamics);
+      setBodyDynamics(beeController.bodyDynamics.update(deltaTime, flight.vx, flight.vy));
       
-      // Update shared queen state for WORKERS to orbit around
+      // Update shared queen state for workers
       beeController.setQueenState(queenX, queenY, flight.vx, flight.vy);
       
-      // Convert center to top-left for rendering
-      const renderX = queenX - halfDim;
-      const renderY = queenY - halfDim;
-      updatePosition(renderX, renderY);
+      // Convert CENTER to TOP-LEFT for rendering
+      updatePosition(queenX - halfDim, queenY - halfDim);
       
-      // Update canvas animation state
+      // Update velocity state
       setBeeVelocity({ x: flight.vx, y: flight.vy });
       updateAutonomousVelocity({ x: flight.vx, y: flight.vy });
       
-      // Check cursor proximity for worker attack trigger
-      const cursorDx = mousePos.x - queenX;
-      const cursorDy = mousePos.y - queenY;
-      const cursorDistance = Math.sqrt(cursorDx * cursorDx + cursorDy * cursorDy);
+      // Check cursor proximity for worker attack
+      const cursorDist = Math.sqrt(
+        Math.pow(mousePos.x - queenX, 2) + Math.pow(mousePos.y - queenY, 2)
+      );
       
-      if (cursorDistance < ATTACK_THRESHOLD && now - lastFrenzyTime > 4000) {
+      if (cursorDist < ATTACK_THRESHOLD && now - lastFrenzyTime > 4000) {
         setLastFrenzyTime(now);
         triggerSwarm({ frenzy: true, workerCount: 8, duration: 3000 });
         setMode('SWARM');
       }
       
-      // Hovering state based on speed
       setIsHovering(speed < 1);
-      
       animationFrameRef.current = requestAnimationFrame(animate);
     };
     
@@ -987,7 +986,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isMounted, dimension, windowDimensions, mousePos, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerSwarm, setMode, beeController]);
+  }, [isMounted, dimension, mousePos, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerSwarm, setMode, beeController]);
 
   // Clean up old woosh particles
   useEffect(() => {
