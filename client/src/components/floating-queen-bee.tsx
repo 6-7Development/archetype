@@ -884,14 +884,12 @@ export function FloatingQueenBee() {
       const spriteTopPadding = hatHeight + 10; // Total top clearance needed
       
       // BACKUP CLAMP: React layer is safety net only - MovementController is authority
-      // AGGRESSIVE padding to match controller - ANY active state must stay visible
-      const isHighEnergyOrAnimating = result.state !== 'WANDER' && result.state !== 'REST';
-      const emotePadding = isHighEnergyOrAnimating ? 80 : 0;  // AGGRESSIVE padding
-      const uniformPadding = Math.max(spriteTopPadding, 70) + emotePadding;  // Base increased to 70
+      // GENEROUS padding to match controller and prevent ANY escape
+      const uniformPadding = Math.max(spriteTopPadding, 80);  // Base increased to 80
       
       const minX = halfDim + uniformPadding;
       const maxX = windowDimensions.width - halfDim - uniformPadding;
-      const minY = halfDim + spriteTopPadding + emotePadding; // Extra top padding for hat + emote
+      const minY = halfDim + spriteTopPadding; // Extra top clearance for hat
       const maxY = windowDimensions.height - halfDim - uniformPadding;
       
       // Clamp the center position

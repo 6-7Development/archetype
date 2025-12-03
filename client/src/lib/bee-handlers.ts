@@ -932,27 +932,26 @@ export class MovementController {
   }
 
   private wander(): Vector2 {
-    // Add jitter to wander angle
-    this.wanderAngle += (Math.random() - 0.5) * this.config.wanderJitter;
+    // Simple wander - just move toward a target position slowly
+    const distToTarget = this.distanceTo(this.targetPosition);
     
-    // Calculate wander circle center (ahead of bee)
-    const vel = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-    const heading = vel > 0.1 
-      ? { x: this.velocity.x / vel, y: this.velocity.y / vel }
-      : { x: Math.cos(this.wanderAngle), y: Math.sin(this.wanderAngle) };
+    // Pick new target if we've arrived or never set one
+    if (distToTarget < 20 || distToTarget === Infinity) {
+      this.pickNewWanderTarget();
+    }
     
-    const circleCenter = {
-      x: this.position.x + heading.x * this.config.wanderDistance,
-      y: this.position.y + heading.y * this.config.wanderDistance,
+    // Calculate direction to target
+    const dx = this.targetPosition.x - this.position.x;
+    const dy = this.targetPosition.y - this.position.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    
+    if (dist < 0.1) return { x: 0, y: 0 };
+    
+    // Return normalized direction scaled by small movement amount (0.8 pixels/frame = slow gentle movement)
+    return {
+      x: (dx / dist) * 0.8,
+      y: (dy / dist) * 0.8,
     };
-    
-    // Calculate target on wander circle
-    this.wanderTarget = {
-      x: circleCenter.x + Math.cos(this.wanderAngle) * this.config.wanderRadius,
-      y: circleCenter.y + Math.sin(this.wanderAngle) * this.config.wanderRadius,
-    };
-    
-    return this.seek(this.wanderTarget, 0.5);
   }
 
   private avoidObstacles(): Vector2 {
@@ -974,51 +973,13 @@ export class MovementController {
     return avoidance;
   }
 
-  private stayInBounds(): Vector2 {
-    const force = { x: 0, y: 0 };
-    const halfDim = this.dimension / 2;
-    // Match React layer's padding exactly: hatHeight = dim * 0.6, uniformPadding = max(hatHeight+10, 50)
-    const hatHeight = this.dimension * 0.6;
-    // INCREASED PADDING for high-energy modes AND any non-idle state (formations/emotes)
-    // More padding = queen stays further from edges = more room to move within visible area
-    // Non-WANDER states include formations, celebrations, any active state
-    const isHighEnergyOrAnimating = this.state !== 'WANDER' && this.state !== 'REST';
-    const emotePadding = isHighEnergyOrAnimating ? 80 : 0;  // AGGRESSIVE padding for any active state
-    const uniformPadding = Math.max(hatHeight + 10, 70) + emotePadding;  // Base increased to 70
-    
-    // Calculate safe bounds (matching hard clamp in React layer)
-    const minX = halfDim + uniformPadding;
-    const maxX = this.viewportSize.x - halfDim - uniformPadding;
-    const minY = halfDim + hatHeight + 10 + emotePadding; // Extra top padding for hat + emote
-    const maxY = this.viewportSize.y - halfDim - uniformPadding;
-    
-    // LARGE soft zone for ANY active state - start pushing back early
-    const softZone = isHighEnergyOrAnimating ? 120 : 40;
-    
-    // STRONG boundary force for ANY active state
-    const boundaryStrength = isHighEnergyOrAnimating ? 0.35 : 0.1;
-    
-    if (this.position.x < minX + softZone) {
-      force.x = (minX + softZone - this.position.x) * boundaryStrength;
-    } else if (this.position.x > maxX - softZone) {
-      force.x = (maxX - softZone - this.position.x) * boundaryStrength;
-    }
-    
-    if (this.position.y < minY + softZone) {
-      force.y = (minY + softZone - this.position.y) * boundaryStrength;
-    } else if (this.position.y > maxY - softZone) {
-      force.y = (maxY - softZone - this.position.y) * boundaryStrength;
-    }
-    
-    return force;
-  }
 
   private pickNewWanderTarget(): void {
-    // Pick a random point within the safe viewport area
+    // Pick a random point within the safe viewport area - MATCHING stayInBounds padding
     const halfDim = this.dimension / 2;
     const hatHeight = this.dimension * 0.6;
-    const uniformPadding = Math.max(hatHeight + 10, 50);
-    const softZone = 40; // Stay away from edges
+    const uniformPadding = Math.max(hatHeight + 10, 80); // Increased to match stayInBounds
+    const softZone = 100; // Large safe zone matching boundary soft zone
     
     const minX = halfDim + uniformPadding + softZone;
     const maxX = this.viewportSize.x - halfDim - uniformPadding - softZone;
@@ -1044,192 +1005,84 @@ export class MovementController {
     // Evaluate state transitions
     this.evaluateStateTransition(deltaTime);
     
-    // Calculate steering forces based on current state
-    let steering = { x: 0, y: 0 };
+    // Get safe bounds for containment
+    const halfDim = this.dimension / 2;
+    const hatHeight = this.dimension * 0.6;
+    const padding = 80;
+    const minX = halfDim + padding;
+    const maxX = this.viewportSize.x - halfDim - padding;
+    const minY = halfDim + hatHeight + 10;
+    const maxY = this.viewportSize.y - halfDim - padding;
+    
+    // Simple movement based on state
+    let moveX = 0;
+    let moveY = 0;
     
     switch (this.state) {
       case 'WANDER':
-        const wanderForce = this.wander();
-        steering.x += wanderForce.x;
-        steering.y += wanderForce.y;
+        const wander = this.wander();
+        moveX = wander.x;
+        moveY = wander.y;
         break;
         
       case 'EVADE':
-        // Predict cursor future position (reduced prediction time)
-        const predictedCursor = {
-          x: this.cursorPosition.x + this.cursorVelocity.x * 5, // Reduced from 10
-          y: this.cursorPosition.y + this.cursorVelocity.y * 5,
-        };
-        // Gentler flee force to prevent whiplash
-        const fleeForce = this.flee(predictedCursor, this.config.evadeDistance * 1.2, 1.5); // Reduced from 1.5/2.5
-        steering.x += fleeForce.x;
-        steering.y += fleeForce.y;
+        // Run away from cursor
+        const dx = this.position.x - this.cursorPosition.x;
+        const dy = this.position.y - this.cursorPosition.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        moveX = (dx / dist) * 2; // Move 2 pixels/frame away
+        moveY = (dy / dist) * 2;
         break;
         
       case 'REST':
-        // Gentle hovering - slight drift
-        steering.x += (Math.random() - 0.5) * 0.02;
-        steering.y += (Math.random() - 0.5) * 0.02;
+        // Don't move much, just tiny random drift
+        moveX = (Math.random() - 0.5) * 0.1;
+        moveY = (Math.random() - 0.5) * 0.1;
         break;
         
       case 'CELEBRATE':
-        // Very gentle bouncy pattern - minimal amplitude to prevent oscillation
-        const celebTime = this.stateTimer * 0.002; // Even slower oscillation
-        steering.x += Math.sin(celebTime * 2) * 0.15; // Reduced from 0.3 to 0.15
-        steering.y += Math.sin(celebTime * 3) * 0.08; // Reduced from 0.15 to 0.08
+        // Gentle up and down bob
+        moveY = Math.sin(this.stateTimer * 0.005) * 0.5;
         break;
         
       case 'ALERT':
-        // Quick back and forth scanning
-        const alertTime = this.stateTimer * 0.008;
-        steering.x += Math.sin(alertTime * 3) * 0.5;
-        // Occasionally look toward cursor
-        if (Math.random() < 0.02) {
-          const lookAt = this.seek(this.cursorPosition, 0.2);
-          steering.x += lookAt.x;
-          steering.y += lookAt.y;
-        }
+        // Tiny nervous twitches
+        moveX = (Math.random() - 0.5) * 0.3;
+        moveY = (Math.random() - 0.5) * 0.3;
         break;
         
       case 'PATROL':
-        if (this.targetPosition) {
-          const arriveForce = this.arrive(this.targetPosition, 50);
-          steering.x += arriveForce.x;
-          steering.y += arriveForce.y;
-          
-          // Pick new target when arrived
-          if (this.distanceTo(this.targetPosition) < 20) {
-            this.pickNewWanderTarget();
-          }
-        }
-        break;
-        
       case 'CHASE':
+        // Move toward target if set
         if (this.targetPosition) {
-          const seekForce = this.seek(this.targetPosition, 1.2);
-          steering.x += seekForce.x;
-          steering.y += seekForce.y;
+          const dx = this.targetPosition.x - this.position.x;
+          const dy = this.targetPosition.y - this.position.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          moveX = (dx / dist) * 1.5;
+          moveY = (dy / dist) * 1.5;
         }
         break;
     }
     
-    // Always apply obstacle avoidance and boundary forces
-    const avoidForce = this.avoidObstacles();
-    const boundaryForce = this.stayInBounds();
+    // Apply movement to position
+    this.position.x += moveX;
+    this.position.y += moveY;
     
-    steering.x += avoidForce.x + boundaryForce.x;
-    steering.y += avoidForce.y + boundaryForce.y;
-    
-    // === ANTI-WHIPLASH PHYSICS SYSTEM ===
-    
-    // Calculate bounds FIRST for predictive clamping
-    const halfDim = this.dimension / 2;
-    const hatHeight = this.dimension * 0.6;
-    // AGGRESSIVE PADDING for ANY non-idle state - matching stayInBounds exactly
-    // Ensures queen stays visible during formations, celebrations, and animations
-    const isHighEnergyOrAnimating = this.state !== 'WANDER' && this.state !== 'REST';
-    const emotePadding = isHighEnergyOrAnimating ? 80 : 0;  // AGGRESSIVE padding
-    const uniformPadding = Math.max(hatHeight + 10, 70) + emotePadding;  // Base increased to 70
-    const minX = halfDim + uniformPadding;
-    const maxX = this.viewportSize.x - halfDim - uniformPadding;
-    const minY = halfDim + hatHeight + 10 + emotePadding;
-    const maxY = this.viewportSize.y - halfDim - uniformPadding;
-    
-    // 1. LIMIT STEERING with state-aware caps (tighter limits)
-    const steerMag = Math.sqrt(steering.x ** 2 + steering.y ** 2);
-    const maxAccelForState = this.state === 'EVADE' ? this.config.maxAcceleration * 0.8
-                            : this.state === 'CELEBRATE' ? this.config.maxAcceleration * 0.6
-                            : this.config.maxAcceleration * 0.7;
-    if (steerMag > maxAccelForState) {
-      steering.x = (steering.x / steerMag) * maxAccelForState;
-      steering.y = (steering.y / steerMag) * maxAccelForState;
-    }
-    
-    // 2. SMOOTH ACCELERATION (lerp to prevent sudden jerks)
-    const accelSmoothing = 0.3; // Lower = smoother transitions
-    this.acceleration.x += (steering.x - this.acceleration.x) * accelSmoothing;
-    this.acceleration.y += (steering.y - this.acceleration.y) * accelSmoothing;
-    
-    // 3. PREDICTIVE BOUNDARY CHECK - apply spring force BEFORE velocity update
-    const predictedX = this.position.x + this.velocity.x + this.acceleration.x;
-    const predictedY = this.position.y + this.velocity.y + this.acceleration.y;
-    
-    // Spring force toward safe zone if prediction is outside bounds
-    const springStrength = 0.15;
-    if (predictedX < minX) {
-      this.acceleration.x += (minX - predictedX) * springStrength;
-      if (this.velocity.x < 0) this.velocity.x *= 0.5; // Dampen outward velocity
-    } else if (predictedX > maxX) {
-      this.acceleration.x += (maxX - predictedX) * springStrength;
-      if (this.velocity.x > 0) this.velocity.x *= 0.5;
-    }
-    if (predictedY < minY) {
-      this.acceleration.y += (minY - predictedY) * springStrength;
-      if (this.velocity.y < 0) this.velocity.y *= 0.5;
-    } else if (predictedY > maxY) {
-      this.acceleration.y += (maxY - predictedY) * springStrength;
-      if (this.velocity.y > 0) this.velocity.y *= 0.5;
-    }
-    
-    // 4. UPDATE VELOCITY with smoothed acceleration
-    this.velocity.x += this.acceleration.x;
-    this.velocity.y += this.acceleration.y;
-    
-    // 5. APPLY FRICTION
-    this.velocity.x *= this.config.friction;
-    this.velocity.y *= this.config.friction;
-    
-    // 6. LIMIT VELOCITY - gentler max speeds, especially for FRENZY/EVADE to stay in bounds
-    const velMag = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-    const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 0.5  // REDUCED from 0.8 to 0.5 for FRENZY containment
-                           : this.state === 'REST' ? this.config.maxSpeed * 0.15
-                           : this.state === 'CELEBRATE' ? this.config.maxSpeed * 0.5
-                           : this.config.maxSpeed * 0.9;
-    if (velMag > maxSpeedForState) {
-      this.velocity.x = (this.velocity.x / velMag) * maxSpeedForState;
-      this.velocity.y = (this.velocity.y / velMag) * maxSpeedForState;
-    }
-    
-    // 7. VELOCITY DAMPING when near boundaries (prevents whiplash at edges)
-    const edgeProximity = 30;
-    const nearLeftEdge = this.position.x < minX + edgeProximity;
-    const nearRightEdge = this.position.x > maxX - edgeProximity;
-    const nearTopEdge = this.position.y < minY + edgeProximity;
-    const nearBottomEdge = this.position.y > maxY - edgeProximity;
-    
-    if (nearLeftEdge || nearRightEdge || nearTopEdge || nearBottomEdge) {
-      this.velocity.x *= 0.85;
-      this.velocity.y *= 0.85;
-    }
-    
-    // 8. UPDATE POSITION
-    this.position.x += this.velocity.x;
-    this.position.y += this.velocity.y;
-    
-    // 9. FINAL HARD CLAMP (safety net - should rarely trigger now)
-    const wasClampedX = this.position.x < minX || this.position.x > maxX;
-    const wasClampedY = this.position.y < minY || this.position.y > maxY;
-    
+    // HARD CLAMP to safe bounds - keep queen always visible
     this.position.x = Math.max(minX, Math.min(maxX, this.position.x));
     this.position.y = Math.max(minY, Math.min(maxY, this.position.y));
     
-    // Zero velocity component if hard clamp was needed
-    if (wasClampedX) {
-      this.velocity.x = 0;
-      this.acceleration.x = 0;
-    }
-    if (wasClampedY) {
-      this.velocity.y = 0;
-      this.acceleration.y = 0;
-    }
+    // Store velocity for animation
+    this.velocity.x = moveX;
+    this.velocity.y = moveY;
     
-    const finalSpeed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+    const speed = Math.sqrt(moveX * moveX + moveY * moveY);
     
     return {
       position: { ...this.position },
       velocity: { ...this.velocity },
       state: this.state,
-      speed: finalSpeed,
+      speed: speed,
     };
   }
 
