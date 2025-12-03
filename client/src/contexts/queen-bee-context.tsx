@@ -2,9 +2,8 @@
  * Global Queen Bee Context - Enhanced with Full Emotional Range
  * ==============================================================
  * Complete emotional AI companion that reacts to all user actions.
- * 36 emotional states for rich tool-triggered reactions.
  * 
- * CORE EMOTIONS (21 original):
+ * EMOTIONS:
  * - IDLE: Resting, gentle floating
  * - LISTENING: User is typing
  * - THINKING: Processing/reasoning
@@ -23,26 +22,6 @@
  * - CELEBRATING: Big achievement
  * - CONFUSED: Error or issue detected
  * - FOCUSED: User working on code
- * - FRENZY: Aggressive attack mode
- * - HUNTING: Chasing cursor
- * - RESTING: Post-activity calm
- * 
- * TOOL-TRIGGERED EMOTIONS (15 new):
- * - FRUSTRATED: Failed tool, preparing retry
- * - SCARED: Dangerous/destructive operation
- * - PANIC: Multiple stacked failures
- * - VICTORY: Successful deploy
- * - BORED: Long idle (>5 minutes)
- * - SEARCHING: Web/code search active
- * - DEBUGGING: Error analysis
- * - REVIEWING: Code review mode
- * - SAVING: File write operation
- * - DEPLOYING: Deploy in progress
- * - ROLLBACK: Reverting changes
- * - DB_QUERY: Database operation
- * - RATE_LIMITED: Hit API limits
- * - DELIGHT: Post-success sparkles
- * - NET_REQUEST: Fetching external data
  * 
  * INTERACTIVE HINTS:
  * - Detects when user hovers over key UI elements
@@ -52,9 +31,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { useLocation } from 'wouter';
 
-// All possible queen bee emotional states (36 total - expanded for tool reactions)
+// All possible queen bee emotional states (21 total)
 export type QueenBeeMode = 
-  // === CORE STATES (21 original) ===
   | 'IDLE'        // Default resting state
   | 'LISTENING'   // User is typing/interacting
   | 'TYPING'      // AI is generating response
@@ -75,23 +53,7 @@ export type QueenBeeMode =
   | 'FOCUSED'     // User working on code
   | 'FRENZY'      // Red mode - bees attacking/aggressive swarm
   | 'HUNTING'     // Bees actively chasing user
-  | 'RESTING'     // Calm after activity ends
-  // === NEW TOOL-TRIGGERED STATES (15 new) ===
-  | 'FRUSTRATED'  // Failed tool call, preparing retry
-  | 'SCARED'      // Dangerous operation (delete, destructive)
-  | 'PANIC'       // Multiple stacked failures
-  | 'VICTORY'     // Successful deploy/major achievement
-  | 'BORED'       // Long idle (>5 minutes)
-  | 'SEARCHING'   // Web/code search in progress
-  | 'DEBUGGING'   // Error analysis mode
-  | 'REVIEWING'   // Code review/approval
-  | 'SAVING'      // File write operation
-  | 'DEPLOYING'   // Deploy in progress
-  | 'ROLLBACK'    // Reverting changes
-  | 'DB_QUERY'    // Database operation
-  | 'RATE_LIMITED'// Hit API rate limits
-  | 'DELIGHT'     // Post-success sparkle celebration
-  | 'NET_REQUEST';// Fetching external data
+  | 'RESTING';    // Calm after activity ends
 
 // Interactive hint types
 export interface InteractiveHint {
@@ -174,18 +136,6 @@ export interface AutonomousVelocity {
   y: number;
 }
 
-// Tool event types for emote triggering
-export type ToolEventType = 
-  | 'file_read' | 'file_write' | 'file_delete'
-  | 'code_run_start' | 'code_run_success' | 'code_run_error'
-  | 'search_start' | 'search_found' | 'search_empty'
-  | 'db_query_start' | 'db_query_success' | 'db_query_error'
-  | 'deploy_start' | 'deploy_success' | 'deploy_error'
-  | 'test_start' | 'test_pass' | 'test_fail'
-  | 'rollback_start' | 'rollback_complete'
-  | 'rate_limit_hit' | 'rate_limit_clear'
-  | 'net_request_start' | 'net_request_complete' | 'net_request_error';
-
 // Context state interface
 interface QueenBeeContextState {
   mode: QueenBeeMode;
@@ -221,11 +171,6 @@ interface QueenBeeContextState {
   // Autonomous movement velocity
   autonomousVelocity: AutonomousVelocity;
   updateAutonomousVelocity: (velocity: AutonomousVelocity) => void;
-  // Tool-triggered emote system
-  triggerToolEmote: (event: ToolEventType) => void;
-  failureCount: number; // Track consecutive failures for PANIC state
-  triggerVictory: () => void;
-  triggerDelight: () => void;
 }
 
 // Get default position
@@ -300,11 +245,6 @@ export function QueenBeeProvider({
   
   // Autonomous velocity for queen bee movement
   const [autonomousVelocity, setAutonomousVelocity] = useState<AutonomousVelocity>({ x: 0, y: 0 });
-  
-  // Failure tracking for PANIC state (multiple consecutive failures)
-  const [failureCount, setFailureCount] = useState(0);
-  const failureResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const toolEmoteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Clamp position to viewport
   const clampPosition = useCallback((x: number, y: number): { x: number; y: number } => {
@@ -451,131 +391,6 @@ export function QueenBeeProvider({
     setAutonomousVelocity(velocity);
   }, []);
 
-  // TOOL EMOTE SYSTEM: Map tool events to queen reactions
-  const triggerToolEmote = useCallback((event: ToolEventType) => {
-    // Clear any pending tool emote timeout
-    if (toolEmoteTimeoutRef.current) {
-      clearTimeout(toolEmoteTimeoutRef.current);
-    }
-    
-    lastActivityTimeRef.current = Date.now();
-    
-    // Map tool events to queen modes with appropriate durations
-    const eventModeMap: Record<ToolEventType, { mode: QueenBeeMode; duration: number; isError?: boolean }> = {
-      // File operations
-      'file_read': { mode: 'CURIOUS', duration: 1000 },
-      'file_write': { mode: 'SAVING', duration: 1500 },
-      'file_delete': { mode: 'SCARED', duration: 2000 },
-      
-      // Code execution
-      'code_run_start': { mode: 'BUILDING', duration: 0 }, // No auto-end, wait for result
-      'code_run_success': { mode: 'SUCCESS', duration: 2000 },
-      'code_run_error': { mode: 'FRUSTRATED', duration: 2500, isError: true },
-      
-      // Search operations
-      'search_start': { mode: 'SEARCHING', duration: 0 }, // No auto-end
-      'search_found': { mode: 'EXCITED', duration: 1500 },
-      'search_empty': { mode: 'CONFUSED', duration: 2000 },
-      
-      // Database operations
-      'db_query_start': { mode: 'DB_QUERY', duration: 0 },
-      'db_query_success': { mode: 'SUCCESS', duration: 1500 },
-      'db_query_error': { mode: 'FRUSTRATED', duration: 2000, isError: true },
-      
-      // Deploy operations
-      'deploy_start': { mode: 'DEPLOYING', duration: 0 },
-      'deploy_success': { mode: 'VICTORY', duration: 4000 },
-      'deploy_error': { mode: 'PANIC', duration: 3000, isError: true },
-      
-      // Test operations
-      'test_start': { mode: 'REVIEWING', duration: 0 },
-      'test_pass': { mode: 'CELEBRATING', duration: 2500 },
-      'test_fail': { mode: 'DEBUGGING', duration: 3000, isError: true },
-      
-      // Rollback
-      'rollback_start': { mode: 'ROLLBACK', duration: 0 },
-      'rollback_complete': { mode: 'RESTING', duration: 2000 },
-      
-      // Rate limiting
-      'rate_limit_hit': { mode: 'RATE_LIMITED', duration: 5000, isError: true },
-      'rate_limit_clear': { mode: 'IDLE', duration: 1000 },
-      
-      // Network requests
-      'net_request_start': { mode: 'NET_REQUEST', duration: 0 },
-      'net_request_complete': { mode: 'SUCCESS', duration: 1500 },
-      'net_request_error': { mode: 'FRUSTRATED', duration: 2000, isError: true },
-    };
-    
-    const config = eventModeMap[event];
-    if (!config) return;
-    
-    // Track failures for PANIC escalation
-    if (config.isError) {
-      setFailureCount(prev => {
-        const newCount = prev + 1;
-        // 3+ consecutive failures trigger PANIC
-        if (newCount >= 3) {
-          setModeState('PANIC');
-          return newCount;
-        }
-        return newCount;
-      });
-      
-      // Reset failure count after 10 seconds of no failures
-      if (failureResetTimeoutRef.current) {
-        clearTimeout(failureResetTimeoutRef.current);
-      }
-      failureResetTimeoutRef.current = setTimeout(() => {
-        setFailureCount(0);
-      }, 10000);
-    } else {
-      // Success resets failure count
-      setFailureCount(0);
-    }
-    
-    // Set mode (unless already in PANIC)
-    if (mode !== 'PANIC' || !config.isError) {
-      setModeState(config.mode);
-    }
-    
-    // Auto-return to IDLE after duration (if duration > 0)
-    if (config.duration > 0) {
-      toolEmoteTimeoutRef.current = setTimeout(() => {
-        setModeState('IDLE');
-      }, config.duration);
-    }
-  }, [mode]);
-
-  // Trigger VICTORY mode (deploy success, major achievement)
-  const triggerVictory = useCallback(() => {
-    setModeState('VICTORY');
-    setFailureCount(0); // Reset failures on victory
-    
-    // Trigger celebratory swarm
-    triggerSwarm({ frenzy: false, workerCount: 10, duration: 4000 });
-    
-    if (modeTimeoutRef.current) {
-      clearTimeout(modeTimeoutRef.current);
-    }
-    modeTimeoutRef.current = setTimeout(() => {
-      setModeState('DELIGHT');
-      setTimeout(() => {
-        setModeState('IDLE');
-      }, 2000);
-    }, 4000);
-  }, [triggerSwarm]);
-
-  // Trigger DELIGHT mode (post-success sparkle celebration)
-  const triggerDelight = useCallback(() => {
-    setModeState('DELIGHT');
-    if (modeTimeoutRef.current) {
-      clearTimeout(modeTimeoutRef.current);
-    }
-    modeTimeoutRef.current = setTimeout(() => {
-      setModeState('IDLE');
-    }, 3000);
-  }, []);
-
   // Load saved config
   useEffect(() => {
     try {
@@ -600,8 +415,18 @@ export function QueenBeeProvider({
     }
   }, [clampPosition]);
 
-  // NOTE: Resize re-clamp removed - parametric movement recalculates center each frame
-  // The Lissajous curves automatically adapt to new viewport dimensions
+  // Re-clamp on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setConfigState(prev => ({
+        ...prev,
+        position: clampPosition(prev.position.x, prev.position.y),
+      }));
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [clampPosition]);
 
   // Save config
   const setConfig = useCallback((updates: Partial<QueenBeeConfig>) => {
@@ -616,11 +441,11 @@ export function QueenBeeProvider({
     });
   }, []);
 
-  // Update position - NO clamping, parametric movement is already bounded
-  // The Lissajous curves guarantee the queen stays within radius of center
+  // Update position
   const updatePosition = useCallback((x: number, y: number) => {
-    setConfig({ position: { x, y } });
-  }, [setConfig]);
+    const clamped = clampPosition(x, y);
+    setConfig({ position: clamped });
+  }, [clampPosition, setConfig]);
 
   // Toggle visibility
   const toggleVisibility = useCallback(() => {
@@ -1020,11 +845,6 @@ export function QueenBeeProvider({
         triggerFrenzy,
         autonomousVelocity,
         updateAutonomousVelocity,
-        // New tool-triggered emote system
-        triggerToolEmote,
-        failureCount,
-        triggerVictory,
-        triggerDelight,
       }}
     >
       {children}
@@ -1047,10 +867,7 @@ export function useQueenBee() {
  * Hook to connect queen bee to AI activity
  */
 export function useQueenBeeAI() {
-  const { 
-    setMode, setIsAIActive, setIsGuest, triggerError, triggerCelebration,
-    triggerToolEmote, triggerVictory, triggerDelight 
-  } = useQueenBee();
+  const { setMode, setIsAIActive, setIsGuest, triggerError, triggerCelebration } = useQueenBee();
 
   const onUserTyping = useCallback(() => {
     setIsGuest(false);
@@ -1109,19 +926,6 @@ export function useQueenBeeAI() {
     triggerCelebration();
   }, [triggerCelebration]);
 
-  // New tool-triggered emote helpers
-  const onToolEvent = useCallback((event: ToolEventType) => {
-    triggerToolEmote(event);
-  }, [triggerToolEmote]);
-
-  const onDeploy = useCallback(() => {
-    triggerVictory();
-  }, [triggerVictory]);
-
-  const onDelight = useCallback(() => {
-    triggerDelight();
-  }, [triggerDelight]);
-
   return {
     onUserTyping,
     onAIThinking,
@@ -1134,9 +938,5 @@ export function useQueenBeeAI() {
     onIdle,
     onLoading,
     onCelebrate,
-    // New tool-triggered emotes
-    onToolEvent,
-    onDeploy,
-    onDelight,
   };
 }

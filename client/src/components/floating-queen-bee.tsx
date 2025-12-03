@@ -17,7 +17,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { QueenBeeCanvas, BeeMode } from './queen-bee-canvas';
 import { useQueenBee, SIZE_DIMENSIONS, QueenBeeMode, AutonomousVelocity } from '@/contexts/queen-bee-context';
-import { RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText, Snowflake, Gift, Star, TreePine, Candy, AlertTriangle, AlertCircle, Trophy, Search, Eye, Save, Rocket, RotateCcw, Database, Clock, Globe } from 'lucide-react';
+import { RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText, Snowflake, Gift, Star, TreePine, Candy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,9 +40,8 @@ function isChristmasSeason(): boolean {
   return false; // Dynamic date-based detection
 }
 
-// Christmas-themed messages for all 36 modes
+// Christmas-themed messages for all 21 modes
 const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
-  // Core modes (21)
   'IDLE': 'Ho ho ho! Merry coding!',
   'LISTENING': 'Santa Bee is listening...',
   'TYPING': 'Writing your wishlist...',
@@ -64,22 +63,6 @@ const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
   'FRENZY': 'Naughty list attack!',
   'HUNTING': 'Hunting for presents!',
   'RESTING': 'Warm by the fire...',
-  // New tool-triggered modes (15)
-  'FRUSTRATED': 'Elves are trying again...',
-  'SCARED': 'Watch the ornaments!',
-  'PANIC': 'Gingerbread emergency!',
-  'VICTORY': 'Santa delivered!',
-  'BORED': '*yawn* waiting for Santa...',
-  'SEARCHING': 'Looking for presents...',
-  'DEBUGGING': 'Fixing the light string...',
-  'REVIEWING': 'Checking it twice!',
-  'SAVING': 'Saving to the nice list...',
-  'DEPLOYING': 'Launching the sleigh!',
-  'ROLLBACK': 'Rewinding the carol...',
-  'DB_QUERY': 'Checking Santa\'s workshop DB...',
-  'RATE_LIMITED': 'Too much eggnog...',
-  'DELIGHT': 'Jingle all the way!',
-  'NET_REQUEST': 'Sending to the North Pole...',
 };
 
 // Snowflake particle component - client-safe with mounted state
@@ -128,66 +111,36 @@ function FallingSnowflake({ id, startX, delay, windowHeight }: SnowflakeProps) {
 // SWARM/EXCITED/HUNTING map to SWARM (active multi-agent visual)
 function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
   switch (mode) {
-    // === THINKING/PROCESSING STATES ===
     case 'LOADING':
     case 'THINKING':
-    case 'SEARCHING':     // Web/code search
-    case 'DB_QUERY':      // Database query
-    case 'NET_REQUEST':   // Network request
-    case 'REVIEWING':     // Code review
       return 'THINKING';
-    
-    // === IDLE/CALM STATES ===
     case 'LISTENING':
     case 'CURIOUS':
     case 'HELPFUL':
     case 'RESTING':
-    case 'SLEEPY':
-    case 'BORED':         // Long idle
-    case 'RATE_LIMITED':  // Cooling down
       return 'IDLE';
-    
     case 'TYPING':
       return 'THINKING';
-    
-    // === CODING STATES ===
     case 'CODING':
     case 'FOCUSED':
-    case 'DEBUGGING':     // Error analysis
       return 'CODING';
-    
-    // === BUILDING STATES ===
     case 'BUILDING':
-    case 'SAVING':        // File write
-    case 'DEPLOYING':     // Deploy in progress
-    case 'ROLLBACK':      // Reverting changes
       return 'BUILDING';
-    
-    // === SUCCESS/CELEBRATION STATES ===
     case 'SUCCESS':
     case 'CELEBRATING':
-    case 'VICTORY':       // Deploy success
-    case 'DELIGHT':       // Post-success sparkles
       return 'SUCCESS';
-    
-    // === ERROR/ALERT STATES ===
     case 'ERROR':
     case 'ALERT':
     case 'CONFUSED':
-    case 'FRUSTRATED':    // Failed tool, retry
-    case 'SCARED':        // Dangerous operation
-    case 'PANIC':         // Multiple failures
       return 'ERROR';
-    
-    // === SWARM/ACTIVE STATES ===
     case 'SWARM':
     case 'EXCITED':
     case 'HUNTING':
       return 'SWARM';
-    
     case 'FRENZY':
       return 'FRENZY';
-    
+    case 'SLEEPY':
+      return 'IDLE';
     default:
       return 'IDLE';
   }
@@ -196,7 +149,6 @@ function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
 // Get mode indicator color
 function getModeColor(mode: QueenBeeMode): string {
   switch (mode) {
-    // Core modes
     case 'LISTENING': return 'bg-blue-400';
     case 'TYPING': return 'bg-honey';
     case 'THINKING': return 'bg-purple-400 animate-pulse';
@@ -217,22 +169,6 @@ function getModeColor(mode: QueenBeeMode): string {
     case 'FRENZY': return 'bg-red-500 animate-pulse';
     case 'HUNTING': return 'bg-orange-400 animate-pulse';
     case 'RESTING': return 'bg-green-300';
-    // New tool-triggered modes
-    case 'FRUSTRATED': return 'bg-amber-500 animate-pulse';
-    case 'SCARED': return 'bg-yellow-600 animate-pulse';
-    case 'PANIC': return 'bg-red-600 animate-ping';
-    case 'VICTORY': return 'bg-gradient-to-r from-gold-400 to-yellow-400 animate-bounce';
-    case 'BORED': return 'bg-slate-400';
-    case 'SEARCHING': return 'bg-cyan-400 animate-pulse';
-    case 'DEBUGGING': return 'bg-amber-400';
-    case 'REVIEWING': return 'bg-violet-400';
-    case 'SAVING': return 'bg-emerald-400';
-    case 'DEPLOYING': return 'bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse';
-    case 'ROLLBACK': return 'bg-orange-600 animate-pulse';
-    case 'DB_QUERY': return 'bg-indigo-500 animate-pulse';
-    case 'RATE_LIMITED': return 'bg-slate-500';
-    case 'DELIGHT': return 'bg-gradient-to-r from-pink-300 via-honey to-mint animate-pulse';
-    case 'NET_REQUEST': return 'bg-sky-400 animate-pulse';
     default: return 'bg-gray-400';
   }
 }
@@ -240,7 +176,6 @@ function getModeColor(mode: QueenBeeMode): string {
 // Get mode label text
 function getModeLabel(mode: QueenBeeMode): string {
   switch (mode) {
-    // Core modes
     case 'LISTENING': return 'Listening...';
     case 'TYPING': return 'Typing...';
     case 'THINKING': return 'Thinking...';
@@ -261,22 +196,6 @@ function getModeLabel(mode: QueenBeeMode): string {
     case 'FRENZY': return 'ATTACK!';
     case 'HUNTING': return 'Hunting...';
     case 'RESTING': return 'Resting...';
-    // New tool-triggered modes
-    case 'FRUSTRATED': return 'Trying again...';
-    case 'SCARED': return 'Careful!';
-    case 'PANIC': return 'Oh no!';
-    case 'VICTORY': return 'VICTORY!';
-    case 'BORED': return '*yawn*';
-    case 'SEARCHING': return 'Searching...';
-    case 'DEBUGGING': return 'Investigating...';
-    case 'REVIEWING': return 'Reviewing...';
-    case 'SAVING': return 'Saving...';
-    case 'DEPLOYING': return 'Deploying...';
-    case 'ROLLBACK': return 'Reverting...';
-    case 'DB_QUERY': return 'Querying DB...';
-    case 'RATE_LIMITED': return 'Cooling down...';
-    case 'DELIGHT': return 'Yay!';
-    case 'NET_REQUEST': return 'Fetching...';
     default: return 'Hi!';
   }
 }
@@ -285,7 +204,6 @@ function getModeLabel(mode: QueenBeeMode): string {
 function getModeIcon(mode: QueenBeeMode): React.ReactNode {
   const iconClass = "w-3 h-3";
   switch (mode) {
-    // Core modes
     case 'LISTENING': return <Ear className={iconClass} />;
     case 'TYPING': return <Pencil className={iconClass} />;
     case 'THINKING': return <Brain className={iconClass} />;
@@ -306,22 +224,6 @@ function getModeIcon(mode: QueenBeeMode): React.ReactNode {
     case 'FRENZY': return <Zap className={`${iconClass} text-red-500`} />;
     case 'HUNTING': return <Target className={`${iconClass} animate-pulse`} />;
     case 'RESTING': return <Coffee className={iconClass} />;
-    // New tool-triggered modes
-    case 'FRUSTRATED': return <RefreshCw className={`${iconClass} animate-spin`} />;
-    case 'SCARED': return <AlertTriangle className={`${iconClass} text-yellow-500`} />;
-    case 'PANIC': return <AlertCircle className={`${iconClass} text-red-500 animate-ping`} />;
-    case 'VICTORY': return <Trophy className={`${iconClass} text-yellow-500`} />;
-    case 'BORED': return <Moon className={iconClass} />;
-    case 'SEARCHING': return <Search className={`${iconClass} animate-pulse`} />;
-    case 'DEBUGGING': return <Bug className={iconClass} />;
-    case 'REVIEWING': return <Eye className={iconClass} />;
-    case 'SAVING': return <Save className={iconClass} />;
-    case 'DEPLOYING': return <Rocket className={`${iconClass} animate-bounce`} />;
-    case 'ROLLBACK': return <RotateCcw className={`${iconClass} animate-spin`} />;
-    case 'DB_QUERY': return <Database className={`${iconClass} animate-pulse`} />;
-    case 'RATE_LIMITED': return <Clock className={iconClass} />;
-    case 'DELIGHT': return <Sparkles className={`${iconClass} text-pink-400`} />;
-    case 'NET_REQUEST': return <Globe className={`${iconClass} animate-pulse`} />;
     default: return <Hand className={iconClass} />;
   }
 }
@@ -577,9 +479,49 @@ export function FloatingQueenBee() {
     beeController.swarm.setOrbitRadius(dimension * 0.6);
   }, [dimension, beeController]);
 
-  // NOTE: MovementController initialization removed - using pure parametric movement instead
-  // The queen's position is now calculated mathematically each frame (Lissajous curves)
-  // No physics, no clamps, no fighting forces - guaranteed bounded movement
+  // Initialize MovementController with viewport and position
+  useEffect(() => {
+    if (isMounted && windowDimensions.width > 0) {
+      beeController.initializeMovement(
+        windowDimensions.width,
+        windowDimensions.height,
+        config.position.x,
+        config.position.y,
+        dimension
+      );
+    }
+  }, [isMounted, windowDimensions, beeController, dimension]);
+
+  // Update MovementController viewport on resize AND clamp position immediately
+  useEffect(() => {
+    if (isMounted && windowDimensions.width > 0 && windowDimensions.height > 0) {
+      beeController.movement.setViewport(windowDimensions.width, windowDimensions.height);
+      
+      // Immediately clamp queen to new bounds after resize
+      const halfDim = dimension / 2;
+      const hatHeight = dimension * 0.6;
+      const spriteTopPadding = hatHeight + 10;
+      const uniformPadding = Math.max(spriteTopPadding, 50);
+      
+      const minX = halfDim + uniformPadding;
+      const maxX = windowDimensions.width - halfDim - uniformPadding;
+      const minY = halfDim + spriteTopPadding;
+      const maxY = windowDimensions.height - halfDim - uniformPadding;
+      
+      // Get current position and clamp
+      const currentPos = beeController.movement.getPosition();
+      const clampedX = Math.max(minX, Math.min(maxX, currentPos.x));
+      const clampedY = Math.max(minY, Math.min(maxY, currentPos.y));
+      
+      // If position changed, sync the movement controller
+      if (clampedX !== currentPos.x || clampedY !== currentPos.y) {
+        beeController.syncMovementPosition(clampedX, clampedY);
+        beeController.setQueenState(clampedX, clampedY, 0, 0);
+        beeController.direction.update(0, 0); // Reset to FRONT facing
+        updatePosition(clampedX - halfDim, clampedY - halfDim);
+      }
+    }
+  }, [windowDimensions, isMounted, beeController, dimension, updatePosition]);
 
   // Wire AI brain events (mode changes) to movement state transitions
   // This maps the QueenBeeMode from context to MovementState in the physics controller
@@ -677,24 +619,12 @@ export function FloatingQueenBee() {
       // WORKER LOOP: All queen position data comes from beeController.getQueenState()
       // which is updated by the main animation loop. This eliminates React state timing issues.
       
-      // Get current queen position from shared state (set by Lissajous loop)
-      const queenState = beeController.getQueenState();
-      
-      // CRITICAL: Update workers with queen's current position so they orbit correctly
-      // Without this, workers use stale position and fly to wrong locations
-      beeController.workers.updateQueen(
-        queenState.x, queenState.y, 
-        queenState.vx, queenState.vy
-      );
-      
       // Update cursor position for attack targeting
       beeController.workers.updateCursor(mousePos.x, mousePos.y);
       
       // Update unity formation positions using the SHARED queen state
+      const queenState = beeController.getQueenState();
       beeController.unity.updateFormation(queenState.x, queenState.y, deltaTime);
-      
-      // Update emote workers with queen position too
-      beeController.emoteWorkers.updateQueen(queenState.x, queenState.y);
       
       // Update seasonal light patterns (Christmas light chase/wave/twinkle effects)
       beeController.season.updatePatterns(deltaTime);
@@ -880,125 +810,151 @@ export function FloatingQueenBee() {
   const modeText = getModeLabel(mode);
   const modeIcon = getModeIcon(mode);
 
-  // TIME REF - Persists across re-renders for smooth animation
-  const timeRef = useRef({ t: Math.random() * 100, lastFrame: 0 });
-
-  // PURE PARAMETRIC MOVEMENT - Lissajous curves, guaranteed bounded
-  // This is the ONLY movement system - clean and simple
+  // AUTONOMOUS MOVEMENT ENGINE - Physics-based steering with MovementController
   useEffect(() => {
     if (!isMounted) return;
     
-    const ATTACK_THRESHOLD = 80;
+    const FRENZY_THRESHOLD = 50;
+    let lastTime = performance.now();
     
-    // MOVEMENT PARAMETERS - Larger movement for visibility
-    const RADIUS_X = 120;           // Horizontal roaming distance (bigger = more visible movement)
-    const RADIUS_Y = 80;            // Vertical roaming distance  
-    const FREQ_X = 0.5;             // Horizontal oscillation speed (slightly faster)
-    const FREQ_Y = 0.6;             // Vertical oscillation speed (different = organic path)
-    const FREQ_X2 = 0.2;            // Secondary X wave (adds complexity)
-    const FREQ_Y2 = 0.27;           // Secondary Y wave
-    const WING_BOB_FREQ = 12;       // Wing beat bob frequency
-    const WING_BOB_AMP = 2;         // Wing beat amplitude
-    
-    // Safe zone boundaries - keep queen well inside viewport
-    const SAFE_PADDING = 100;       // Minimum distance from edges
-    
-    const time = timeRef.current;
+    // Map MovementState to EmotionalState
+    const mapMovementToEmotional = (movementState: MovementState): EmotionalState => {
+      switch (movementState) {
+        case 'WANDER': return 'IDLE';
+        case 'EVADE': return 'EVADING';
+        case 'REST': return 'RESTING';
+        case 'CELEBRATE': return 'CELEBRATING';
+        case 'ALERT': return 'ALERT';
+        case 'PATROL': return 'CURIOUS';
+        case 'CHASE': return 'CURIOUS';
+        default: return 'IDLE';
+      }
+    };
     
     const animate = (currentTime: number) => {
-      // Time delta for smooth animation
-      const deltaMs = time.lastFrame ? currentTime - time.lastFrame : 16;
-      time.lastFrame = currentTime;
-      const dt = deltaMs * 0.001; // Convert to seconds
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
       
-      // Advance time
-      time.t += dt;
+      const beeCenterX = config.position.x + dimension / 2;
+      const beeCenterY = config.position.y + dimension / 2;
       
-      const halfDim = dimension / 2;
+      // Check for FRENZY trigger (when user gets too close)
+      const dx = mousePos.x - beeCenterX;
+      const dy = mousePos.y - beeCenterY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
       const now = Date.now();
       
-      // Calculate safe center zone (viewport center, clamped to safe bounds)
-      const viewW = window.innerWidth;
-      const viewH = window.innerHeight;
-      
-      // The safe zone center - where queen orbits around
-      const safeCenterX = viewW / 2;
-      const safeCenterY = viewH / 2;
-      
-      // LISSAJOUS POSITION - Pure math, guaranteed within radius
-      // Primary figure-8 like pattern
-      const px1 = Math.sin(time.t * FREQ_X) * RADIUS_X;
-      const py1 = Math.sin(time.t * FREQ_Y) * RADIUS_Y;
-      
-      // Secondary smaller waves for organic feel
-      const px2 = Math.sin(time.t * FREQ_X2 + 1.5) * RADIUS_X * 0.3;
-      const py2 = Math.cos(time.t * FREQ_Y2 + 2.1) * RADIUS_Y * 0.3;
-      
-      // Combined position (center-based)
-      let queenX = safeCenterX + px1 + px2;
-      let queenY = safeCenterY + py1 + py2;
-      
-      // HARD CLAMP: Keep queen center inside safe viewport zone
-      // This ensures queen NEVER escapes, even on window resize
-      const minX = SAFE_PADDING + halfDim;
-      const maxX = viewW - SAFE_PADDING - halfDim;
-      const minY = SAFE_PADDING + halfDim;
-      const maxY = viewH - SAFE_PADDING - halfDim;
-      
-      queenX = Math.max(minX, Math.min(maxX, queenX));
-      queenY = Math.max(minY, Math.min(maxY, queenY));
-      
-      // Calculate velocity from position derivatives (for facing direction)
-      const vx = Math.cos(time.t * FREQ_X) * FREQ_X * RADIUS_X +
-                 Math.cos(time.t * FREQ_X2 + 1.5) * FREQ_X2 * RADIUS_X * 0.3;
-      const vy = Math.cos(time.t * FREQ_Y) * FREQ_Y * RADIUS_Y -
-                 Math.sin(time.t * FREQ_Y2 + 2.1) * FREQ_Y2 * RADIUS_Y * 0.3;
-      
-      // Wing beat bob (rapid small oscillation)
-      const wingBob = Math.sin(time.t * WING_BOB_FREQ) * WING_BOB_AMP;
-      const finalY = queenY + wingBob;
-      
-      // Update facing direction from velocity
-      beeController.direction.update(vx, vy);
-      setFacing(beeController.direction.getFacing());
-      
-      // Update head aim (eyes follow cursor)
-      setHeadAim(beeController.headAim.update(
-        deltaMs, queenX, finalY,
-        mousePos.x, mousePos.y,
-        vx, vy, false
-      ));
-      
-      // Update body dynamics
-      setBodyDynamics(beeController.bodyDynamics.update(deltaMs, vx, vy));
-      
-      // Update shared queen state for workers to orbit (clamped position)
-      // Workers will orbit around this position, which is guaranteed to be in-bounds
-      beeController.setQueenState(queenX, finalY, vx, vy);
-      
-      // Convert center to top-left for rendering (already clamped above)
-      const renderX = queenX - halfDim;
-      const renderY = finalY - halfDim;
-      
-      updatePosition(renderX, renderY);
-      
-      // Update velocity state for other systems
-      setBeeVelocity({ x: vx * 0.1, y: vy * 0.1 });
-      updateAutonomousVelocity({ x: vx * 0.1, y: vy * 0.1 });
-      
-      // Worker attack when cursor gets close
-      const cursorDist = Math.sqrt(
-        Math.pow(mousePos.x - queenX, 2) + Math.pow(mousePos.y - finalY, 2)
-      );
-      
-      if (cursorDist < ATTACK_THRESHOLD && now - lastFrenzyTime > 4000) {
+      if (distance < FRENZY_THRESHOLD && now - lastFrenzyTime > 6000) {
         setLastFrenzyTime(now);
-        triggerSwarm({ frenzy: true, workerCount: 8, duration: 3000 });
-        setMode('SWARM');
+        triggerFrenzy();
+        triggerSwarm({ frenzy: true, workerCount: 10, duration: 4000 });
+        setMode('FRENZY');
+        setEmotionalState('FRENZY');
+        beeController.movement.forceState('EVADE');
       }
       
-      // Gentle hover state
-      setIsHovering(true);
+      // Run the physics-based movement update
+      const result = beeController.updateAutonomous(
+        deltaTime,
+        mousePos.x,
+        mousePos.y,
+        mouseVelocity.x,
+        mouseVelocity.y
+      );
+      
+      // HARD CLAMP: Ensure queen stays within viewport bounds
+      // This is the final safety net - queen must NEVER escape visible area
+      // Use UNIFORM padding for all edges to prevent asymmetric displacement
+      const halfDim = dimension / 2;
+      const hatHeight = dimension * 0.6; // Hat extends above head by ~60% of dimension
+      const spriteTopPadding = hatHeight + 10; // Total top clearance needed
+      const uniformPadding = Math.max(spriteTopPadding, 50); // At least 50px all sides for consistency
+      
+      const minX = halfDim + uniformPadding;
+      const maxX = windowDimensions.width - halfDim - uniformPadding;
+      const minY = halfDim + spriteTopPadding; // Extra top padding for hat
+      const maxY = windowDimensions.height - halfDim - uniformPadding;
+      
+      // Clamp the center position
+      const clampedX = Math.max(minX, Math.min(maxX, result.position.x));
+      const clampedY = Math.max(minY, Math.min(maxY, result.position.y));
+      
+      // Check if clamping was actually applied
+      const wasClamped = clampedX !== result.position.x || clampedY !== result.position.y;
+      
+      // When clamped, the velocity is pointing toward the boundary (wrong direction for facing)
+      // Use zero velocity for facing calculation to keep bee facing forward
+      const effectiveVelocity = wasClamped 
+        ? { x: 0, y: 0 }  // Reset velocity when at boundary to face forward
+        : result.velocity;
+      
+      // SINGLE SOURCE OF TRUTH: Update the shared queen state for workers
+      beeController.setQueenState(clampedX, clampedY, effectiveVelocity.x, effectiveVelocity.y);
+      
+      // Only sync movement controller position when clamping is applied
+      // This prevents physics state interference during normal movement
+      if (wasClamped) {
+        beeController.syncMovementPosition(clampedX, clampedY);
+        // Update direction with zero velocity to reset facing to FRONT
+        beeController.direction.update(0, 0);
+      }
+      
+      // Convert center position back to top-left for rendering
+      const newX = clampedX - halfDim;
+      const newY = clampedY - halfDim;
+      
+      // Update React state for rendering only
+      updatePosition(newX, newY);
+      setBeeVelocity(effectiveVelocity);
+      updateAutonomousVelocity(effectiveVelocity);
+      
+      // Update facing direction based on velocity (now uses effective velocity)
+      const newFacing = beeController.direction.getFacing();
+      setFacing(newFacing);
+      
+      // Update head aim and body dynamics from movement controller
+      setHeadAim(result.headAim);
+      setBodyDynamics(result.bodyDynamics);
+      
+      // Update emotional state based on movement state
+      const newEmotionalState = mapMovementToEmotional(result.state);
+      if (newEmotionalState !== emotionalState && emotionalState !== 'FRENZY') {
+        setEmotionalState(newEmotionalState);
+      }
+      
+      // Handle FRENZY timeout
+      if (emotionalState === 'FRENZY' && now - lastFrenzyTime > 4000) {
+        setEmotionalState('RESTING');
+        beeController.movement.forceState('REST');
+        canvasRef.current?.resetRagdoll?.();
+      }
+      
+      // Create woosh trail when moving fast
+      if (result.speed > 3) {
+        const newParticle: WooshParticle = {
+          id: wooshIdRef.current++,
+          x: result.position.x,
+          y: result.position.y,
+          timestamp: Date.now(),
+        };
+        setWooshTrail(prev => [...prev.slice(-15), newParticle]);
+      }
+      
+      // HOVER BOB: Track when queen is nearly stationary (low speed)
+      // Uses hysteresis to prevent flickering: 0.5 on, 0.8 off
+      const HOVER_ON_THRESHOLD = 0.5;
+      const HOVER_OFF_THRESHOLD = 0.8;
+      const wasHovering = isHoveringRef.current;
+      // Compute isEvading locally to avoid temporal dead zone issues
+      const currentlyEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT' || emotionalState === 'FRENZY';
+      const shouldHover = wasHovering 
+        ? result.speed < HOVER_OFF_THRESHOLD && !currentlyEvading  // Higher threshold to stop hovering
+        : result.speed < HOVER_ON_THRESHOLD && !currentlyEvading;  // Lower threshold to start hovering
+      
+      if (shouldHover !== wasHovering) {
+        isHoveringRef.current = shouldHover;
+        setIsHovering(shouldHover);
+      }
       
       animationFrameRef.current = requestAnimationFrame(animate);
     };
@@ -1010,7 +966,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isMounted, dimension, mousePos, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerSwarm, setMode, beeController]);
+  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerFrenzy, triggerSwarm, setMode, beeController]);
 
   // Clean up old woosh particles
   useEffect(() => {

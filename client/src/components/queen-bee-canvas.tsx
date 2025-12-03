@@ -582,18 +582,14 @@ class AgentBeeAnimation {
     
     // Apply headAim: rotation (left/right look) and tilt (up/down look)
     // NOTE: headAim.rotation is in degrees (-45 to +45), convert to radians for canvas
-    // Clamp rotation and tilt to prevent extreme values
-    const clampedRotation = Math.max(-45, Math.min(45, headAim.rotation || 0));
-    const clampedTilt = Math.max(-0.3, Math.min(0.3, headAim.tilt || 0));
-    
-    const headRotationRad = (clampedRotation * Math.PI / 180) * 0.3; // Very subtle head turn
-    const headTilt = clampedTilt * 0.2;
+    const headRotationRad = (headAim.rotation * Math.PI / 180) * 0.5; // Scale down for subtle effect
+    const headTilt = headAim.tilt * 0.3;
     ctx.rotate(headRotationRad);
     
     // Head base
     ctx.fillStyle = "#0a0a0a";
     ctx.beginPath();
-    ctx.ellipse(0, headTilt * size * 0.05, size * 0.35, size * 0.3, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, headTilt * size * 0.1, size * 0.35, size * 0.3, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Eyes with look direction and blink animation
@@ -601,34 +597,33 @@ class AgentBeeAnimation {
     ctx.shadowColor = modeColor;
     ctx.fillStyle = "#fff";
     
-    // Eye positions - VERY subtle shift to keep eyes firmly on face
-    // Normalize rotation to -1 to +1 range, then apply tiny pixel shift
-    const normalizedRotation = clampedRotation / 45; // -1 to +1
-    const eyeShift = normalizedRotation * size * 0.03; // Max ~3% of size
-    const eyeVertShift = clampedTilt * size * 0.02;   // Max ~2% of size
+    // Eye positions shift based on headAim rotation for "looking at" effect
+    // NOTE: headAim.rotation is in degrees, normalize to small pixel shift
+    const eyeShift = (headAim.rotation / 45) * size * 0.08; // Normalize to -1 to +1 range
+    const eyeVertShift = headAim.tilt * size * 0.05;
     
     // Blink animation - squash eyes vertically during blink
     const blinkScale = headAim.isBlinking ? Math.max(0.1, 1 - headAim.blinkProgress * 0.9) : 1;
     
-    // Left eye - positioned relative to head center
+    // Left eye
     ctx.beginPath();
     ctx.ellipse(
-      -size * 0.15 + eyeShift, 
-      -size * 0.05 + eyeVertShift, 
+      -size * 0.2 + eyeShift, 
+      -size * 0.1 + headTilt * size * 0.1 + eyeVertShift, 
       size * 0.1, 
-      size * 0.12 * blinkScale, 
-      -0.1, 0, Math.PI * 2
+      size * 0.15 * blinkScale, 
+      -0.2, 0, Math.PI * 2
     );
     ctx.fill();
     
-    // Right eye - positioned relative to head center
+    // Right eye
     ctx.beginPath();
     ctx.ellipse(
-      size * 0.15 + eyeShift, 
-      -size * 0.05 + eyeVertShift, 
+      size * 0.2 + eyeShift, 
+      -size * 0.1 + headTilt * size * 0.1 + eyeVertShift, 
       size * 0.1, 
-      size * 0.12 * blinkScale, 
-      0.1, 0, Math.PI * 2
+      size * 0.15 * blinkScale, 
+      0.2, 0, Math.PI * 2
     );
     ctx.fill();
     ctx.shadowBlur = 0;

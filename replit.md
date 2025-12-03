@@ -61,15 +61,6 @@ A dynamic role-based access control system (`shared/rbac.ts`) serves as a single
 ### UI/UX Decisions
 The UI features a tab-based workspace with a command console and real-time live preview, adhering to a professional swarm/hive theme with honey-gold and mint-teal accents. It uses card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces utilize semantic theme tokens for consistent messaging and display Scout's thought process inline with responses using `EnhancedMessageDisplay` and collapsible, color-coded blocks for thinking, tool calls, and results. A comprehensive Agent Chatroom interface includes real-time progress tracking via SSE events, managed by a `UniversalChat` component. A Replit Agent-style Testing UI with a `TestingPanel` provides live browser previews, AI narration, and step progress tracking. A functional Terminal component is integrated into the WorkspaceLayout. The platform incorporates a comprehensive animation system with WCAG 2.3.3 accessibility compliance using CSS keyframe animations and Framer Motion components, including `prefers-reduced-motion` support.
 
-**Queen Bee Movement Architecture (CRITICAL)**:
--   **Pure Parametric Movement**: Uses Lissajous curves (mathematical), NOT physics simulation
--   **Guaranteed Bounded**: Position = center + [A·sin(ω₁t), B·sin(ω₂t)] - mathematically cannot escape
--   **Single Source of Truth**: `timeRef` persists across re-renders, no position conflicts
--   **NO Clamping**: Context's `updatePosition` does NOT clamp - parametric math handles bounds
--   **Key Files**: `floating-queen-bee.tsx` (Lissajous loop), `queen-bee-context.tsx` (no clamp)
--   **Failed Approaches**: Physics-based thrust/drag, free-roam zones, home-pull forces all caused escape/oscillation bugs
--   **Christmas Mode**: SVG decorations via `christmas-decorations.tsx`, worker bees orbit queen and attack cursor
-
 ### System Design Choices
 Scout operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). Scout Advanced is a manually-triggered premium consultant, providing strategic guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. Scout incorporates efficiency rules like SEARCH BEFORE CODING and ITERATION BUDGET AWARENESS.
 
