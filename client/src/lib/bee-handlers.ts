@@ -933,9 +933,19 @@ export class MovementController {
 
   private wander(): Vector2 {
     // Simple wander - just move toward a target position slowly
+    // Pick new target if we don't have one or have arrived
+    if (!this.targetPosition) {
+      this.pickNewWanderTarget();
+    }
+    
+    // Safety check - if still no target, return zero movement
+    if (!this.targetPosition) {
+      return { x: 0, y: 0 };
+    }
+    
     const distToTarget = this.distanceTo(this.targetPosition);
     
-    // Pick new target if we've arrived or never set one
+    // Pick new target if we've arrived
     if (distToTarget < 20 || distToTarget === Infinity) {
       this.pickNewWanderTarget();
     }
@@ -1026,12 +1036,36 @@ export class MovementController {
         break;
         
       case 'EVADE':
-        // Run away from cursor
-        const dx = this.position.x - this.cursorPosition.x;
-        const dy = this.position.y - this.cursorPosition.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        moveX = (dx / dist) * 2; // Move 2 pixels/frame away
-        moveY = (dy / dist) * 2;
+        // SMART EVADE: Move away from cursor BUT stay in safe bounds
+        // Calculate escape vector (away from cursor)
+        const escapeDx = this.position.x - this.cursorPosition.x;
+        const escapeDy = this.position.y - this.cursorPosition.y;
+        const escapeDist = Math.sqrt(escapeDx * escapeDx + escapeDy * escapeDy) || 1;
+        
+        // Normalize escape direction
+        let escapeX = (escapeDx / escapeDist);
+        let escapeY = (escapeDy / escapeDist);
+        
+        // Check if escape direction pushes toward boundaries
+        const boundaryMargin = 50; // Danger zone near edges
+        const nearLeftEdge = this.position.x < minX + boundaryMargin;
+        const nearRightEdge = this.position.x > maxX - boundaryMargin;
+        const nearTopEdge = this.position.y < minY + boundaryMargin;
+        const nearBottomEdge = this.position.y > maxY - boundaryMargin;
+        
+        // If escaping toward a boundary, redirect perpendicular or toward center
+        if ((nearLeftEdge && escapeX < 0) || (nearRightEdge && escapeX > 0)) {
+          // Flip X direction to move away from edge, not toward it
+          escapeX = nearLeftEdge ? Math.abs(escapeX) : -Math.abs(escapeX);
+        }
+        if ((nearTopEdge && escapeY < 0) || (nearBottomEdge && escapeY > 0)) {
+          // Flip Y direction to move away from edge, not toward it
+          escapeY = nearTopEdge ? Math.abs(escapeY) : -Math.abs(escapeY);
+        }
+        
+        // Apply gentle evasion (1.5 pixels/frame - slower than before)
+        moveX = escapeX * 1.5;
+        moveY = escapeY * 1.5;
         break;
         
       case 'REST':
