@@ -2710,9 +2710,10 @@ export class SeasonEventHandler {
 export type SwarmSyncPhase = 'PATROL' | 'UNITY_TRANSIT' | 'UNITY_ACTIVE' | 'DISPERSING';
 
 // Emote modes that trigger worker unity (vs idle/roam modes)
+// These modes cause workers to form up around the queen
 const EMOTE_MODES = [
   'EXCITED', 'ERROR', 'CONFUSED', 'HELPFUL', 'CELEBRATING', 
-  'THINKING', 'LOADING', 'SLEEPY', 'FOCUSED'
+  'THINKING', 'LOADING', 'SLEEPY', 'FOCUSED', 'SUCCESS'
 ] as const;
 
 const IDLE_MODES = ['IDLE', 'ROAM'] as const;
@@ -2857,7 +2858,8 @@ export class SwarmUnityController {
     switch (mode) {
       case 'EXCITED':
       case 'CELEBRATING':
-        radius = 55; // Tighter ring for excitement
+      case 'SUCCESS':
+        radius = 55; // Tighter ring for celebration
         scaleVariation = 0.15;
         break;
       case 'ERROR':
@@ -2910,7 +2912,8 @@ export class SwarmUnityController {
     switch (mode) {
       case 'EXCITED':
       case 'CELEBRATING':
-        radius = 55 + Math.sin(this.emoteClock * 0.01) * 5; // Pulsing
+      case 'SUCCESS':
+        radius = 55 + Math.sin(this.emoteClock * 0.01) * 5; // Pulsing celebration
         break;
       case 'ERROR':
       case 'CONFUSED':
