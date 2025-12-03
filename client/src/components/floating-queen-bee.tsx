@@ -810,138 +810,102 @@ export function FloatingQueenBee() {
   const modeText = getModeLabel(mode);
   const modeIcon = getModeIcon(mode);
 
-  // AUTONOMOUS MOVEMENT - Queen flies around but stays within her home circle
+  // BOUNDED DRIFT ANIMATION - Queen drifts within home circle using Lissajous pattern
+  // This GUARANTEES she never leaves the circle by design (no physics fighting)
   useEffect(() => {
     if (!isMounted) return;
     
     let lastTime = performance.now();
-    const ATTACK_THRESHOLD = 80; // Distance for worker attack trigger
+    let animTime = Math.random() * 1000; // Random start phase
+    const ATTACK_THRESHOLD = 80;
     
     const animate = (currentTime: number) => {
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
+      animTime += deltaTime * 0.001; // Slow time progression
       const now = Date.now();
       
-      // HOME CIRCLE: Define queen's animation zone
-      const homeRadius = 100; // Animation circle radius
+      // HOME CIRCLE: Queen's guaranteed animation zone
+      const homeRadius = 80; // Maximum drift distance from center
       const homeX = windowDimensions.width / 2;
       const homeY = windowDimensions.height / 2;
-      
-      // Run the physics-based movement update
-      const result = beeController.updateAutonomous(
-        deltaTime,
-        mousePos.x,
-        mousePos.y,
-        mouseVelocity.x,
-        mouseVelocity.y
-      );
-      
-      // Calculate distance from home center
-      const homeDistX = result.position.x - homeX;
-      const homeDistY = result.position.y - homeY;
-      const homeDistance = Math.sqrt(homeDistX * homeDistX + homeDistY * homeDistY);
-      
-      // SPRING-DAMPER CONSTRAINT: Smooth anchoring to home circle
-      // Uses progressive force that increases near edge to prevent bounce
-      let constrainedX = result.position.x;
-      let constrainedY = result.position.y;
-      let dampedVx = result.velocity.x;
-      let dampedVy = result.velocity.y;
-      
-      // Start applying force at 60% of radius (soft zone)
-      const softZone = homeRadius * 0.6;
-      
-      if (homeDistance > softZone) {
-        // Calculate how far into the constraint zone (0 at softZone, 1 at homeRadius)
-        const edgeProgress = Math.min(1, (homeDistance - softZone) / (homeRadius - softZone));
-        
-        // Direction toward center
-        const dirX = -homeDistX / Math.max(homeDistance, 1);
-        const dirY = -homeDistY / Math.max(homeDistance, 1);
-        
-        // Progressive spring force (stronger near edge)
-        const springForce = edgeProgress * edgeProgress * 0.4;
-        
-        // Apply centering force
-        constrainedX += dirX * homeDistance * springForce;
-        constrainedY += dirY * homeDistance * springForce;
-        
-        // Dampen velocity pointing outward (prevents bounce)
-        const radialVelocity = (dampedVx * homeDistX + dampedVy * homeDistY) / Math.max(homeDistance, 1);
-        if (radialVelocity > 0) { // Moving outward
-          const dampingFactor = 1 - edgeProgress * 0.8; // More damping near edge
-          dampedVx *= dampingFactor;
-          dampedVy *= dampingFactor;
-        }
-      }
-      
-      // Hard clamp if somehow still outside (safety net)
-      if (homeDistance > homeRadius) {
-        const angle = Math.atan2(homeDistY, homeDistX);
-        constrainedX = homeX + Math.cos(angle) * homeRadius * 0.95;
-        constrainedY = homeY + Math.sin(angle) * homeRadius * 0.95;
-        dampedVx = 0;
-        dampedVy = 0;
-      }
-      
-      // VIEWPORT CLAMP: Safety net to stay within visible area
       const halfDim = dimension / 2;
-      const padding = 60;
-      const minX = halfDim + padding;
-      const maxX = windowDimensions.width - halfDim - padding;
-      const minY = halfDim + padding;
-      const maxY = windowDimensions.height - halfDim - padding;
       
-      const finalX = Math.max(minX, Math.min(maxX, constrainedX));
-      const finalY = Math.max(minY, Math.min(maxY, constrainedY));
+      // LISSAJOUS DRIFT: Mathematically bounded within homeRadius
+      // Uses different frequencies for organic, non-repeating motion
+      const freqX = 0.7;
+      const freqY = 0.9;
+      const freqX2 = 0.3;
+      const freqY2 = 0.5;
       
-      // Check if hard clamp was applied (for facing reset)
-      const wasHardClamped = finalX !== constrainedX || finalY !== constrainedY;
+      // Primary drift (larger, slower)
+      const driftX = Math.sin(animTime * freqX) * homeRadius * 0.6;
+      const driftY = Math.cos(animTime * freqY) * homeRadius * 0.5;
       
-      // Use damped velocity for smooth animations
-      const effectiveVelocity = wasHardClamped 
-        ? { x: 0, y: 0 }
-        : { x: dampedVx, y: dampedVy };
+      // Secondary drift (smaller, faster - adds organic feel)
+      const drift2X = Math.sin(animTime * freqX2 + 2.1) * homeRadius * 0.3;
+      const drift2Y = Math.cos(animTime * freqY2 + 1.3) * homeRadius * 0.3;
       
-      // Update direction from velocity
-      beeController.direction.update(effectiveVelocity.x, effectiveVelocity.y);
+      // Combined position - mathematically cannot exceed homeRadius * 0.9
+      const queenX = homeX + driftX + drift2X;
+      const queenY = homeY + driftY + drift2Y;
+      
+      // Calculate velocity from position change (for animations)
+      const velocityX = (Math.cos(animTime * freqX) * freqX + Math.cos(animTime * freqX2 + 2.1) * freqX2) * homeRadius * 0.02;
+      const velocityY = (-Math.sin(animTime * freqY) * freqY - Math.sin(animTime * freqY2 + 1.3) * freqY2) * homeRadius * 0.02;
+      
+      // Update direction from velocity for facing
+      beeController.direction.update(velocityX, velocityY);
       const newFacing = beeController.direction.getFacing();
       setFacing(newFacing);
       
-      // Update shared queen state for WORKERS to orbit around
-      beeController.setQueenState(finalX, finalY, effectiveVelocity.x, effectiveVelocity.y);
+      // Update head aim (eyes follow cursor)
+      const headAim = beeController.headAim.update(
+        deltaTime,
+        queenX,
+        queenY,
+        mousePos.x,
+        mousePos.y,
+        velocityX,
+        velocityY,
+        false
+      );
+      setHeadAim(headAim);
       
-      // Sync movement controller when constrained
-      if (homeDistance > homeRadius * 0.8 || wasHardClamped) {
-        beeController.syncMovementPosition(finalX, finalY);
-      }
+      // Update body dynamics
+      const bodyDynamics = beeController.bodyDynamics.update(
+        deltaTime,
+        velocityX,
+        velocityY
+      );
+      setBodyDynamics(bodyDynamics);
+      
+      // Update shared queen state for WORKERS to orbit around
+      beeController.setQueenState(queenX, queenY, velocityX, velocityY);
       
       // Convert center to top-left for rendering
-      const renderX = finalX - halfDim;
-      const renderY = finalY - halfDim;
+      const renderX = queenX - halfDim;
+      const renderY = queenY - halfDim;
       updatePosition(renderX, renderY);
       
       // Update canvas animation state
-      setBeeVelocity(effectiveVelocity);
-      updateAutonomousVelocity(effectiveVelocity);
-      setHeadAim(result.headAim);
-      setBodyDynamics(result.bodyDynamics);
+      setBeeVelocity({ x: velocityX, y: velocityY });
+      updateAutonomousVelocity({ x: velocityX, y: velocityY });
       
       // Check cursor proximity for worker attack trigger
-      const cursorDx = mousePos.x - finalX;
-      const cursorDy = mousePos.y - finalY;
+      const cursorDx = mousePos.x - queenX;
+      const cursorDy = mousePos.y - queenY;
       const cursorDistance = Math.sqrt(cursorDx * cursorDx + cursorDy * cursorDy);
       
       if (cursorDistance < ATTACK_THRESHOLD && now - lastFrenzyTime > 4000) {
         setLastFrenzyTime(now);
-        // Workers attack cursor - queen keeps flying normally
+        // Workers attack cursor - queen keeps drifting normally
         triggerSwarm({ frenzy: true, workerCount: 8, duration: 3000 });
         setMode('SWARM');
       }
       
-      // Gentle hover bob when moving slowly
-      const speed = Math.sqrt(effectiveVelocity.x ** 2 + effectiveVelocity.y ** 2);
-      setIsHovering(speed < 1);
+      // Always hovering with gentle bob
+      setIsHovering(true);
       
       animationFrameRef.current = requestAnimationFrame(animate);
     };
@@ -953,7 +917,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isMounted, dimension, windowDimensions, mousePos, mouseVelocity, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerSwarm, setMode, beeController]);
+  }, [isMounted, dimension, windowDimensions, mousePos, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerSwarm, setMode, beeController]);
 
   // Clean up old woosh particles
   useEffect(() => {
