@@ -1,13 +1,317 @@
 /**
- * Christmas Decorations Component - Optimized Pure CSS
- * Pure CSS animations, no Framer Motion, no string styles
- * Now with obstacle registry support for bee avoidance!
+ * Christmas Decorations - Dynamic SVG-based system
+ * Features:
+ * - Realistic SVG icicles that can hang from any element
+ * - Configurable ornaments with multiple styles
+ * - Easy to edit density, colors, and placement
+ * - Performance optimized with CSS animations
  */
 
-import { useMemo, useEffect, useCallback } from 'react';
+import { useMemo, useEffect, useCallback, useRef } from 'react';
 
-const BULB_COLORS = ['#FF1744', '#2979F3', '#00E676', '#FFD600', '#FF6E40', '#1DE9B6'];
+// ============================================
+// CONFIGURATION - Easy to edit these values!
+// ============================================
+export const CHRISTMAS_CONFIG = {
+  // Icicle settings
+  icicles: {
+    enabled: true,
+    density: 12,           // Number of icicles per row
+    minLength: 15,         // Minimum icicle length in px
+    maxLength: 45,         // Maximum icicle length in px
+    minWidth: 3,           // Minimum icicle width at top
+    maxWidth: 8,           // Maximum width at top
+    colors: {
+      primary: '#E3F2FD',  // Light ice blue
+      highlight: '#FFFFFF', // White highlight
+      shadow: '#B3E5FC',   // Darker ice blue
+    },
+    drip: true,            // Animated drip effect
+  },
+  // Ornament settings
+  ornaments: {
+    enabled: true,
+    count: 6,              // Number of floating ornaments
+    colors: ['#DC2626', '#2563EB', '#16A34A', '#EAB308', '#9333EA', '#F97316'],
+    sizes: [24, 28, 32],   // Available sizes
+    twinkle: true,         // Twinkle animation
+  },
+  // Light string settings
+  lights: {
+    enabled: true,
+    count: 14,             // Number of lights in string
+    colors: ['#FF1744', '#2979F3', '#00E676', '#FFD600', '#FF6E40', '#1DE9B6'],
+    glow: true,
+  },
+  // Corner wreaths
+  wreaths: {
+    enabled: true,
+    size: 70,
+    corners: ['tl', 'tr'] as const, // Which corners to decorate
+  },
+};
 
+// ============================================
+// SVG ICICLE COMPONENT
+// ============================================
+interface IcicleProps {
+  length: number;
+  width: number;
+  offsetX: number;
+  delay: number;
+  index: number;
+}
+
+function Icicle({ length, width, offsetX, delay, index }: IcicleProps) {
+  const { colors, drip } = CHRISTMAS_CONFIG.icicles;
+  
+  return (
+    <svg
+      width={width + 4}
+      height={length + 8}
+      viewBox={`0 0 ${width + 4} ${length + 8}`}
+      style={{
+        position: 'absolute',
+        left: offsetX - width / 2,
+        top: -2,
+        filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.1))',
+        animation: drip ? `icicle-drip ${3 + delay}s ease-in-out infinite ${delay}s` : undefined,
+      }}
+    >
+      <defs>
+        <linearGradient id={`ice-grad-${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={colors.shadow} stopOpacity="0.8" />
+          <stop offset="30%" stopColor={colors.primary} stopOpacity="0.95" />
+          <stop offset="50%" stopColor={colors.highlight} stopOpacity="1" />
+          <stop offset="70%" stopColor={colors.primary} stopOpacity="0.95" />
+          <stop offset="100%" stopColor={colors.shadow} stopOpacity="0.8" />
+        </linearGradient>
+      </defs>
+      <path
+        d={`
+          M ${width / 2 + 2} 0
+          Q ${width + 2} 2, ${width + 1} ${length * 0.3}
+          Q ${width} ${length * 0.6}, ${width / 2 + 2} ${length}
+          Q 4 ${length * 0.6}, 3 ${length * 0.3}
+          Q 2 2, ${width / 2 + 2} 0
+          Z
+        `}
+        fill={`url(#ice-grad-${index})`}
+      />
+      <ellipse
+        cx={width / 2 + 2}
+        cy={length - 2}
+        rx={2}
+        ry={3}
+        fill={colors.highlight}
+        opacity={0.6}
+      />
+    </svg>
+  );
+}
+
+// ============================================
+// ICICLE ROW COMPONENT
+// ============================================
+interface IcicleRowProps {
+  width: number;
+  className?: string;
+}
+
+export function IcicleRow({ width, className = '' }: IcicleRowProps) {
+  const { density, minLength, maxLength, minWidth, maxWidth } = CHRISTMAS_CONFIG.icicles;
+  
+  const icicles = useMemo(() => {
+    const result = [];
+    const spacing = width / density;
+    
+    for (let i = 0; i < density; i++) {
+      const seed = Math.sin(i * 12.9898) * 43758.5453;
+      const rand = seed - Math.floor(seed);
+      
+      result.push({
+        id: i,
+        length: minLength + rand * (maxLength - minLength),
+        width: minWidth + rand * (maxWidth - minWidth),
+        offsetX: spacing * i + spacing / 2,
+        delay: rand * 2,
+      });
+    }
+    return result;
+  }, [width, density, minLength, maxLength, minWidth, maxWidth]);
+  
+  if (!CHRISTMAS_CONFIG.icicles.enabled) return null;
+  
+  return (
+    <div 
+      className={`relative pointer-events-none ${className}`}
+      style={{ width, height: maxLength + 10 }}
+    >
+      {icicles.map((icicle) => (
+        <Icicle
+          key={icicle.id}
+          index={icicle.id}
+          length={icicle.length}
+          width={icicle.width}
+          offsetX={icicle.offsetX}
+          delay={icicle.delay}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ============================================
+// ORNAMENT COMPONENT
+// ============================================
+interface OrnamentProps {
+  x: string;
+  y: string;
+  size: number;
+  color: string;
+  index: number;
+}
+
+function Ornament({ x, y, size, color, index }: OrnamentProps) {
+  const { twinkle } = CHRISTMAS_CONFIG.ornaments;
+  
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        left: x,
+        top: y,
+        zIndex: 85,
+        pointerEvents: 'none',
+        animation: twinkle ? `ornament-swing ${4 + index * 0.5}s ease-in-out infinite` : undefined,
+        transformOrigin: 'top center',
+      }}
+    >
+      <svg 
+        width={size} 
+        height={size * 1.4} 
+        viewBox="0 0 28 40"
+      >
+        <defs>
+          <radialGradient id={`ornament-grad-${index}`} cx="30%" cy="30%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
+            <stop offset="40%" stopColor={color} />
+            <stop offset="100%" stopColor={color} stopOpacity="0.7" />
+          </radialGradient>
+        </defs>
+        <rect x="10" y="0" width="8" height="5" fill="#C9A227" rx="1" />
+        <circle cx="14" cy="4" r="3" fill="#FFD700" />
+        <line x1="14" y1="5" x2="14" y2="10" stroke="#888" strokeWidth="1" />
+        <circle cx="14" cy="24" r="13" fill={`url(#ornament-grad-${index})`} />
+        <ellipse cx="10" cy="20" rx="3" ry="4" fill="white" opacity="0.3" />
+      </svg>
+    </div>
+  );
+}
+
+// ============================================
+// LIGHT STRING COMPONENT
+// ============================================
+function LightString() {
+  const { count, colors, glow } = CHRISTMAS_CONFIG.lights;
+  
+  if (!CHRISTMAS_CONFIG.lights.enabled) return null;
+  
+  const lights = useMemo(() => {
+    return Array.from({ length: count }, (_, i) => ({
+      id: i,
+      x: 3 + (i * 94) / (count - 1),
+      y: 1.5 + Math.sin(i * 0.8) * 0.8,
+      color: colors[i % colors.length],
+    }));
+  }, [count, colors]);
+  
+  return (
+    <>
+      <svg
+        className="fixed top-0 left-0 w-full h-8 pointer-events-none z-[85]"
+        preserveAspectRatio="none"
+      >
+        <path
+          d={`M 0,8 ${lights.map(l => `Q ${l.x - 3}%,${l.y + 2}% ${l.x}%,${l.y + 1.5}%`).join(' ')} L 100%,8`}
+          fill="none"
+          stroke="#333"
+          strokeWidth="2"
+        />
+      </svg>
+      {lights.map((light) => (
+        <div
+          key={light.id}
+          style={{
+            position: 'fixed',
+            left: `${light.x}%`,
+            top: `${light.y}%`,
+            width: 10,
+            height: 14,
+            borderRadius: '50% 50% 50% 50% / 40% 40% 60% 60%',
+            background: light.color,
+            zIndex: 86,
+            pointerEvents: 'none',
+            boxShadow: glow ? `0 0 8px ${light.color}, 0 0 12px ${light.color}80` : undefined,
+            animation: `light-twinkle ${1.5 + (light.id % 3) * 0.5}s ease-in-out infinite ${light.id * 0.2}s`,
+            transform: 'translateX(-50%)',
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
+// ============================================
+// CORNER WREATH COMPONENT
+// ============================================
+function CornerWreath({ corner }: { corner: 'tl' | 'tr' | 'bl' | 'br' }) {
+  const { size } = CHRISTMAS_CONFIG.wreaths;
+  
+  const positions: Record<string, React.CSSProperties> = {
+    tl: { top: 0, left: 0 },
+    tr: { top: 0, right: 0 },
+    bl: { bottom: 0, left: 0 },
+    br: { bottom: 0, right: 0 },
+  };
+
+  return (
+    <svg
+      style={{
+        position: 'fixed',
+        pointerEvents: 'none',
+        zIndex: 85,
+        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+        animation: 'wreath-sway 8s ease-in-out infinite',
+        ...positions[corner],
+      }}
+      viewBox="0 0 80 80"
+      width={size}
+      height={size}
+    >
+      <defs>
+        <linearGradient id="wreath-green" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#2E7D32" />
+          <stop offset="100%" stopColor="#1B5E20" />
+        </linearGradient>
+      </defs>
+      <circle cx="40" cy="40" r="28" fill="none" stroke="url(#wreath-green)" strokeWidth="12" />
+      <circle cx="40" cy="40" r="32" fill="none" stroke="#388E3C" strokeWidth="2" opacity="0.5" />
+      {[0, 60, 120, 180, 240, 300].map((angle, i) => {
+        const rad = (angle * Math.PI) / 180;
+        const x = 40 + Math.cos(rad) * 28;
+        const y = 40 + Math.sin(rad) * 28;
+        const colors = ['#DC2626', '#FFD700', '#DC2626', '#FFD700', '#DC2626', '#FFD700'];
+        return <circle key={i} cx={x} cy={y} r={4} fill={colors[i]} />;
+      })}
+      <path d="M 34 8 L 40 2 L 46 8 L 43 8 L 43 15 L 37 15 L 37 8 Z" fill="#FFD700" />
+    </svg>
+  );
+}
+
+// ============================================
+// MAIN DECORATIONS COMPONENT
+// ============================================
 export interface DecorationObstacle {
   id: string;
   x: number;
@@ -15,13 +319,6 @@ export interface DecorationObstacle {
   width: number;
   height: number;
   type: 'wreath' | 'ornament' | 'bulb';
-}
-
-interface ChristmasBulb {
-  id: number;
-  x: number;
-  y: number;
-  color: string;
 }
 
 interface ChristmasDecorationsProps {
@@ -32,105 +329,6 @@ interface ChristmasDecorationsProps {
   viewportHeight?: number;
 }
 
-// Minimal Christmas Bulb - Pure CSS animation
-function ChristmasBulb({ bulb }: { bulb: ChristmasBulb }) {
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        pointerEvents: 'none',
-        borderRadius: '50%',
-        left: `${bulb.x}%`,
-        top: `${bulb.y}%`,
-        width: '6px',
-        height: '6px',
-        background: bulb.color,
-        zIndex: 85,
-        animation: `bulb-flash-${bulb.id} 2s infinite ease-in-out`,
-        boxShadow: `0 0 8px ${bulb.color}`,
-      }}
-    />
-  );
-}
-
-// Corner Wreath - CSS animation only
-function CornerWreath({ corner }: { corner: 'tl' | 'tr' | 'bl' | 'br' }) {
-  const positions: Record<string, React.CSSProperties> = {
-    tl: { top: 0, left: 0 },
-    tr: { top: 0, right: 0 },
-    bl: { bottom: 0, left: 0 },
-    br: { bottom: 0, right: 0 },
-  };
-
-  const svgStyle: React.CSSProperties = {
-    position: 'fixed',
-    pointerEvents: 'none',
-    zIndex: 85,
-    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
-    animation: 'wreath-sway 6s infinite ease-in-out',
-    transformOrigin: corner.includes('tl') || corner.includes('bl') ? 'top left' : 'top right',
-    ...positions[corner],
-  };
-
-  return (
-    <svg
-      style={svgStyle}
-      viewBox="0 0 80 80"
-      width="80"
-      height="80"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle cx="40" cy="40" r="32" fill="none" stroke="#22863A" strokeWidth="10" opacity={0.85} />
-      <circle cx="40" cy="40" r="36" fill="none" stroke="#2E7D32" strokeWidth="1.5" opacity={0.4} />
-      <path d="M 40 10 Q 45 12 50 14 Q 48 18 40 20 Q 32 18 30 14 Q 35 12 40 10" fill="#1B5E20" />
-      <path d="M 40 70 Q 45 68 50 66 Q 48 62 40 60 Q 32 62 30 66 Q 35 68 40 70" fill="#1B5E20" />
-      <path d="M 10 40 Q 12 45 14 50 Q 18 48 20 40 Q 18 32 14 30 Q 12 35 10 40" fill="#1B5E20" />
-      <path d="M 70 40 Q 68 45 66 50 Q 62 48 60 40 Q 62 32 66 30 Q 68 35 70 40" fill="#1B5E20" />
-      <circle cx="68" cy="40" r="3.5" fill="#DC2626" />
-      <circle cx="40" cy="68" r="3.5" fill="#DC2626" />
-      <circle cx="12" cy="40" r="3.5" fill="#DC2626" />
-      <circle cx="40" cy="12" r="3.5" fill="#DC2626" />
-      <circle cx="40" cy="12" r="6" fill="#FFD700" />
-      <rect x="34" y="17" width="2.5" height="8" fill="#FFD700" rx="1" />
-      <rect x="46" y="17" width="2.5" height="8" fill="#FFD700" rx="1" />
-    </svg>
-  );
-}
-
-// Floating Ornament - CSS animation
-function FloatingOrnament({ index }: { index: number }) {
-  const positions = [
-    { x: '8%', y: '15%' },
-    { x: '92%', y: '12%' },
-    { x: '5%', y: '82%' },
-    { x: '88%', y: '85%' },
-  ];
-
-  const colors = ['#FF1744', '#2979F3', '#00E676', '#FFD600'];
-  const pos = positions[index];
-  const color = colors[index % colors.length];
-
-  const ornamentStyle: React.CSSProperties = {
-    position: 'fixed',
-    pointerEvents: 'none',
-    left: pos.x,
-    top: pos.y,
-    zIndex: 85,
-    animation: `ornament-bob-${index} 4s infinite reverse`,
-  };
-
-  return (
-    <div style={ornamentStyle}>
-      <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="0" width="12" height="3.5" fill="#FFD700" rx="1" />
-        <circle cx="14" cy="18" r="10" fill={color} />
-        <circle cx="11" cy="15" r="2.5" fill="white" opacity={0.3} />
-        <line x1="14" y1="3.5" x2="14" y2="7" stroke="#FFD700" strokeWidth="0.8" />
-      </svg>
-    </div>
-  );
-}
-
 export function ChristmasDecorations({
   enabled = true,
   className = '',
@@ -138,48 +336,40 @@ export function ChristmasDecorations({
   viewportWidth = 1000,
   viewportHeight = 800,
 }: ChristmasDecorationsProps) {
-  const bulbs = useMemo(() => {
-    const positions: ChristmasBulb[] = [];
-
-    for (let i = 0; i < 7; i++) {
-      positions.push({
-        id: i,
-        x: 5 + i * 13,
-        y: 2,
-        color: BULB_COLORS[i % BULB_COLORS.length],
-      });
-    }
-
-    for (let i = 0; i < 7; i++) {
-      positions.push({
-        id: 7 + i,
-        x: 5 + i * 13,
-        y: 98,
-        color: BULB_COLORS[(i + 2) % BULB_COLORS.length],
-      });
-    }
-
-    return positions;
+  
+  const ornaments = useMemo(() => {
+    const { count, colors, sizes } = CHRISTMAS_CONFIG.ornaments;
+    const positions = [
+      { x: '6%', y: '18%' },
+      { x: '94%', y: '15%' },
+      { x: '4%', y: '75%' },
+      { x: '92%', y: '78%' },
+      { x: '15%', y: '45%' },
+      { x: '85%', y: '50%' },
+    ];
+    
+    return positions.slice(0, count).map((pos, i) => ({
+      ...pos,
+      color: colors[i % colors.length],
+      size: sizes[i % sizes.length],
+      index: i,
+    }));
   }, []);
 
-  // Calculate and report obstacle positions for bee avoidance
   const calculateObstacles = useCallback((): DecorationObstacle[] => {
     const obstacles: DecorationObstacle[] = [];
-    const wreathSize = 80;
-    const ornamentWidth = 28;
-    const ornamentHeight = 36;
+    const { size: wreathSize, corners } = CHRISTMAS_CONFIG.wreaths;
 
-    // Corner wreaths (fixed positions)
-    const wreathPositions = [
-      { id: 'wreath-tl', x: 0, y: 0 },
-      { id: 'wreath-tr', x: viewportWidth - wreathSize, y: 0 },
-      { id: 'wreath-bl', x: 0, y: viewportHeight - wreathSize },
-      { id: 'wreath-br', x: viewportWidth - wreathSize, y: viewportHeight - wreathSize },
-    ];
-
-    wreathPositions.forEach(pos => {
+    corners.forEach((corner, i) => {
+      const pos = {
+        tl: { x: 0, y: 0 },
+        tr: { x: viewportWidth - wreathSize, y: 0 },
+        bl: { x: 0, y: viewportHeight - wreathSize },
+        br: { x: viewportWidth - wreathSize, y: viewportHeight - wreathSize },
+      }[corner];
+      
       obstacles.push({
-        id: pos.id,
+        id: `wreath-${corner}`,
         x: pos.x,
         y: pos.y,
         width: wreathSize,
@@ -188,33 +378,12 @@ export function ChristmasDecorations({
       });
     });
 
-    // Floating ornaments (percentage-based positions)
-    const ornamentPositions = [
-      { id: 'ornament-0', xPercent: 8, yPercent: 15 },
-      { id: 'ornament-1', xPercent: 92, yPercent: 12 },
-      { id: 'ornament-2', xPercent: 5, yPercent: 82 },
-      { id: 'ornament-3', xPercent: 88, yPercent: 85 },
-    ];
-
-    ornamentPositions.forEach(pos => {
-      obstacles.push({
-        id: pos.id,
-        x: (pos.xPercent / 100) * viewportWidth,
-        y: (pos.yPercent / 100) * viewportHeight,
-        width: ornamentWidth,
-        height: ornamentHeight,
-        type: 'ornament',
-      });
-    });
-
     return obstacles;
   }, [viewportWidth, viewportHeight]);
 
-  // Report obstacles when component mounts or viewport changes
   useEffect(() => {
     if (enabled && onObstaclesReady) {
-      const obstacles = calculateObstacles();
-      onObstaclesReady(obstacles);
+      onObstaclesReady(calculateObstacles());
     }
   }, [enabled, onObstaclesReady, calculateObstacles]);
 
@@ -223,45 +392,48 @@ export function ChristmasDecorations({
   return (
     <>
       <style>{`
-        @keyframes bulb-flash-0 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #FF1744; } 50% { opacity: 1; box-shadow: 0 0 16px #FF174480; } }
-        @keyframes bulb-flash-1 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #FF1744; } 50% { opacity: 1; box-shadow: 0 0 16px #FF174480; } }
-        @keyframes bulb-flash-2 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #2979F3; } 50% { opacity: 1; box-shadow: 0 0 16px #2979F380; } }
-        @keyframes bulb-flash-3 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #00E676; } 50% { opacity: 1; box-shadow: 0 0 16px #00E67680; } }
-        @keyframes bulb-flash-4 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #FFD600; } 50% { opacity: 1; box-shadow: 0 0 16px #FFD60080; } }
-        @keyframes bulb-flash-5 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #FF6E40; } 50% { opacity: 1; box-shadow: 0 0 16px #FF6E4080; } }
-        @keyframes bulb-flash-6 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #1DE9B6; } 50% { opacity: 1; box-shadow: 0 0 16px #1DE9B680; } }
-        @keyframes bulb-flash-7 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #FF1744; } 50% { opacity: 1; box-shadow: 0 0 16px #FF174480; } }
-        @keyframes bulb-flash-8 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #2979F3; } 50% { opacity: 1; box-shadow: 0 0 16px #2979F380; } }
-        @keyframes bulb-flash-9 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #00E676; } 50% { opacity: 1; box-shadow: 0 0 16px #00E67680; } }
-        @keyframes bulb-flash-10 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #FFD600; } 50% { opacity: 1; box-shadow: 0 0 16px #FFD60080; } }
-        @keyframes bulb-flash-11 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #FF6E40; } 50% { opacity: 1; box-shadow: 0 0 16px #FF6E4080; } }
-        @keyframes bulb-flash-12 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #1DE9B6; } 50% { opacity: 1; box-shadow: 0 0 16px #1DE9B680; } }
-        @keyframes bulb-flash-13 { 0%, 100% { opacity: 0.4; box-shadow: 0 0 8px #FF1744; } 50% { opacity: 1; box-shadow: 0 0 16px #FF174480; } }
-
-        @keyframes wreath-sway {
-          0%, 100% { transform: rotate(0deg); }
-          50% { transform: rotate(5deg); }
+        @keyframes icicle-drip {
+          0%, 100% { transform: scaleY(1); }
+          50% { transform: scaleY(1.03); }
         }
-
-        @keyframes ornament-bob-0 { 0%, 100% { transform: translateY(0px) rotateZ(0deg); } 50% { transform: translateY(-8px) rotateZ(180deg); } }
-        @keyframes ornament-bob-1 { 0%, 100% { transform: translateY(0px) rotateZ(0deg); } 50% { transform: translateY(-8px) rotateZ(180deg); } }
-        @keyframes ornament-bob-2 { 0%, 100% { transform: translateY(0px) rotateZ(0deg); } 50% { transform: translateY(-8px) rotateZ(180deg); } }
-        @keyframes ornament-bob-3 { 0%, 100% { transform: translateY(0px) rotateZ(0deg); } 50% { transform: translateY(-8px) rotateZ(180deg); } }
+        
+        @keyframes ornament-swing {
+          0%, 100% { transform: rotate(-3deg); }
+          50% { transform: rotate(3deg); }
+        }
+        
+        @keyframes light-twinkle {
+          0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(0.95); }
+          50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+        }
+        
+        @keyframes wreath-sway {
+          0%, 100% { transform: rotate(-2deg); }
+          50% { transform: rotate(2deg); }
+        }
       `}</style>
 
-      <div className={`fixed inset-0 pointer-events-none z-[50] ${className}`}>
-        <CornerWreath corner="tl" />
-        <CornerWreath corner="tr" />
-        <CornerWreath corner="bl" />
-        <CornerWreath corner="br" />
+      <div className={`fixed inset-0 pointer-events-none z-[50] overflow-hidden ${className}`}>
+        <LightString />
+        
+        {CHRISTMAS_CONFIG.wreaths.enabled && 
+          CHRISTMAS_CONFIG.wreaths.corners.map((corner) => (
+            <CornerWreath key={corner} corner={corner} />
+          ))
+        }
 
-        {bulbs.map((bulb) => (
-          <ChristmasBulb key={`bulb-${bulb.id}`} bulb={bulb} />
-        ))}
-
-        {[0, 1, 2, 3].map((index) => (
-          <FloatingOrnament key={`ornament-${index}`} index={index} />
-        ))}
+        {CHRISTMAS_CONFIG.ornaments.enabled &&
+          ornaments.map((orn) => (
+            <Ornament
+              key={orn.index}
+              x={orn.x}
+              y={orn.y}
+              size={orn.size}
+              color={orn.color}
+              index={orn.index}
+            />
+          ))
+        }
       </div>
     </>
   );
