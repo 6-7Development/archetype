@@ -17,7 +17,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { QueenBeeCanvas, BeeMode } from './queen-bee-canvas';
 import { useQueenBee, SIZE_DIMENSIONS, QueenBeeMode, AutonomousVelocity } from '@/contexts/queen-bee-context';
-import { RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText, Snowflake, Gift, Star, TreePine, Candy } from 'lucide-react';
+import { RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText, Snowflake, Gift, Star, TreePine, Candy, AlertTriangle, AlertCircle, Trophy, Search, Eye, Save, Rocket, RotateCcw, Database, Clock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,8 +40,9 @@ function isChristmasSeason(): boolean {
   return false; // Dynamic date-based detection
 }
 
-// Christmas-themed messages for all 21 modes
+// Christmas-themed messages for all 36 modes
 const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
+  // Core modes (21)
   'IDLE': 'Ho ho ho! Merry coding!',
   'LISTENING': 'Santa Bee is listening...',
   'TYPING': 'Writing your wishlist...',
@@ -63,6 +64,22 @@ const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
   'FRENZY': 'Naughty list attack!',
   'HUNTING': 'Hunting for presents!',
   'RESTING': 'Warm by the fire...',
+  // New tool-triggered modes (15)
+  'FRUSTRATED': 'Elves are trying again...',
+  'SCARED': 'Watch the ornaments!',
+  'PANIC': 'Gingerbread emergency!',
+  'VICTORY': 'Santa delivered!',
+  'BORED': '*yawn* waiting for Santa...',
+  'SEARCHING': 'Looking for presents...',
+  'DEBUGGING': 'Fixing the light string...',
+  'REVIEWING': 'Checking it twice!',
+  'SAVING': 'Saving to the nice list...',
+  'DEPLOYING': 'Launching the sleigh!',
+  'ROLLBACK': 'Rewinding the carol...',
+  'DB_QUERY': 'Checking Santa\'s workshop DB...',
+  'RATE_LIMITED': 'Too much eggnog...',
+  'DELIGHT': 'Jingle all the way!',
+  'NET_REQUEST': 'Sending to the North Pole...',
 };
 
 // Snowflake particle component - client-safe with mounted state
@@ -111,36 +128,66 @@ function FallingSnowflake({ id, startX, delay, windowHeight }: SnowflakeProps) {
 // SWARM/EXCITED/HUNTING map to SWARM (active multi-agent visual)
 function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
   switch (mode) {
+    // === THINKING/PROCESSING STATES ===
     case 'LOADING':
     case 'THINKING':
+    case 'SEARCHING':     // Web/code search
+    case 'DB_QUERY':      // Database query
+    case 'NET_REQUEST':   // Network request
+    case 'REVIEWING':     // Code review
       return 'THINKING';
+    
+    // === IDLE/CALM STATES ===
     case 'LISTENING':
     case 'CURIOUS':
     case 'HELPFUL':
     case 'RESTING':
+    case 'SLEEPY':
+    case 'BORED':         // Long idle
+    case 'RATE_LIMITED':  // Cooling down
       return 'IDLE';
+    
     case 'TYPING':
       return 'THINKING';
+    
+    // === CODING STATES ===
     case 'CODING':
     case 'FOCUSED':
+    case 'DEBUGGING':     // Error analysis
       return 'CODING';
+    
+    // === BUILDING STATES ===
     case 'BUILDING':
+    case 'SAVING':        // File write
+    case 'DEPLOYING':     // Deploy in progress
+    case 'ROLLBACK':      // Reverting changes
       return 'BUILDING';
+    
+    // === SUCCESS/CELEBRATION STATES ===
     case 'SUCCESS':
     case 'CELEBRATING':
+    case 'VICTORY':       // Deploy success
+    case 'DELIGHT':       // Post-success sparkles
       return 'SUCCESS';
+    
+    // === ERROR/ALERT STATES ===
     case 'ERROR':
     case 'ALERT':
     case 'CONFUSED':
+    case 'FRUSTRATED':    // Failed tool, retry
+    case 'SCARED':        // Dangerous operation
+    case 'PANIC':         // Multiple failures
       return 'ERROR';
+    
+    // === SWARM/ACTIVE STATES ===
     case 'SWARM':
     case 'EXCITED':
     case 'HUNTING':
       return 'SWARM';
+    
     case 'FRENZY':
       return 'FRENZY';
-    case 'SLEEPY':
-      return 'IDLE';
+    
     default:
       return 'IDLE';
   }
@@ -149,6 +196,7 @@ function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
 // Get mode indicator color
 function getModeColor(mode: QueenBeeMode): string {
   switch (mode) {
+    // Core modes
     case 'LISTENING': return 'bg-blue-400';
     case 'TYPING': return 'bg-honey';
     case 'THINKING': return 'bg-purple-400 animate-pulse';
@@ -169,6 +217,22 @@ function getModeColor(mode: QueenBeeMode): string {
     case 'FRENZY': return 'bg-red-500 animate-pulse';
     case 'HUNTING': return 'bg-orange-400 animate-pulse';
     case 'RESTING': return 'bg-green-300';
+    // New tool-triggered modes
+    case 'FRUSTRATED': return 'bg-amber-500 animate-pulse';
+    case 'SCARED': return 'bg-yellow-600 animate-pulse';
+    case 'PANIC': return 'bg-red-600 animate-ping';
+    case 'VICTORY': return 'bg-gradient-to-r from-gold-400 to-yellow-400 animate-bounce';
+    case 'BORED': return 'bg-slate-400';
+    case 'SEARCHING': return 'bg-cyan-400 animate-pulse';
+    case 'DEBUGGING': return 'bg-amber-400';
+    case 'REVIEWING': return 'bg-violet-400';
+    case 'SAVING': return 'bg-emerald-400';
+    case 'DEPLOYING': return 'bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse';
+    case 'ROLLBACK': return 'bg-orange-600 animate-pulse';
+    case 'DB_QUERY': return 'bg-indigo-500 animate-pulse';
+    case 'RATE_LIMITED': return 'bg-slate-500';
+    case 'DELIGHT': return 'bg-gradient-to-r from-pink-300 via-honey to-mint animate-pulse';
+    case 'NET_REQUEST': return 'bg-sky-400 animate-pulse';
     default: return 'bg-gray-400';
   }
 }
@@ -176,6 +240,7 @@ function getModeColor(mode: QueenBeeMode): string {
 // Get mode label text
 function getModeLabel(mode: QueenBeeMode): string {
   switch (mode) {
+    // Core modes
     case 'LISTENING': return 'Listening...';
     case 'TYPING': return 'Typing...';
     case 'THINKING': return 'Thinking...';
@@ -196,6 +261,22 @@ function getModeLabel(mode: QueenBeeMode): string {
     case 'FRENZY': return 'ATTACK!';
     case 'HUNTING': return 'Hunting...';
     case 'RESTING': return 'Resting...';
+    // New tool-triggered modes
+    case 'FRUSTRATED': return 'Trying again...';
+    case 'SCARED': return 'Careful!';
+    case 'PANIC': return 'Oh no!';
+    case 'VICTORY': return 'VICTORY!';
+    case 'BORED': return '*yawn*';
+    case 'SEARCHING': return 'Searching...';
+    case 'DEBUGGING': return 'Investigating...';
+    case 'REVIEWING': return 'Reviewing...';
+    case 'SAVING': return 'Saving...';
+    case 'DEPLOYING': return 'Deploying...';
+    case 'ROLLBACK': return 'Reverting...';
+    case 'DB_QUERY': return 'Querying DB...';
+    case 'RATE_LIMITED': return 'Cooling down...';
+    case 'DELIGHT': return 'Yay!';
+    case 'NET_REQUEST': return 'Fetching...';
     default: return 'Hi!';
   }
 }
@@ -204,6 +285,7 @@ function getModeLabel(mode: QueenBeeMode): string {
 function getModeIcon(mode: QueenBeeMode): React.ReactNode {
   const iconClass = "w-3 h-3";
   switch (mode) {
+    // Core modes
     case 'LISTENING': return <Ear className={iconClass} />;
     case 'TYPING': return <Pencil className={iconClass} />;
     case 'THINKING': return <Brain className={iconClass} />;
@@ -224,6 +306,22 @@ function getModeIcon(mode: QueenBeeMode): React.ReactNode {
     case 'FRENZY': return <Zap className={`${iconClass} text-red-500`} />;
     case 'HUNTING': return <Target className={`${iconClass} animate-pulse`} />;
     case 'RESTING': return <Coffee className={iconClass} />;
+    // New tool-triggered modes
+    case 'FRUSTRATED': return <RefreshCw className={`${iconClass} animate-spin`} />;
+    case 'SCARED': return <AlertTriangle className={`${iconClass} text-yellow-500`} />;
+    case 'PANIC': return <AlertCircle className={`${iconClass} text-red-500 animate-ping`} />;
+    case 'VICTORY': return <Trophy className={`${iconClass} text-yellow-500`} />;
+    case 'BORED': return <Moon className={iconClass} />;
+    case 'SEARCHING': return <Search className={`${iconClass} animate-pulse`} />;
+    case 'DEBUGGING': return <Bug className={iconClass} />;
+    case 'REVIEWING': return <Eye className={iconClass} />;
+    case 'SAVING': return <Save className={iconClass} />;
+    case 'DEPLOYING': return <Rocket className={`${iconClass} animate-bounce`} />;
+    case 'ROLLBACK': return <RotateCcw className={`${iconClass} animate-spin`} />;
+    case 'DB_QUERY': return <Database className={`${iconClass} animate-pulse`} />;
+    case 'RATE_LIMITED': return <Clock className={iconClass} />;
+    case 'DELIGHT': return <Sparkles className={`${iconClass} text-pink-400`} />;
+    case 'NET_REQUEST': return <Globe className={`${iconClass} animate-pulse`} />;
     default: return <Hand className={iconClass} />;
   }
 }
