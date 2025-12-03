@@ -1047,12 +1047,13 @@ export class MovementController {
         break;
         
       case 'EVADE':
-        // Predict cursor future position
+        // Predict cursor future position (reduced prediction time)
         const predictedCursor = {
-          x: this.cursorPosition.x + this.cursorVelocity.x * 10,
-          y: this.cursorPosition.y + this.cursorVelocity.y * 10,
+          x: this.cursorPosition.x + this.cursorVelocity.x * 5, // Reduced from 10
+          y: this.cursorPosition.y + this.cursorVelocity.y * 5,
         };
-        const fleeForce = this.flee(predictedCursor, this.config.evadeDistance * 1.5, 2.5);
+        // Gentler flee force to prevent whiplash
+        const fleeForce = this.flee(predictedCursor, this.config.evadeDistance * 1.2, 1.5); // Reduced from 1.5/2.5
         steering.x += fleeForce.x;
         steering.y += fleeForce.y;
         break;
@@ -1111,67 +1112,112 @@ export class MovementController {
     steering.x += avoidForce.x + boundaryForce.x;
     steering.y += avoidForce.y + boundaryForce.y;
     
-    // Limit steering force
+    // === ANTI-WHIPLASH PHYSICS SYSTEM ===
+    
+    // Calculate bounds FIRST for predictive clamping
+    const halfDim = this.dimension / 2;
+    const hatHeight = this.dimension * 0.6;
+    const uniformPadding = Math.max(hatHeight + 10, 50);
+    const minX = halfDim + uniformPadding;
+    const maxX = this.viewportSize.x - halfDim - uniformPadding;
+    const minY = halfDim + hatHeight + 10;
+    const maxY = this.viewportSize.y - halfDim - uniformPadding;
+    
+    // 1. LIMIT STEERING with state-aware caps (tighter limits)
     const steerMag = Math.sqrt(steering.x ** 2 + steering.y ** 2);
-    if (steerMag > this.config.maxAcceleration) {
-      steering.x = (steering.x / steerMag) * this.config.maxAcceleration;
-      steering.y = (steering.y / steerMag) * this.config.maxAcceleration;
+    const maxAccelForState = this.state === 'EVADE' ? this.config.maxAcceleration * 0.8
+                            : this.state === 'CELEBRATE' ? this.config.maxAcceleration * 0.6
+                            : this.config.maxAcceleration * 0.7;
+    if (steerMag > maxAccelForState) {
+      steering.x = (steering.x / steerMag) * maxAccelForState;
+      steering.y = (steering.y / steerMag) * maxAccelForState;
     }
     
-    // Apply steering to acceleration
-    this.acceleration.x = steering.x;
-    this.acceleration.y = steering.y;
+    // 2. SMOOTH ACCELERATION (lerp to prevent sudden jerks)
+    const accelSmoothing = 0.3; // Lower = smoother transitions
+    this.acceleration.x += (steering.x - this.acceleration.x) * accelSmoothing;
+    this.acceleration.y += (steering.y - this.acceleration.y) * accelSmoothing;
     
-    // Update velocity with acceleration
+    // 3. PREDICTIVE BOUNDARY CHECK - apply spring force BEFORE velocity update
+    const predictedX = this.position.x + this.velocity.x + this.acceleration.x;
+    const predictedY = this.position.y + this.velocity.y + this.acceleration.y;
+    
+    // Spring force toward safe zone if prediction is outside bounds
+    const springStrength = 0.15;
+    if (predictedX < minX) {
+      this.acceleration.x += (minX - predictedX) * springStrength;
+      if (this.velocity.x < 0) this.velocity.x *= 0.5; // Dampen outward velocity
+    } else if (predictedX > maxX) {
+      this.acceleration.x += (maxX - predictedX) * springStrength;
+      if (this.velocity.x > 0) this.velocity.x *= 0.5;
+    }
+    if (predictedY < minY) {
+      this.acceleration.y += (minY - predictedY) * springStrength;
+      if (this.velocity.y < 0) this.velocity.y *= 0.5;
+    } else if (predictedY > maxY) {
+      this.acceleration.y += (maxY - predictedY) * springStrength;
+      if (this.velocity.y > 0) this.velocity.y *= 0.5;
+    }
+    
+    // 4. UPDATE VELOCITY with smoothed acceleration
     this.velocity.x += this.acceleration.x;
     this.velocity.y += this.acceleration.y;
     
-    // Apply friction
+    // 5. APPLY FRICTION
     this.velocity.x *= this.config.friction;
     this.velocity.y *= this.config.friction;
     
-    // Limit velocity - REDUCED speeds to prevent wild movement
+    // 6. LIMIT VELOCITY - gentler max speeds
     const velMag = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-    const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 1.3 // Reduced from 2x
-                           : this.state === 'REST' ? this.config.maxSpeed * 0.2
-                           : this.config.maxSpeed;
+    const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 1.2
+                           : this.state === 'REST' ? this.config.maxSpeed * 0.15
+                           : this.state === 'CELEBRATE' ? this.config.maxSpeed * 0.8
+                           : this.config.maxSpeed * 0.9;
     if (velMag > maxSpeedForState) {
       this.velocity.x = (this.velocity.x / velMag) * maxSpeedForState;
       this.velocity.y = (this.velocity.y / velMag) * maxSpeedForState;
     }
     
-    // Update position
+    // 7. VELOCITY DAMPING when near boundaries (prevents whiplash at edges)
+    const edgeProximity = 30;
+    const nearLeftEdge = this.position.x < minX + edgeProximity;
+    const nearRightEdge = this.position.x > maxX - edgeProximity;
+    const nearTopEdge = this.position.y < minY + edgeProximity;
+    const nearBottomEdge = this.position.y > maxY - edgeProximity;
+    
+    if (nearLeftEdge || nearRightEdge || nearTopEdge || nearBottomEdge) {
+      this.velocity.x *= 0.85;
+      this.velocity.y *= 0.85;
+    }
+    
+    // 8. UPDATE POSITION
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
     
-    // STRICT border constraints - queen bee must stay fully visible
-    // Use SAME padding as React layer to prevent conflicting clamping
-    const halfDim = this.dimension / 2;
-    const hatHeight = this.dimension * 0.6;
-    const uniformPadding = Math.max(hatHeight + 10, 50);
-    
-    // Clamp position so entire bee (including hat) stays in view
-    const minX = halfDim + uniformPadding;
-    const maxX = this.viewportSize.x - halfDim - uniformPadding;
-    const minY = halfDim + hatHeight + 10; // Extra top padding for hat
-    const maxY = this.viewportSize.y - halfDim - uniformPadding;
+    // 9. FINAL HARD CLAMP (safety net - should rarely trigger now)
+    const wasClampedX = this.position.x < minX || this.position.x > maxX;
+    const wasClampedY = this.position.y < minY || this.position.y > maxY;
     
     this.position.x = Math.max(minX, Math.min(maxX, this.position.x));
     this.position.y = Math.max(minY, Math.min(maxY, this.position.y));
     
-    // If hitting edge, zero out velocity in that direction to prevent sticking
-    if (this.position.x <= minX || this.position.x >= maxX) {
-      this.velocity.x *= -0.3; // Bounce back slightly
+    // Zero velocity component if hard clamp was needed
+    if (wasClampedX) {
+      this.velocity.x = 0;
+      this.acceleration.x = 0;
     }
-    if (this.position.y <= minY || this.position.y >= maxY) {
-      this.velocity.y *= -0.3; // Bounce back slightly
+    if (wasClampedY) {
+      this.velocity.y = 0;
+      this.acceleration.y = 0;
     }
+    
+    const finalSpeed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
     
     return {
       position: { ...this.position },
       velocity: { ...this.velocity },
       state: this.state,
-      speed: velMag,
+      speed: finalSpeed,
     };
   }
 
