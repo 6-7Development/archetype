@@ -958,8 +958,11 @@ export function FloatingQueenBee() {
       // Update shared queen state for workers to orbit
       beeController.setQueenState(queenX, finalY, vx, vy);
       
-      // Convert center to top-left for rendering
-      updatePosition(queenX - halfDim, finalY - halfDim);
+      // Convert center to top-left for rendering and CLAMP to viewport
+      const renderX = queenX - halfDim;
+      const renderY = finalY - halfDim;
+      const clampedPos = clampPosition(renderX, renderY);
+      updatePosition(clampedPos.x, clampedPos.y);
       
       // Update velocity state for other systems
       setBeeVelocity({ x: vx * 0.1, y: vy * 0.1 });

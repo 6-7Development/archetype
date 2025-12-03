@@ -4454,6 +4454,527 @@ export class ParticleSystem {
 export const particleSystem = new ParticleSystem();
 
 // ============================================
+// WORKER FORMATION SYSTEM
+// ============================================
+// Organized formations for worker bees during major events
+
+export type FormationType = 
+  | 'crown'      // Crown/halo above queen - victory, deploy success
+  | 'shield'     // Shield wall in front - error protection, rollback
+  | 'spiral'     // Spiral search pattern - searching, debugging
+  | 'orbit'      // Standard orbit - normal behavior
+  | 'scatter'    // Scattered retreat - panic, scared
+  | 'line'       // Line formation - building, coding
+  | 'heart'      // Heart shape - delight, helpful
+  | 'star'       // Star burst - celebrating, excited
+  | 'circle'     // Defensive circle - alert, swarm
+  | 'v_shape';   // V formation - deploying, hunting
+
+export interface FormationPoint {
+  x: number;      // Relative X offset from queen
+  y: number;      // Relative Y offset from queen
+  angle: number;  // Rotation angle for the bee
+  scale: number;  // Size multiplier
+  delay: number;  // Delay before moving to position (ms)
+  glow?: string;  // Optional glow color
+}
+
+export interface FormationConfig {
+  name: FormationType;
+  points: (queenSize: number, workerCount: number) => FormationPoint[];
+  transitionDuration: number; // How long to transition to formation (ms)
+  holdDuration: number;       // How long to hold formation (ms)
+  returnToOrbit: boolean;     // Whether to return to orbit after
+  orbitSpeed: number;         // Formation orbit speed multiplier
+}
+
+// Generate formation points dynamically based on worker count
+const FORMATION_GENERATORS: Record<FormationType, (queenSize: number, count: number) => FormationPoint[]> = {
+  'crown': (qs, count) => {
+    const points: FormationPoint[] = [];
+    const crownRadius = qs * 0.8;
+    const crownY = -qs * 0.7;
+    const arcSpan = Math.PI * 0.8; // 144 degree arc
+    const startAngle = -Math.PI / 2 - arcSpan / 2;
+    
+    for (let i = 0; i < count; i++) {
+      const t = count > 1 ? i / (count - 1) : 0.5;
+      const angle = startAngle + t * arcSpan;
+      points.push({
+        x: Math.cos(angle) * crownRadius,
+        y: crownY + Math.sin(angle) * (crownRadius * 0.4),
+        angle: (angle + Math.PI / 2) * (180 / Math.PI),
+        scale: 1.2 + Math.sin(t * Math.PI) * 0.2,
+        delay: i * 50,
+        glow: '#fbbf24',
+      });
+    }
+    return points;
+  },
+  
+  'shield': (qs, count) => {
+    const points: FormationPoint[] = [];
+    const shieldRadius = qs * 1.2;
+    const arcSpan = Math.PI * 0.6; // 108 degree arc
+    const startAngle = -Math.PI / 2 - arcSpan / 2;
+    
+    for (let i = 0; i < count; i++) {
+      const t = count > 1 ? i / (count - 1) : 0.5;
+      const angle = startAngle + t * arcSpan;
+      points.push({
+        x: Math.cos(angle) * shieldRadius,
+        y: Math.sin(angle) * shieldRadius,
+        angle: (angle + Math.PI / 2) * (180 / Math.PI),
+        scale: 1.3,
+        delay: (count - 1 - i) * 60, // Inside out
+        glow: '#ef4444',
+      });
+    }
+    return points;
+  },
+  
+  'spiral': (qs, count) => {
+    const points: FormationPoint[] = [];
+    const maxRadius = qs * 1.5;
+    const turns = 1.5;
+    
+    for (let i = 0; i < count; i++) {
+      const t = i / count;
+      const angle = t * turns * Math.PI * 2;
+      const radius = (t * 0.6 + 0.4) * maxRadius;
+      points.push({
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+        angle: angle * (180 / Math.PI) + 90,
+        scale: 1 + t * 0.3,
+        delay: i * 80,
+        glow: '#22d3ee',
+      });
+    }
+    return points;
+  },
+  
+  'orbit': (qs, count) => {
+    const points: FormationPoint[] = [];
+    const orbitRadius = qs * 1.0;
+    
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2;
+      points.push({
+        x: Math.cos(angle) * orbitRadius,
+        y: Math.sin(angle) * orbitRadius,
+        angle: angle * (180 / Math.PI) + 90,
+        scale: 1,
+        delay: 0,
+      });
+    }
+    return points;
+  },
+  
+  'scatter': (qs, count) => {
+    const points: FormationPoint[] = [];
+    const scatterRadius = qs * 2.5;
+    
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = (0.5 + Math.random() * 0.5) * scatterRadius;
+      points.push({
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+        angle: Math.random() * 360,
+        scale: 0.8 + Math.random() * 0.4,
+        delay: Math.random() * 200,
+      });
+    }
+    return points;
+  },
+  
+  'line': (qs, count) => {
+    const points: FormationPoint[] = [];
+    const lineLength = qs * 2;
+    const lineY = qs * 0.8;
+    
+    for (let i = 0; i < count; i++) {
+      const t = count > 1 ? i / (count - 1) : 0.5;
+      points.push({
+        x: (t - 0.5) * lineLength,
+        y: lineY,
+        angle: 0,
+        scale: 1,
+        delay: Math.abs(t - 0.5) * 100,
+        glow: '#34d399',
+      });
+    }
+    return points;
+  },
+  
+  'heart': (qs, count) => {
+    const points: FormationPoint[] = [];
+    const heartSize = qs * 0.7;
+    
+    for (let i = 0; i < count; i++) {
+      const t = (i / count) * Math.PI * 2;
+      // Heart curve parametric equations
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+      points.push({
+        x: (x / 16) * heartSize,
+        y: ((y - 12) / 16) * heartSize,
+        angle: t * (180 / Math.PI) + 90,
+        scale: 1 + Math.sin(t * 2) * 0.1,
+        delay: i * 40,
+        glow: '#f472b6',
+      });
+    }
+    return points;
+  },
+  
+  'star': (qs, count) => {
+    const points: FormationPoint[] = [];
+    const innerRadius = qs * 0.5;
+    const outerRadius = qs * 1.2;
+    
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
+      const radius = (i % 2 === 0) ? outerRadius : innerRadius;
+      points.push({
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+        angle: angle * (180 / Math.PI) + 90,
+        scale: (i % 2 === 0) ? 1.3 : 0.9,
+        delay: i * 30,
+        glow: '#a855f7',
+      });
+    }
+    return points;
+  },
+  
+  'circle': (qs, count) => {
+    const points: FormationPoint[] = [];
+    const circleRadius = qs * 1.1;
+    
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2;
+      points.push({
+        x: Math.cos(angle) * circleRadius,
+        y: Math.sin(angle) * circleRadius,
+        angle: angle * (180 / Math.PI) + 90,
+        scale: 1.1,
+        delay: i * 25,
+        glow: '#fbbf24',
+      });
+    }
+    return points;
+  },
+  
+  'v_shape': (qs, count) => {
+    const points: FormationPoint[] = [];
+    const vAngle = Math.PI / 4; // 45 degrees
+    const spacing = qs * 0.4;
+    const startY = -qs * 0.5;
+    
+    for (let i = 0; i < count; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const position = Math.floor(i / 2) + 1;
+      const x = side * position * spacing * Math.sin(vAngle);
+      const y = startY + position * spacing * Math.cos(vAngle);
+      
+      points.push({
+        x,
+        y,
+        angle: side * 30,
+        scale: 1 - position * 0.05,
+        delay: position * 50,
+        glow: '#8b5cf6',
+      });
+    }
+    return points;
+  },
+};
+
+// Formation configurations per emote
+export const FORMATION_CONFIGS: Record<string, FormationConfig> = {
+  'VICTORY': {
+    name: 'crown',
+    points: FORMATION_GENERATORS['crown'],
+    transitionDuration: 800,
+    holdDuration: 4000,
+    returnToOrbit: true,
+    orbitSpeed: 0.5,
+  },
+  
+  'DEPLOYING': {
+    name: 'v_shape',
+    points: FORMATION_GENERATORS['v_shape'],
+    transitionDuration: 600,
+    holdDuration: 8000,
+    returnToOrbit: false,
+    orbitSpeed: 0.3,
+  },
+  
+  'ERROR': {
+    name: 'shield',
+    points: FORMATION_GENERATORS['shield'],
+    transitionDuration: 300,
+    holdDuration: 3000,
+    returnToOrbit: true,
+    orbitSpeed: 0.2,
+  },
+  
+  'PANIC': {
+    name: 'scatter',
+    points: FORMATION_GENERATORS['scatter'],
+    transitionDuration: 150,
+    holdDuration: 3000,
+    returnToOrbit: true,
+    orbitSpeed: 2.0,
+  },
+  
+  'SCARED': {
+    name: 'scatter',
+    points: FORMATION_GENERATORS['scatter'],
+    transitionDuration: 200,
+    holdDuration: 2000,
+    returnToOrbit: true,
+    orbitSpeed: 1.5,
+  },
+  
+  'SEARCHING': {
+    name: 'spiral',
+    points: FORMATION_GENERATORS['spiral'],
+    transitionDuration: 800,
+    holdDuration: 5000,
+    returnToOrbit: false,
+    orbitSpeed: 0.8,
+  },
+  
+  'DEBUGGING': {
+    name: 'spiral',
+    points: FORMATION_GENERATORS['spiral'],
+    transitionDuration: 1000,
+    holdDuration: 6000,
+    returnToOrbit: false,
+    orbitSpeed: 0.5,
+  },
+  
+  'CODING': {
+    name: 'line',
+    points: FORMATION_GENERATORS['line'],
+    transitionDuration: 600,
+    holdDuration: 10000,
+    returnToOrbit: true,
+    orbitSpeed: 0.4,
+  },
+  
+  'BUILDING': {
+    name: 'line',
+    points: FORMATION_GENERATORS['line'],
+    transitionDuration: 500,
+    holdDuration: 8000,
+    returnToOrbit: true,
+    orbitSpeed: 0.5,
+  },
+  
+  'DELIGHT': {
+    name: 'heart',
+    points: FORMATION_GENERATORS['heart'],
+    transitionDuration: 700,
+    holdDuration: 3000,
+    returnToOrbit: true,
+    orbitSpeed: 0.6,
+  },
+  
+  'HELPFUL': {
+    name: 'heart',
+    points: FORMATION_GENERATORS['heart'],
+    transitionDuration: 800,
+    holdDuration: 4000,
+    returnToOrbit: true,
+    orbitSpeed: 0.5,
+  },
+  
+  'CELEBRATING': {
+    name: 'star',
+    points: FORMATION_GENERATORS['star'],
+    transitionDuration: 500,
+    holdDuration: 4000,
+    returnToOrbit: true,
+    orbitSpeed: 1.2,
+  },
+  
+  'EXCITED': {
+    name: 'star',
+    points: FORMATION_GENERATORS['star'],
+    transitionDuration: 400,
+    holdDuration: 3000,
+    returnToOrbit: true,
+    orbitSpeed: 1.5,
+  },
+  
+  'ALERT': {
+    name: 'circle',
+    points: FORMATION_GENERATORS['circle'],
+    transitionDuration: 300,
+    holdDuration: 2000,
+    returnToOrbit: true,
+    orbitSpeed: 1.0,
+  },
+  
+  'SWARM': {
+    name: 'circle',
+    points: FORMATION_GENERATORS['circle'],
+    transitionDuration: 400,
+    holdDuration: 8000,
+    returnToOrbit: false,
+    orbitSpeed: 2.0,
+  },
+  
+  'HUNTING': {
+    name: 'v_shape',
+    points: FORMATION_GENERATORS['v_shape'],
+    transitionDuration: 500,
+    holdDuration: 6000,
+    returnToOrbit: true,
+    orbitSpeed: 0.8,
+  },
+  
+  'ROLLBACK': {
+    name: 'shield',
+    points: FORMATION_GENERATORS['shield'],
+    transitionDuration: 400,
+    holdDuration: 5000,
+    returnToOrbit: true,
+    orbitSpeed: 0.3,
+  },
+};
+
+// Formation Manager - coordinates worker bee movements
+export class FormationManager {
+  private currentFormation: FormationType = 'orbit';
+  private targetPoints: FormationPoint[] = [];
+  private transitionStart: number = 0;
+  private transitionDuration: number = 0;
+  private holdUntil: number = 0;
+  private returnToOrbit: boolean = false;
+  private isTransitioning: boolean = false;
+  private currentMode: string = '';
+  private queenSize: number = 80;
+  
+  // Set mode and trigger formation change
+  setMode(mode: string, queenSize: number, workerCount: number): void {
+    if (this.currentMode === mode) return;
+    
+    this.currentMode = mode;
+    this.queenSize = queenSize;
+    
+    const config = FORMATION_CONFIGS[mode];
+    if (config) {
+      this.startFormation(config, workerCount);
+    } else {
+      // Default to orbit for unspecified modes
+      this.startOrbit(workerCount);
+    }
+  }
+  
+  // Start a formation
+  private startFormation(config: FormationConfig, workerCount: number): void {
+    this.currentFormation = config.name;
+    this.targetPoints = config.points(this.queenSize, workerCount);
+    this.transitionStart = performance.now();
+    this.transitionDuration = config.transitionDuration;
+    this.holdUntil = this.transitionStart + config.transitionDuration + config.holdDuration;
+    this.returnToOrbit = config.returnToOrbit;
+    this.isTransitioning = true;
+  }
+  
+  // Start orbit formation (default)
+  private startOrbit(workerCount: number): void {
+    this.currentFormation = 'orbit';
+    this.targetPoints = FORMATION_GENERATORS['orbit'](this.queenSize, workerCount);
+    this.transitionStart = performance.now();
+    this.transitionDuration = 500;
+    this.holdUntil = Infinity;
+    this.returnToOrbit = false;
+    this.isTransitioning = true;
+  }
+  
+  // Update and check if should return to orbit
+  update(workerCount: number): void {
+    const now = performance.now();
+    
+    // Check if transition is complete
+    if (this.isTransitioning && now >= this.transitionStart + this.transitionDuration) {
+      this.isTransitioning = false;
+    }
+    
+    // Check if should return to orbit
+    if (this.returnToOrbit && now >= this.holdUntil) {
+      this.startOrbit(workerCount);
+      this.returnToOrbit = false;
+    }
+  }
+  
+  // Get target position for a worker at index, with transition interpolation
+  getWorkerTarget(workerIndex: number, currentX: number, currentY: number): { x: number; y: number; angle: number; scale: number; glow?: string } {
+    if (workerIndex >= this.targetPoints.length) {
+      // More workers than points - use modulo
+      workerIndex = workerIndex % Math.max(1, this.targetPoints.length);
+    }
+    
+    if (this.targetPoints.length === 0) {
+      return { x: currentX, y: currentY, angle: 0, scale: 1 };
+    }
+    
+    const target = this.targetPoints[workerIndex];
+    const now = performance.now();
+    const elapsed = now - this.transitionStart - target.delay;
+    
+    if (elapsed < 0) {
+      // Still waiting for delay
+      return { x: currentX, y: currentY, angle: 0, scale: 1 };
+    }
+    
+    // Calculate transition progress with easing
+    let progress = Math.min(1, elapsed / this.transitionDuration);
+    progress = this.easeOutBack(progress);
+    
+    return {
+      x: currentX + (target.x - currentX) * progress,
+      y: currentY + (target.y - currentY) * progress,
+      angle: target.angle * progress,
+      scale: 1 + (target.scale - 1) * progress,
+      glow: target.glow,
+    };
+  }
+  
+  // Easing function for smooth transitions
+  private easeOutBack(t: number): number {
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  }
+  
+  // Get current formation type
+  getCurrentFormation(): FormationType {
+    return this.currentFormation;
+  }
+  
+  // Check if in transition
+  isInTransition(): boolean {
+    return this.isTransitioning;
+  }
+  
+  // Get orbit speed multiplier for current mode
+  getOrbitSpeedMultiplier(): number {
+    const config = FORMATION_CONFIGS[this.currentMode];
+    return config?.orbitSpeed || 1;
+  }
+}
+
+// Create singleton formation manager
+export const formationManager = new FormationManager();
+
+// ============================================
 // COMBINED BEE CONTROLLER
 // ============================================
 export class BeeController {
