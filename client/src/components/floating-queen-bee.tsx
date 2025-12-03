@@ -822,6 +822,11 @@ export function FloatingQueenBee() {
       lastTime = currentTime;
       const now = Date.now();
       
+      // HOME CIRCLE: Define queen's animation zone
+      const homeRadius = 100; // Animation circle radius
+      const homeX = windowDimensions.width / 2;
+      const homeY = windowDimensions.height / 2;
+      
       // Run the physics-based movement update
       const result = beeController.updateAutonomous(
         deltaTime,
@@ -831,26 +836,52 @@ export function FloatingQueenBee() {
         mouseVelocity.y
       );
       
-      // HOME CIRCLE: Queen stays within radius around viewport center
-      const homeRadius = 120; // Maximum distance from home anchor
-      const homeX = windowDimensions.width / 2;
-      const homeY = windowDimensions.height / 2;
-      
       // Calculate distance from home center
       const homeDistX = result.position.x - homeX;
       const homeDistY = result.position.y - homeY;
       const homeDistance = Math.sqrt(homeDistX * homeDistX + homeDistY * homeDistY);
       
-      // Soft constraint: if outside home circle, pull back toward center
+      // SPRING-DAMPER CONSTRAINT: Smooth anchoring to home circle
+      // Uses progressive force that increases near edge to prevent bounce
       let constrainedX = result.position.x;
       let constrainedY = result.position.y;
+      let dampedVx = result.velocity.x;
+      let dampedVy = result.velocity.y;
+      
+      // Start applying force at 60% of radius (soft zone)
+      const softZone = homeRadius * 0.6;
+      
+      if (homeDistance > softZone) {
+        // Calculate how far into the constraint zone (0 at softZone, 1 at homeRadius)
+        const edgeProgress = Math.min(1, (homeDistance - softZone) / (homeRadius - softZone));
+        
+        // Direction toward center
+        const dirX = -homeDistX / Math.max(homeDistance, 1);
+        const dirY = -homeDistY / Math.max(homeDistance, 1);
+        
+        // Progressive spring force (stronger near edge)
+        const springForce = edgeProgress * edgeProgress * 0.4;
+        
+        // Apply centering force
+        constrainedX += dirX * homeDistance * springForce;
+        constrainedY += dirY * homeDistance * springForce;
+        
+        // Dampen velocity pointing outward (prevents bounce)
+        const radialVelocity = (dampedVx * homeDistX + dampedVy * homeDistY) / Math.max(homeDistance, 1);
+        if (radialVelocity > 0) { // Moving outward
+          const dampingFactor = 1 - edgeProgress * 0.8; // More damping near edge
+          dampedVx *= dampingFactor;
+          dampedVy *= dampingFactor;
+        }
+      }
+      
+      // Hard clamp if somehow still outside (safety net)
       if (homeDistance > homeRadius) {
-        const pullStrength = 0.3; // Gentle pull, not hard clamp
         const angle = Math.atan2(homeDistY, homeDistX);
-        const targetX = homeX + Math.cos(angle) * homeRadius;
-        const targetY = homeY + Math.sin(angle) * homeRadius;
-        constrainedX = result.position.x + (targetX - result.position.x) * pullStrength;
-        constrainedY = result.position.y + (targetY - result.position.y) * pullStrength;
+        constrainedX = homeX + Math.cos(angle) * homeRadius * 0.95;
+        constrainedY = homeY + Math.sin(angle) * homeRadius * 0.95;
+        dampedVx = 0;
+        dampedVy = 0;
       }
       
       // VIEWPORT CLAMP: Safety net to stay within visible area
@@ -867,10 +898,10 @@ export function FloatingQueenBee() {
       // Check if hard clamp was applied (for facing reset)
       const wasHardClamped = finalX !== constrainedX || finalY !== constrainedY;
       
-      // Use actual velocity for facing unless hard clamped
+      // Use damped velocity for smooth animations
       const effectiveVelocity = wasHardClamped 
         ? { x: 0, y: 0 }
-        : result.velocity;
+        : { x: dampedVx, y: dampedVy };
       
       // Update direction from velocity
       beeController.direction.update(effectiveVelocity.x, effectiveVelocity.y);
@@ -880,8 +911,8 @@ export function FloatingQueenBee() {
       // Update shared queen state for WORKERS to orbit around
       beeController.setQueenState(finalX, finalY, effectiveVelocity.x, effectiveVelocity.y);
       
-      // Sync movement controller if position was constrained
-      if (homeDistance > homeRadius || wasHardClamped) {
+      // Sync movement controller when constrained
+      if (homeDistance > homeRadius * 0.8 || wasHardClamped) {
         beeController.syncMovementPosition(finalX, finalY);
       }
       
