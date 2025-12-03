@@ -862,22 +862,40 @@ export function FloatingQueenBee() {
         mouseVelocity.y
       );
       
-      // HARD CLAMP: Ensure queen stays within viewport bounds
-      // This is the final safety net - queen must NEVER escape visible area
-      // Use UNIFORM padding for all edges to prevent asymmetric displacement
+      // HOME CIRCLE: Queen stays within a defined radius around her anchor point
+      // Worker bees are coded separately and can move freely
+      const homeRadius = 150; // Maximum distance from anchor
+      const homeX = windowDimensions.width / 2;  // Center of viewport
+      const homeY = windowDimensions.height / 2;
+      
+      // Calculate distance from home
+      const homeDistX = result.position.x - homeX;
+      const homeDistY = result.position.y - homeY;
+      const homeDistance = Math.sqrt(homeDistX * homeDistX + homeDistY * homeDistY);
+      
+      // If outside home circle, pull back to edge
+      let constrainedX = result.position.x;
+      let constrainedY = result.position.y;
+      if (homeDistance > homeRadius) {
+        const angle = Math.atan2(homeDistY, homeDistX);
+        constrainedX = homeX + Math.cos(angle) * homeRadius;
+        constrainedY = homeY + Math.sin(angle) * homeRadius;
+      }
+      
+      // VIEWPORT CLAMP: Additional safety to stay within visible area
       const halfDim = dimension / 2;
-      const hatHeight = dimension * 0.6; // Hat extends above head by ~60% of dimension
-      const spriteTopPadding = hatHeight + 10; // Total top clearance needed
-      const uniformPadding = Math.max(spriteTopPadding, 50); // At least 50px all sides for consistency
+      const hatHeight = dimension * 0.6;
+      const spriteTopPadding = hatHeight + 10;
+      const uniformPadding = Math.max(spriteTopPadding, 50);
       
       const minX = halfDim + uniformPadding;
       const maxX = windowDimensions.width - halfDim - uniformPadding;
-      const minY = halfDim + spriteTopPadding; // Extra top padding for hat
+      const minY = halfDim + spriteTopPadding;
       const maxY = windowDimensions.height - halfDim - uniformPadding;
       
-      // Clamp the center position
-      const clampedX = Math.max(minX, Math.min(maxX, result.position.x));
-      const clampedY = Math.max(minY, Math.min(maxY, result.position.y));
+      // Apply viewport clamp after home circle constraint
+      const clampedX = Math.max(minX, Math.min(maxX, constrainedX));
+      const clampedY = Math.max(minY, Math.min(maxY, constrainedY));
       
       // Check if clamping was actually applied
       const wasClamped = clampedX !== result.position.x || clampedY !== result.position.y;
