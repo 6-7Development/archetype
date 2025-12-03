@@ -932,11 +932,12 @@ export function FloatingQueenBee() {
       let queenY = centerY + py1 + py2;
       
       // CLAMP CENTER position to viewport bounds BEFORE all other operations
+      // This prevents the queen from escaping while preserving Lissajous movement
       if (typeof window !== 'undefined') {
-        const size = SIZE_DIMENSIONS[config.size];
-        const padding = 10;
-        queenX = Math.max(padding + halfDim, Math.min(queenX, window.innerWidth - halfDim - padding));
-        queenY = Math.max(HEADER_BUFFER + halfDim, Math.min(queenY, window.innerHeight - halfDim - padding));
+        const topPadding = 60; // Header buffer
+        const edgePadding = 10;
+        queenX = Math.max(edgePadding + halfDim, Math.min(queenX, window.innerWidth - halfDim - edgePadding));
+        queenY = Math.max(topPadding + halfDim, Math.min(queenY, window.innerHeight - halfDim - edgePadding));
       }
       
       // Calculate velocity from position derivatives (for facing direction)
