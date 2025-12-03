@@ -810,169 +810,78 @@ export function FloatingQueenBee() {
   const modeText = getModeLabel(mode);
   const modeIcon = getModeIcon(mode);
 
-  // AUTONOMOUS MOVEMENT ENGINE - Physics-based steering with MovementController
+  // STATIONARY QUEEN ANIMATION - Queen stays locked at center, body animates toward cursor
   useEffect(() => {
     if (!isMounted) return;
     
-    const FRENZY_THRESHOLD = 50;
     let lastTime = performance.now();
-    
-    // Map MovementState to EmotionalState
-    const mapMovementToEmotional = (movementState: MovementState): EmotionalState => {
-      switch (movementState) {
-        case 'WANDER': return 'IDLE';
-        case 'EVADE': return 'EVADING';
-        case 'REST': return 'RESTING';
-        case 'CELEBRATE': return 'CELEBRATING';
-        case 'ALERT': return 'ALERT';
-        case 'PATROL': return 'CURIOUS';
-        case 'CHASE': return 'CURIOUS';
-        default: return 'IDLE';
-      }
-    };
+    const ATTACK_THRESHOLD = 100; // Distance for worker attack trigger
     
     const animate = (currentTime: number) => {
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
       
-      const beeCenterX = config.position.x + dimension / 2;
-      const beeCenterY = config.position.y + dimension / 2;
-      
-      // Check for FRENZY trigger (when user gets too close)
-      const dx = mousePos.x - beeCenterX;
-      const dy = mousePos.y - beeCenterY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const now = Date.now();
-      
-      if (distance < FRENZY_THRESHOLD && now - lastFrenzyTime > 6000) {
-        setLastFrenzyTime(now);
-        triggerFrenzy();
-        triggerSwarm({ frenzy: true, workerCount: 10, duration: 4000 });
-        setMode('FRENZY');
-        setEmotionalState('FRENZY');
-        beeController.movement.forceState('EVADE');
-      }
-      
-      // Run the physics-based movement update
-      const result = beeController.updateAutonomous(
-        deltaTime,
-        mousePos.x,
-        mousePos.y,
-        mouseVelocity.x,
-        mouseVelocity.y
-      );
-      
-      // HOME CIRCLE: Queen stays within a defined radius around her anchor point
-      // Worker bees are coded separately and can move freely
-      const homeRadius = 150; // Maximum distance from anchor
-      const homeX = windowDimensions.width / 2;  // Center of viewport
-      const homeY = windowDimensions.height / 2;
-      
-      // Calculate distance from home
-      const homeDistX = result.position.x - homeX;
-      const homeDistY = result.position.y - homeY;
-      const homeDistance = Math.sqrt(homeDistX * homeDistX + homeDistY * homeDistY);
-      
-      // If outside home circle, pull back to edge
-      let constrainedX = result.position.x;
-      let constrainedY = result.position.y;
-      if (homeDistance > homeRadius) {
-        const angle = Math.atan2(homeDistY, homeDistX);
-        constrainedX = homeX + Math.cos(angle) * homeRadius;
-        constrainedY = homeY + Math.sin(angle) * homeRadius;
-      }
-      
-      // VIEWPORT CLAMP: Additional safety to stay within visible area
+      // LOCKED POSITION: Queen stays at viewport center
       const halfDim = dimension / 2;
-      const hatHeight = dimension * 0.6;
-      const spriteTopPadding = hatHeight + 10;
-      const uniformPadding = Math.max(spriteTopPadding, 50);
+      const centerX = windowDimensions.width / 2;
+      const centerY = windowDimensions.height / 2;
       
-      const minX = halfDim + uniformPadding;
-      const maxX = windowDimensions.width - halfDim - uniformPadding;
-      const minY = halfDim + spriteTopPadding;
-      const maxY = windowDimensions.height - halfDim - uniformPadding;
+      // Calculate direction TO cursor (for body lean/facing)
+      const dx = mousePos.x - centerX;
+      const dy = mousePos.y - centerY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
       
-      // Apply viewport clamp after home circle constraint
-      const clampedX = Math.max(minX, Math.min(maxX, constrainedX));
-      const clampedY = Math.max(minY, Math.min(maxY, constrainedY));
+      // Synthetic velocity for body animations (toward cursor, scaled by proximity)
+      const proximityFactor = Math.min(1, distance / 300);
+      const syntheticVx = (dx / Math.max(distance, 1)) * proximityFactor * 2;
+      const syntheticVy = (dy / Math.max(distance, 1)) * proximityFactor * 2;
       
-      // Check if clamping was actually applied
-      const wasClamped = clampedX !== result.position.x || clampedY !== result.position.y;
-      
-      // When clamped, the velocity is pointing toward the boundary (wrong direction for facing)
-      // Use zero velocity for facing calculation to keep bee facing forward
-      const effectiveVelocity = wasClamped 
-        ? { x: 0, y: 0 }  // Reset velocity when at boundary to face forward
-        : result.velocity;
-      
-      // SINGLE SOURCE OF TRUTH: Update the shared queen state for workers
-      beeController.setQueenState(clampedX, clampedY, effectiveVelocity.x, effectiveVelocity.y);
-      
-      // Only sync movement controller position when clamping is applied
-      // This prevents physics state interference during normal movement
-      if (wasClamped) {
-        beeController.syncMovementPosition(clampedX, clampedY);
-        // Update direction with zero velocity to reset facing to FRONT
-        beeController.direction.update(0, 0);
-      }
-      
-      // Convert center position back to top-left for rendering
-      const newX = clampedX - halfDim;
-      const newY = clampedY - halfDim;
-      
-      // Update React state for rendering only
-      updatePosition(newX, newY);
-      setBeeVelocity(effectiveVelocity);
-      updateAutonomousVelocity(effectiveVelocity);
-      
-      // Update facing direction based on velocity (now uses effective velocity)
+      // Update direction handler for facing (uses synthetic velocity)
+      beeController.direction.update(syntheticVx, syntheticVy);
       const newFacing = beeController.direction.getFacing();
       setFacing(newFacing);
       
-      // Update head aim and body dynamics from movement controller
-      setHeadAim(result.headAim);
-      setBodyDynamics(result.bodyDynamics);
+      // Update head aim (eyes follow cursor)
+      const headAim = beeController.headAim.update(
+        deltaTime,
+        centerX,
+        centerY,
+        mousePos.x,
+        mousePos.y,
+        syntheticVx,
+        syntheticVy,
+        false // not emoting
+      );
+      setHeadAim(headAim);
       
-      // Update emotional state based on movement state
-      const newEmotionalState = mapMovementToEmotional(result.state);
-      if (newEmotionalState !== emotionalState && emotionalState !== 'FRENZY') {
-        setEmotionalState(newEmotionalState);
+      // Update body dynamics (lean toward cursor, breathing)
+      const bodyDynamics = beeController.bodyDynamics.update(
+        deltaTime,
+        syntheticVx,
+        syntheticVy
+      );
+      setBodyDynamics(bodyDynamics);
+      
+      // Update shared queen state for workers (fixed position)
+      beeController.setQueenState(centerX, centerY, syntheticVx, syntheticVy);
+      
+      // Trigger worker attack when cursor gets close to queen
+      const now = Date.now();
+      if (distance < ATTACK_THRESHOLD && now - lastFrenzyTime > 3000) {
+        setLastFrenzyTime(now);
+        // Workers attack - queen stays calm
+        triggerSwarm({ frenzy: true, workerCount: 8, duration: 3000 });
+        setMode('SWARM');
       }
       
-      // Handle FRENZY timeout
-      if (emotionalState === 'FRENZY' && now - lastFrenzyTime > 4000) {
-        setEmotionalState('RESTING');
-        beeController.movement.forceState('REST');
-        canvasRef.current?.resetRagdoll?.();
-      }
+      // Convert center to top-left for rendering (FIXED position)
+      const renderX = centerX - halfDim;
+      const renderY = centerY - halfDim;
+      updatePosition(renderX, renderY);
       
-      // Create woosh trail when moving fast
-      if (result.speed > 3) {
-        const newParticle: WooshParticle = {
-          id: wooshIdRef.current++,
-          x: result.position.x,
-          y: result.position.y,
-          timestamp: Date.now(),
-        };
-        setWooshTrail(prev => [...prev.slice(-15), newParticle]);
-      }
-      
-      // HOVER BOB: Track when queen is nearly stationary (low speed)
-      // Uses hysteresis to prevent flickering: 0.5 on, 0.8 off
-      const HOVER_ON_THRESHOLD = 0.5;
-      const HOVER_OFF_THRESHOLD = 0.8;
-      const wasHovering = isHoveringRef.current;
-      // Compute isEvading locally to avoid temporal dead zone issues
-      const currentlyEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT' || emotionalState === 'FRENZY';
-      const shouldHover = wasHovering 
-        ? result.speed < HOVER_OFF_THRESHOLD && !currentlyEvading  // Higher threshold to stop hovering
-        : result.speed < HOVER_ON_THRESHOLD && !currentlyEvading;  // Lower threshold to start hovering
-      
-      if (shouldHover !== wasHovering) {
-        isHoveringRef.current = shouldHover;
-        setIsHovering(shouldHover);
-      }
+      // Set synthetic velocity for canvas animations
+      setBeeVelocity({ x: syntheticVx, y: syntheticVy });
+      updateAutonomousVelocity({ x: syntheticVx, y: syntheticVy });
       
       animationFrameRef.current = requestAnimationFrame(animate);
     };
@@ -984,7 +893,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerFrenzy, triggerSwarm, setMode, beeController]);
+  }, [isMounted, dimension, windowDimensions, mousePos, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerSwarm, setMode, beeController]);
 
   // Clean up old woosh particles
   useEffect(() => {
