@@ -579,12 +579,24 @@ export function FloatingQueenBee() {
       // WORKER LOOP: All queen position data comes from beeController.getQueenState()
       // which is updated by the main animation loop. This eliminates React state timing issues.
       
+      // Get current queen position from shared state (set by Lissajous loop)
+      const queenState = beeController.getQueenState();
+      
+      // CRITICAL: Update workers with queen's current position so they orbit correctly
+      // Without this, workers use stale position and fly to wrong locations
+      beeController.workers.updateQueen(
+        queenState.x, queenState.y, 
+        queenState.vx, queenState.vy
+      );
+      
       // Update cursor position for attack targeting
       beeController.workers.updateCursor(mousePos.x, mousePos.y);
       
       // Update unity formation positions using the SHARED queen state
-      const queenState = beeController.getQueenState();
       beeController.unity.updateFormation(queenState.x, queenState.y, deltaTime);
+      
+      // Update emote workers with queen position too
+      beeController.emoteWorkers.updateQueen(queenState.x, queenState.y);
       
       // Update seasonal light patterns (Christmas light chase/wave/twinkle effects)
       beeController.season.updatePatterns(deltaTime);

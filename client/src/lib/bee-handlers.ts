@@ -1477,7 +1477,7 @@ export class IndependentWorkerHandler {
   private readonly baseOrbitRadius = 55;
   private readonly orbitBandMin = 35;
   private readonly orbitBandMax = 120;  // Larger orbit band for non-attack
-  private readonly attackRangeMax = 400; // Bees can fly 400px away during attack
+  private readonly attackRangeMax = 180; // Bees stay within 180px of queen even during attack
   private readonly maxSpeed = 4;
   private readonly attackSpeed = 8;      // Faster attack speed
   private readonly separationDistance = 25;
