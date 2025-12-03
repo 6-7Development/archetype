@@ -3053,6 +3053,591 @@ export function getToolCategory(toolName: string): ToolCategory | null {
 }
 
 // ============================================
+// VISUAL TRANSFORMATION PRESETS
+// ============================================
+// Per-mode visual effects for queen bee appearance
+
+export interface TransformationPreset {
+  // Size effects
+  scalePulse: {
+    min: number;      // Minimum scale (1.0 = normal)
+    max: number;      // Maximum scale
+    speed: number;    // Pulse speed (Hz)
+    easing: 'sine' | 'bounce' | 'elastic' | 'linear';
+  };
+  
+  // Color tint overlay
+  colorTint: {
+    hue: number;      // Hue shift (0-360)
+    saturation: number; // Saturation adjustment (-1 to 1)
+    brightness: number; // Brightness adjustment (-1 to 1)
+    opacity: number;  // Tint opacity (0-1)
+  };
+  
+  // Wing animation
+  wingSpeed: {
+    multiplier: number; // Wing flutter speed multiplier (1.0 = normal)
+    amplitude: number;  // Wing angle amplitude
+  };
+  
+  // Body dynamics
+  bodyLean: {
+    angle: number;    // Base body lean angle (degrees)
+    wobble: number;   // Wobble amount (0-1)
+    wobbleSpeed: number; // Wobble speed (Hz)
+  };
+  
+  // Eye expression
+  eyes: {
+    size: number;     // Eye size multiplier (1.0 = normal)
+    dilation: number; // Pupil dilation (0.5-2)
+    sparkle: boolean; // Add sparkle effect
+    squint: number;   // Squint amount (0 = none, 1 = full)
+  };
+  
+  // Glow effect
+  glow: {
+    color: string;    // CSS color for glow
+    intensity: number; // Glow intensity (0-1)
+    pulse: boolean;   // Pulsing glow
+  };
+  
+  // Duration and transition
+  duration: number;   // How long this state typically lasts (ms)
+  transitionIn: number; // Fade-in duration (ms)
+  transitionOut: number; // Fade-out duration (ms)
+}
+
+// Default preset (no transformation)
+const DEFAULT_PRESET: TransformationPreset = {
+  scalePulse: { min: 1.0, max: 1.0, speed: 0, easing: 'linear' },
+  colorTint: { hue: 0, saturation: 0, brightness: 0, opacity: 0 },
+  wingSpeed: { multiplier: 1.0, amplitude: 15 },
+  bodyLean: { angle: 0, wobble: 0, wobbleSpeed: 0 },
+  eyes: { size: 1.0, dilation: 1.0, sparkle: false, squint: 0 },
+  glow: { color: 'transparent', intensity: 0, pulse: false },
+  duration: 2000,
+  transitionIn: 300,
+  transitionOut: 300,
+};
+
+// All mode transformation presets
+export const TRANSFORMATION_PRESETS: Record<string, TransformationPreset> = {
+  // === POSITIVE STATES ===
+  'SUCCESS': {
+    scalePulse: { min: 1.0, max: 1.15, speed: 2, easing: 'bounce' },
+    colorTint: { hue: 120, saturation: 0.3, brightness: 0.1, opacity: 0.3 },
+    wingSpeed: { multiplier: 1.5, amplitude: 20 },
+    bodyLean: { angle: 5, wobble: 0.2, wobbleSpeed: 3 },
+    eyes: { size: 1.1, dilation: 1.3, sparkle: true, squint: 0 },
+    glow: { color: '#4ade80', intensity: 0.6, pulse: true },
+    duration: 2000,
+    transitionIn: 200,
+    transitionOut: 500,
+  },
+  
+  'VICTORY': {
+    scalePulse: { min: 1.0, max: 1.3, speed: 1.5, easing: 'elastic' },
+    colorTint: { hue: 45, saturation: 0.5, brightness: 0.2, opacity: 0.4 },
+    wingSpeed: { multiplier: 2.0, amplitude: 30 },
+    bodyLean: { angle: 0, wobble: 0.4, wobbleSpeed: 4 },
+    eyes: { size: 1.3, dilation: 1.5, sparkle: true, squint: 0 },
+    glow: { color: '#fbbf24', intensity: 0.8, pulse: true },
+    duration: 5000,
+    transitionIn: 300,
+    transitionOut: 800,
+  },
+  
+  'DELIGHT': {
+    scalePulse: { min: 1.0, max: 1.2, speed: 3, easing: 'sine' },
+    colorTint: { hue: 330, saturation: 0.4, brightness: 0.15, opacity: 0.35 },
+    wingSpeed: { multiplier: 1.8, amplitude: 25 },
+    bodyLean: { angle: -5, wobble: 0.3, wobbleSpeed: 5 },
+    eyes: { size: 1.2, dilation: 1.4, sparkle: true, squint: 0 },
+    glow: { color: '#f472b6', intensity: 0.7, pulse: true },
+    duration: 3000,
+    transitionIn: 200,
+    transitionOut: 600,
+  },
+  
+  'CELEBRATING': {
+    scalePulse: { min: 0.95, max: 1.25, speed: 2.5, easing: 'bounce' },
+    colorTint: { hue: 60, saturation: 0.4, brightness: 0.15, opacity: 0.3 },
+    wingSpeed: { multiplier: 2.2, amplitude: 35 },
+    bodyLean: { angle: 0, wobble: 0.5, wobbleSpeed: 6 },
+    eyes: { size: 1.25, dilation: 1.4, sparkle: true, squint: 0 },
+    glow: { color: '#a855f7', intensity: 0.75, pulse: true },
+    duration: 4000,
+    transitionIn: 250,
+    transitionOut: 700,
+  },
+  
+  'EXCITED': {
+    scalePulse: { min: 1.0, max: 1.18, speed: 4, easing: 'sine' },
+    colorTint: { hue: 30, saturation: 0.35, brightness: 0.1, opacity: 0.25 },
+    wingSpeed: { multiplier: 2.0, amplitude: 28 },
+    bodyLean: { angle: 3, wobble: 0.35, wobbleSpeed: 5 },
+    eyes: { size: 1.15, dilation: 1.35, sparkle: true, squint: 0 },
+    glow: { color: '#fb923c', intensity: 0.6, pulse: false },
+    duration: 3000,
+    transitionIn: 150,
+    transitionOut: 400,
+  },
+  
+  // === WORK STATES ===
+  'THINKING': {
+    scalePulse: { min: 0.98, max: 1.02, speed: 0.8, easing: 'sine' },
+    colorTint: { hue: 220, saturation: 0.15, brightness: 0, opacity: 0.15 },
+    wingSpeed: { multiplier: 0.6, amplitude: 10 },
+    bodyLean: { angle: 8, wobble: 0.1, wobbleSpeed: 1 },
+    eyes: { size: 1.0, dilation: 0.8, sparkle: false, squint: 0.2 },
+    glow: { color: '#60a5fa', intensity: 0.3, pulse: true },
+    duration: 5000,
+    transitionIn: 400,
+    transitionOut: 300,
+  },
+  
+  'CODING': {
+    scalePulse: { min: 0.98, max: 1.03, speed: 1.2, easing: 'linear' },
+    colorTint: { hue: 150, saturation: 0.2, brightness: 0.05, opacity: 0.2 },
+    wingSpeed: { multiplier: 0.8, amplitude: 12 },
+    bodyLean: { angle: 5, wobble: 0.15, wobbleSpeed: 2 },
+    eyes: { size: 1.0, dilation: 0.9, sparkle: false, squint: 0.15 },
+    glow: { color: '#34d399', intensity: 0.4, pulse: false },
+    duration: 10000,
+    transitionIn: 300,
+    transitionOut: 300,
+  },
+  
+  'BUILDING': {
+    scalePulse: { min: 0.97, max: 1.05, speed: 1.5, easing: 'sine' },
+    colorTint: { hue: 200, saturation: 0.25, brightness: 0.05, opacity: 0.2 },
+    wingSpeed: { multiplier: 1.2, amplitude: 18 },
+    bodyLean: { angle: -3, wobble: 0.2, wobbleSpeed: 2.5 },
+    eyes: { size: 1.05, dilation: 1.0, sparkle: false, squint: 0.1 },
+    glow: { color: '#38bdf8', intensity: 0.45, pulse: true },
+    duration: 8000,
+    transitionIn: 350,
+    transitionOut: 350,
+  },
+  
+  'SAVING': {
+    scalePulse: { min: 0.95, max: 1.0, speed: 2, easing: 'sine' },
+    colorTint: { hue: 130, saturation: 0.3, brightness: 0.1, opacity: 0.25 },
+    wingSpeed: { multiplier: 1.0, amplitude: 15 },
+    bodyLean: { angle: 0, wobble: 0.1, wobbleSpeed: 1.5 },
+    eyes: { size: 0.95, dilation: 0.9, sparkle: false, squint: 0.1 },
+    glow: { color: '#22c55e', intensity: 0.5, pulse: true },
+    duration: 1500,
+    transitionIn: 100,
+    transitionOut: 200,
+  },
+  
+  'SEARCHING': {
+    scalePulse: { min: 0.98, max: 1.02, speed: 1.8, easing: 'sine' },
+    colorTint: { hue: 180, saturation: 0.3, brightness: 0.05, opacity: 0.2 },
+    wingSpeed: { multiplier: 1.3, amplitude: 16 },
+    bodyLean: { angle: -10, wobble: 0.25, wobbleSpeed: 3 },
+    eyes: { size: 1.1, dilation: 1.2, sparkle: false, squint: 0 },
+    glow: { color: '#22d3ee', intensity: 0.4, pulse: true },
+    duration: 4000,
+    transitionIn: 250,
+    transitionOut: 300,
+  },
+  
+  'DEBUGGING': {
+    scalePulse: { min: 0.98, max: 1.0, speed: 0.5, easing: 'linear' },
+    colorTint: { hue: 35, saturation: 0.25, brightness: 0, opacity: 0.2 },
+    wingSpeed: { multiplier: 0.5, amplitude: 8 },
+    bodyLean: { angle: 12, wobble: 0.05, wobbleSpeed: 0.5 },
+    eyes: { size: 0.9, dilation: 0.7, sparkle: false, squint: 0.35 },
+    glow: { color: '#fbbf24', intensity: 0.35, pulse: false },
+    duration: 6000,
+    transitionIn: 400,
+    transitionOut: 300,
+  },
+  
+  'REVIEWING': {
+    scalePulse: { min: 0.99, max: 1.01, speed: 0.6, easing: 'sine' },
+    colorTint: { hue: 280, saturation: 0.2, brightness: 0, opacity: 0.15 },
+    wingSpeed: { multiplier: 0.7, amplitude: 10 },
+    bodyLean: { angle: 6, wobble: 0.08, wobbleSpeed: 1 },
+    eyes: { size: 1.05, dilation: 0.85, sparkle: false, squint: 0.1 },
+    glow: { color: '#a78bfa', intensity: 0.35, pulse: false },
+    duration: 5000,
+    transitionIn: 350,
+    transitionOut: 350,
+  },
+  
+  'DEPLOYING': {
+    scalePulse: { min: 0.95, max: 1.1, speed: 2.5, easing: 'bounce' },
+    colorTint: { hue: 260, saturation: 0.4, brightness: 0.1, opacity: 0.3 },
+    wingSpeed: { multiplier: 1.8, amplitude: 25 },
+    bodyLean: { angle: -15, wobble: 0.3, wobbleSpeed: 4 },
+    eyes: { size: 1.15, dilation: 1.3, sparkle: true, squint: 0 },
+    glow: { color: '#8b5cf6', intensity: 0.7, pulse: true },
+    duration: 10000,
+    transitionIn: 200,
+    transitionOut: 500,
+  },
+  
+  'DB_QUERY': {
+    scalePulse: { min: 0.98, max: 1.02, speed: 2, easing: 'linear' },
+    colorTint: { hue: 240, saturation: 0.25, brightness: 0, opacity: 0.2 },
+    wingSpeed: { multiplier: 0.9, amplitude: 12 },
+    bodyLean: { angle: 5, wobble: 0.12, wobbleSpeed: 2 },
+    eyes: { size: 1.0, dilation: 0.9, sparkle: false, squint: 0.15 },
+    glow: { color: '#6366f1', intensity: 0.45, pulse: true },
+    duration: 3000,
+    transitionIn: 200,
+    transitionOut: 250,
+  },
+  
+  'NET_REQUEST': {
+    scalePulse: { min: 0.97, max: 1.03, speed: 2.5, easing: 'sine' },
+    colorTint: { hue: 195, saturation: 0.3, brightness: 0.05, opacity: 0.2 },
+    wingSpeed: { multiplier: 1.1, amplitude: 14 },
+    bodyLean: { angle: -8, wobble: 0.18, wobbleSpeed: 2.5 },
+    eyes: { size: 1.05, dilation: 1.1, sparkle: false, squint: 0 },
+    glow: { color: '#0ea5e9', intensity: 0.45, pulse: true },
+    duration: 4000,
+    transitionIn: 150,
+    transitionOut: 250,
+  },
+  
+  // === NEGATIVE STATES ===
+  'ERROR': {
+    scalePulse: { min: 0.95, max: 1.05, speed: 6, easing: 'bounce' },
+    colorTint: { hue: 0, saturation: 0.5, brightness: -0.1, opacity: 0.4 },
+    wingSpeed: { multiplier: 0.4, amplitude: 8 },
+    bodyLean: { angle: -5, wobble: 0.4, wobbleSpeed: 8 },
+    eyes: { size: 1.2, dilation: 1.6, sparkle: false, squint: 0 },
+    glow: { color: '#ef4444', intensity: 0.7, pulse: true },
+    duration: 3000,
+    transitionIn: 100,
+    transitionOut: 600,
+  },
+  
+  'FRUSTRATED': {
+    scalePulse: { min: 0.97, max: 1.03, speed: 4, easing: 'sine' },
+    colorTint: { hue: 30, saturation: 0.4, brightness: -0.05, opacity: 0.3 },
+    wingSpeed: { multiplier: 1.4, amplitude: 22 },
+    bodyLean: { angle: -8, wobble: 0.3, wobbleSpeed: 5 },
+    eyes: { size: 0.9, dilation: 0.8, sparkle: false, squint: 0.4 },
+    glow: { color: '#f59e0b', intensity: 0.5, pulse: true },
+    duration: 2500,
+    transitionIn: 150,
+    transitionOut: 400,
+  },
+  
+  'SCARED': {
+    scalePulse: { min: 0.9, max: 1.0, speed: 8, easing: 'sine' },
+    colorTint: { hue: 50, saturation: 0.35, brightness: -0.05, opacity: 0.3 },
+    wingSpeed: { multiplier: 2.5, amplitude: 35 },
+    bodyLean: { angle: 15, wobble: 0.5, wobbleSpeed: 10 },
+    eyes: { size: 1.4, dilation: 2.0, sparkle: false, squint: 0 },
+    glow: { color: '#eab308', intensity: 0.6, pulse: true },
+    duration: 2000,
+    transitionIn: 50,
+    transitionOut: 500,
+  },
+  
+  'PANIC': {
+    scalePulse: { min: 0.85, max: 1.15, speed: 10, easing: 'bounce' },
+    colorTint: { hue: 0, saturation: 0.6, brightness: -0.1, opacity: 0.5 },
+    wingSpeed: { multiplier: 3.0, amplitude: 45 },
+    bodyLean: { angle: 0, wobble: 0.7, wobbleSpeed: 15 },
+    eyes: { size: 1.5, dilation: 2.5, sparkle: false, squint: 0 },
+    glow: { color: '#dc2626', intensity: 0.9, pulse: true },
+    duration: 4000,
+    transitionIn: 50,
+    transitionOut: 800,
+  },
+  
+  'ROLLBACK': {
+    scalePulse: { min: 0.95, max: 1.0, speed: 3, easing: 'sine' },
+    colorTint: { hue: 25, saturation: 0.4, brightness: 0, opacity: 0.35 },
+    wingSpeed: { multiplier: 1.2, amplitude: 18 },
+    bodyLean: { angle: 10, wobble: 0.25, wobbleSpeed: 4 },
+    eyes: { size: 1.1, dilation: 1.1, sparkle: false, squint: 0.15 },
+    glow: { color: '#ea580c', intensity: 0.55, pulse: true },
+    duration: 5000,
+    transitionIn: 200,
+    transitionOut: 400,
+  },
+  
+  'RATE_LIMITED': {
+    scalePulse: { min: 0.95, max: 0.98, speed: 0.3, easing: 'sine' },
+    colorTint: { hue: 220, saturation: -0.2, brightness: -0.15, opacity: 0.3 },
+    wingSpeed: { multiplier: 0.3, amplitude: 5 },
+    bodyLean: { angle: 20, wobble: 0.05, wobbleSpeed: 0.3 },
+    eyes: { size: 0.85, dilation: 0.6, sparkle: false, squint: 0.5 },
+    glow: { color: '#64748b', intensity: 0.3, pulse: false },
+    duration: 10000,
+    transitionIn: 500,
+    transitionOut: 300,
+  },
+  
+  // === NEUTRAL/OTHER STATES ===
+  'IDLE': { ...DEFAULT_PRESET },
+  
+  'LISTENING': {
+    scalePulse: { min: 0.99, max: 1.01, speed: 1, easing: 'sine' },
+    colorTint: { hue: 200, saturation: 0.1, brightness: 0, opacity: 0.1 },
+    wingSpeed: { multiplier: 0.8, amplitude: 12 },
+    bodyLean: { angle: 3, wobble: 0.08, wobbleSpeed: 1.5 },
+    eyes: { size: 1.05, dilation: 1.1, sparkle: false, squint: 0 },
+    glow: { color: '#93c5fd', intensity: 0.25, pulse: false },
+    duration: 30000,
+    transitionIn: 400,
+    transitionOut: 300,
+  },
+  
+  'TYPING': {
+    scalePulse: { min: 0.98, max: 1.02, speed: 3, easing: 'linear' },
+    colorTint: { hue: 180, saturation: 0.15, brightness: 0.05, opacity: 0.15 },
+    wingSpeed: { multiplier: 1.0, amplitude: 14 },
+    bodyLean: { angle: -5, wobble: 0.15, wobbleSpeed: 3 },
+    eyes: { size: 1.0, dilation: 1.0, sparkle: false, squint: 0.05 },
+    glow: { color: '#5eead4', intensity: 0.3, pulse: false },
+    duration: 10000,
+    transitionIn: 150,
+    transitionOut: 200,
+  },
+  
+  'LOADING': {
+    scalePulse: { min: 0.97, max: 1.03, speed: 1.5, easing: 'sine' },
+    colorTint: { hue: 210, saturation: 0.2, brightness: 0, opacity: 0.2 },
+    wingSpeed: { multiplier: 1.2, amplitude: 16 },
+    bodyLean: { angle: 0, wobble: 0.15, wobbleSpeed: 2 },
+    eyes: { size: 1.0, dilation: 1.0, sparkle: false, squint: 0.1 },
+    glow: { color: '#60a5fa', intensity: 0.4, pulse: true },
+    duration: 15000,
+    transitionIn: 200,
+    transitionOut: 250,
+  },
+  
+  'BORED': {
+    scalePulse: { min: 0.97, max: 0.99, speed: 0.3, easing: 'sine' },
+    colorTint: { hue: 220, saturation: -0.15, brightness: -0.1, opacity: 0.2 },
+    wingSpeed: { multiplier: 0.4, amplitude: 6 },
+    bodyLean: { angle: 15, wobble: 0.03, wobbleSpeed: 0.5 },
+    eyes: { size: 0.9, dilation: 0.7, sparkle: false, squint: 0.4 },
+    glow: { color: 'transparent', intensity: 0, pulse: false },
+    duration: 30000,
+    transitionIn: 1000,
+    transitionOut: 500,
+  },
+  
+  'SLEEPY': {
+    scalePulse: { min: 0.95, max: 0.98, speed: 0.2, easing: 'sine' },
+    colorTint: { hue: 260, saturation: 0.1, brightness: -0.1, opacity: 0.15 },
+    wingSpeed: { multiplier: 0.2, amplitude: 4 },
+    bodyLean: { angle: 20, wobble: 0.02, wobbleSpeed: 0.2 },
+    eyes: { size: 0.8, dilation: 0.5, sparkle: false, squint: 0.7 },
+    glow: { color: '#c4b5fd', intensity: 0.2, pulse: false },
+    duration: 60000,
+    transitionIn: 2000,
+    transitionOut: 1000,
+  },
+  
+  'CURIOUS': {
+    scalePulse: { min: 1.0, max: 1.08, speed: 2, easing: 'sine' },
+    colorTint: { hue: 45, saturation: 0.2, brightness: 0.05, opacity: 0.15 },
+    wingSpeed: { multiplier: 1.3, amplitude: 18 },
+    bodyLean: { angle: -12, wobble: 0.2, wobbleSpeed: 2.5 },
+    eyes: { size: 1.2, dilation: 1.4, sparkle: false, squint: 0 },
+    glow: { color: '#fcd34d', intensity: 0.35, pulse: false },
+    duration: 3000,
+    transitionIn: 200,
+    transitionOut: 400,
+  },
+  
+  'ALERT': {
+    scalePulse: { min: 1.0, max: 1.1, speed: 4, easing: 'bounce' },
+    colorTint: { hue: 45, saturation: 0.4, brightness: 0.1, opacity: 0.3 },
+    wingSpeed: { multiplier: 1.8, amplitude: 25 },
+    bodyLean: { angle: 0, wobble: 0.35, wobbleSpeed: 6 },
+    eyes: { size: 1.25, dilation: 1.5, sparkle: false, squint: 0 },
+    glow: { color: '#fbbf24', intensity: 0.6, pulse: true },
+    duration: 2000,
+    transitionIn: 100,
+    transitionOut: 400,
+  },
+  
+  'HELPFUL': {
+    scalePulse: { min: 1.0, max: 1.05, speed: 1.5, easing: 'sine' },
+    colorTint: { hue: 150, saturation: 0.2, brightness: 0.08, opacity: 0.2 },
+    wingSpeed: { multiplier: 1.1, amplitude: 16 },
+    bodyLean: { angle: -5, wobble: 0.12, wobbleSpeed: 2 },
+    eyes: { size: 1.1, dilation: 1.2, sparkle: true, squint: 0 },
+    glow: { color: '#4ade80', intensity: 0.4, pulse: false },
+    duration: 4000,
+    transitionIn: 300,
+    transitionOut: 350,
+  },
+  
+  'CONFUSED': {
+    scalePulse: { min: 0.97, max: 1.03, speed: 2, easing: 'sine' },
+    colorTint: { hue: 270, saturation: 0.2, brightness: -0.05, opacity: 0.2 },
+    wingSpeed: { multiplier: 0.9, amplitude: 12 },
+    bodyLean: { angle: -15, wobble: 0.3, wobbleSpeed: 3 },
+    eyes: { size: 1.15, dilation: 1.3, sparkle: false, squint: 0.1 },
+    glow: { color: '#c084fc', intensity: 0.35, pulse: false },
+    duration: 3000,
+    transitionIn: 250,
+    transitionOut: 400,
+  },
+  
+  'FOCUSED': {
+    scalePulse: { min: 0.99, max: 1.01, speed: 0.5, easing: 'linear' },
+    colorTint: { hue: 220, saturation: 0.2, brightness: 0, opacity: 0.15 },
+    wingSpeed: { multiplier: 0.6, amplitude: 10 },
+    bodyLean: { angle: 8, wobble: 0.05, wobbleSpeed: 0.8 },
+    eyes: { size: 0.95, dilation: 0.8, sparkle: false, squint: 0.25 },
+    glow: { color: '#3b82f6', intensity: 0.35, pulse: false },
+    duration: 20000,
+    transitionIn: 500,
+    transitionOut: 400,
+  },
+  
+  'SWARM': {
+    scalePulse: { min: 0.9, max: 1.1, speed: 5, easing: 'bounce' },
+    colorTint: { hue: 45, saturation: 0.5, brightness: 0.1, opacity: 0.4 },
+    wingSpeed: { multiplier: 2.5, amplitude: 40 },
+    bodyLean: { angle: 0, wobble: 0.4, wobbleSpeed: 8 },
+    eyes: { size: 1.2, dilation: 1.4, sparkle: true, squint: 0 },
+    glow: { color: '#f7b500', intensity: 0.8, pulse: true },
+    duration: 8000,
+    transitionIn: 150,
+    transitionOut: 600,
+  },
+  
+  'FRENZY': {
+    scalePulse: { min: 0.9, max: 1.15, speed: 8, easing: 'bounce' },
+    colorTint: { hue: 0, saturation: 0.5, brightness: 0, opacity: 0.4 },
+    wingSpeed: { multiplier: 3.0, amplitude: 50 },
+    bodyLean: { angle: 0, wobble: 0.6, wobbleSpeed: 12 },
+    eyes: { size: 1.3, dilation: 1.8, sparkle: false, squint: 0 },
+    glow: { color: '#ef4444', intensity: 0.85, pulse: true },
+    duration: 5000,
+    transitionIn: 100,
+    transitionOut: 700,
+  },
+  
+  'HUNTING': {
+    scalePulse: { min: 0.98, max: 1.05, speed: 3, easing: 'sine' },
+    colorTint: { hue: 30, saturation: 0.4, brightness: 0.05, opacity: 0.3 },
+    wingSpeed: { multiplier: 1.8, amplitude: 28 },
+    bodyLean: { angle: -20, wobble: 0.25, wobbleSpeed: 4 },
+    eyes: { size: 1.15, dilation: 1.3, sparkle: false, squint: 0.15 },
+    glow: { color: '#f97316', intensity: 0.55, pulse: true },
+    duration: 6000,
+    transitionIn: 150,
+    transitionOut: 400,
+  },
+  
+  'RESTING': {
+    scalePulse: { min: 0.97, max: 1.0, speed: 0.4, easing: 'sine' },
+    colorTint: { hue: 120, saturation: 0.1, brightness: 0.05, opacity: 0.1 },
+    wingSpeed: { multiplier: 0.3, amplitude: 5 },
+    bodyLean: { angle: 12, wobble: 0.03, wobbleSpeed: 0.4 },
+    eyes: { size: 0.95, dilation: 0.8, sparkle: false, squint: 0.3 },
+    glow: { color: '#86efac', intensity: 0.2, pulse: false },
+    duration: 20000,
+    transitionIn: 800,
+    transitionOut: 600,
+  },
+};
+
+// Get transformation preset for a mode
+export function getTransformationPreset(mode: string): TransformationPreset {
+  return TRANSFORMATION_PRESETS[mode] || DEFAULT_PRESET;
+}
+
+// Interpolate between two presets based on progress (0-1)
+export function interpolatePresets(
+  from: TransformationPreset,
+  to: TransformationPreset,
+  progress: number
+): TransformationPreset {
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+  
+  return {
+    scalePulse: {
+      min: lerp(from.scalePulse.min, to.scalePulse.min, progress),
+      max: lerp(from.scalePulse.max, to.scalePulse.max, progress),
+      speed: lerp(from.scalePulse.speed, to.scalePulse.speed, progress),
+      easing: progress < 0.5 ? from.scalePulse.easing : to.scalePulse.easing,
+    },
+    colorTint: {
+      hue: lerp(from.colorTint.hue, to.colorTint.hue, progress),
+      saturation: lerp(from.colorTint.saturation, to.colorTint.saturation, progress),
+      brightness: lerp(from.colorTint.brightness, to.colorTint.brightness, progress),
+      opacity: lerp(from.colorTint.opacity, to.colorTint.opacity, progress),
+    },
+    wingSpeed: {
+      multiplier: lerp(from.wingSpeed.multiplier, to.wingSpeed.multiplier, progress),
+      amplitude: lerp(from.wingSpeed.amplitude, to.wingSpeed.amplitude, progress),
+    },
+    bodyLean: {
+      angle: lerp(from.bodyLean.angle, to.bodyLean.angle, progress),
+      wobble: lerp(from.bodyLean.wobble, to.bodyLean.wobble, progress),
+      wobbleSpeed: lerp(from.bodyLean.wobbleSpeed, to.bodyLean.wobbleSpeed, progress),
+    },
+    eyes: {
+      size: lerp(from.eyes.size, to.eyes.size, progress),
+      dilation: lerp(from.eyes.dilation, to.eyes.dilation, progress),
+      sparkle: progress < 0.5 ? from.eyes.sparkle : to.eyes.sparkle,
+      squint: lerp(from.eyes.squint, to.eyes.squint, progress),
+    },
+    glow: {
+      color: progress < 0.5 ? from.glow.color : to.glow.color,
+      intensity: lerp(from.glow.intensity, to.glow.intensity, progress),
+      pulse: progress < 0.5 ? from.glow.pulse : to.glow.pulse,
+    },
+    duration: lerp(from.duration, to.duration, progress),
+    transitionIn: lerp(from.transitionIn, to.transitionIn, progress),
+    transitionOut: lerp(from.transitionOut, to.transitionOut, progress),
+  };
+}
+
+// Calculate current scale based on preset and time
+export function calculateScalePulse(preset: TransformationPreset, time: number): number {
+  const { min, max, speed, easing } = preset.scalePulse;
+  if (speed === 0) return min;
+  
+  const phase = (time * speed * Math.PI * 2) % (Math.PI * 2);
+  let t: number;
+  
+  switch (easing) {
+    case 'sine':
+      t = (Math.sin(phase) + 1) / 2;
+      break;
+    case 'bounce':
+      t = Math.abs(Math.sin(phase));
+      break;
+    case 'elastic':
+      t = (Math.sin(phase * 1.5) * Math.exp(-phase * 0.2) + 1) / 2;
+      break;
+    case 'linear':
+    default:
+      t = (phase % Math.PI) / Math.PI;
+  }
+  
+  return min + (max - min) * t;
+}
+
+// Calculate body wobble based on preset and time
+export function calculateBodyWobble(preset: TransformationPreset, time: number): number {
+  const { wobble, wobbleSpeed } = preset.bodyLean;
+  if (wobble === 0 || wobbleSpeed === 0) return 0;
+  
+  const phase = time * wobbleSpeed * Math.PI * 2;
+  return Math.sin(phase) * wobble * 10; // Returns degrees
+}
+
+// ============================================
 // COMBINED BEE CONTROLLER
 // ============================================
 export class BeeController {
