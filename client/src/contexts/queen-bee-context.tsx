@@ -415,18 +415,8 @@ export function QueenBeeProvider({
     }
   }, [clampPosition]);
 
-  // Re-clamp on resize
-  useEffect(() => {
-    const handleResize = () => {
-      setConfigState(prev => ({
-        ...prev,
-        position: clampPosition(prev.position.x, prev.position.y),
-      }));
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [clampPosition]);
+  // NOTE: Resize re-clamp removed - parametric movement recalculates center each frame
+  // The Lissajous curves automatically adapt to new viewport dimensions
 
   // Save config
   const setConfig = useCallback((updates: Partial<QueenBeeConfig>) => {
@@ -441,11 +431,11 @@ export function QueenBeeProvider({
     });
   }, []);
 
-  // Update position
+  // Update position - NO clamping, parametric movement is already bounded
+  // The Lissajous curves guarantee the queen stays within radius of center
   const updatePosition = useCallback((x: number, y: number) => {
-    const clamped = clampPosition(x, y);
-    setConfig({ position: clamped });
-  }, [clampPosition, setConfig]);
+    setConfig({ position: { x, y } });
+  }, [setConfig]);
 
   // Toggle visibility
   const toggleVisibility = useCallback(() => {
