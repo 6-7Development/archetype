@@ -979,11 +979,12 @@ export class MovementController {
     const halfDim = this.dimension / 2;
     // Match React layer's padding exactly: hatHeight = dim * 0.6, uniformPadding = max(hatHeight+10, 50)
     const hatHeight = this.dimension * 0.6;
-    // INCREASED PADDING for high-energy modes - FRENZY must stay visible
+    // INCREASED PADDING for high-energy modes AND any non-idle state (formations/emotes)
     // More padding = queen stays further from edges = more room to move within visible area
-    const isHighEnergy = this.state === 'CELEBRATE' || this.state === 'EVADE';
-    const emotePadding = isHighEnergy ? 60 : 0;  // INCREASED from 20 to 60 for FRENZY containment
-    const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;  // Base increased from 40 to 50
+    // Non-WANDER states include formations, celebrations, any active state
+    const isHighEnergyOrAnimating = this.state !== 'WANDER' && this.state !== 'REST';
+    const emotePadding = isHighEnergyOrAnimating ? 80 : 0;  // AGGRESSIVE padding for any active state
+    const uniformPadding = Math.max(hatHeight + 10, 70) + emotePadding;  // Base increased to 70
     
     // Calculate safe bounds (matching hard clamp in React layer)
     const minX = halfDim + uniformPadding;
@@ -991,11 +992,11 @@ export class MovementController {
     const minY = halfDim + hatHeight + 10 + emotePadding; // Extra top padding for hat + emote
     const maxY = this.viewportSize.y - halfDim - uniformPadding;
     
-    // LARGER soft zone for high-energy modes - start pushing back sooner
-    const softZone = isHighEnergy ? 80 : 40; // DOUBLED for FRENZY containment
+    // LARGE soft zone for ANY active state - start pushing back early
+    const softZone = isHighEnergyOrAnimating ? 120 : 40;
     
-    // STRONGER boundary force for high-energy modes
-    const boundaryStrength = isHighEnergy ? 0.25 : 0.1; // INCREASED from 0.1
+    // STRONG boundary force for ANY active state
+    const boundaryStrength = isHighEnergyOrAnimating ? 0.35 : 0.1;
     
     if (this.position.x < minX + softZone) {
       force.x = (minX + softZone - this.position.x) * boundaryStrength;
@@ -1124,11 +1125,11 @@ export class MovementController {
     // Calculate bounds FIRST for predictive clamping
     const halfDim = this.dimension / 2;
     const hatHeight = this.dimension * 0.6;
-    // INCREASED PADDING for high-energy modes - matching stayInBounds exactly
-    // FRENZY/EVADE uses larger padding to keep queen well within visible area
-    const isHighEnergy = this.state === 'CELEBRATE' || this.state === 'EVADE';
-    const emotePadding = isHighEnergy ? 60 : 0;  // INCREASED from 20 to 60 for FRENZY containment
-    const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;  // Base increased from 40 to 50
+    // AGGRESSIVE PADDING for ANY non-idle state - matching stayInBounds exactly
+    // Ensures queen stays visible during formations, celebrations, and animations
+    const isHighEnergyOrAnimating = this.state !== 'WANDER' && this.state !== 'REST';
+    const emotePadding = isHighEnergyOrAnimating ? 80 : 0;  // AGGRESSIVE padding
+    const uniformPadding = Math.max(hatHeight + 10, 70) + emotePadding;  // Base increased to 70
     const minX = halfDim + uniformPadding;
     const maxX = this.viewportSize.x - halfDim - uniformPadding;
     const minY = halfDim + hatHeight + 10 + emotePadding;
