@@ -147,8 +147,8 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   try {
     const { default: gitRouter } = await import("./git.js");
     if (gitRouter) {
-      app.use(gitRouter);
-      console.log("[GIT] Git router mounted");
+      app.use("/api/git", gitRouter);
+      console.log("[GIT] Git router mounted at /api/git");
     }
   } catch (e) {
     console.warn("[GIT] Failed to load git router:", (e as any).message);

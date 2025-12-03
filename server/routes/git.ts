@@ -8,7 +8,7 @@ const router = Router();
 router.use(isAuthenticated);
 
 // Get commit history for platform repo
-router.get("/api/git/history", async (req, res) => {
+router.get("/history", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 50;
     const commits = await platformGitService.getHistory(limit);
@@ -20,7 +20,7 @@ router.get("/api/git/history", async (req, res) => {
 });
 
 // Get current git status
-router.get("/api/git/status", async (req, res) => {
+router.get("/status", async (req, res) => {
   try {
     const status = await platformGitService.getStatus();
     res.json(status);
@@ -31,7 +31,7 @@ router.get("/api/git/status", async (req, res) => {
 });
 
 // Get diff for uncommitted changes
-router.get("/api/git/diff", async (req, res) => {
+router.get("/diff", async (req, res) => {
   try {
     const filePath = req.query.file as string | undefined;
     const diff = await platformGitService.getDiff(filePath);
@@ -43,7 +43,7 @@ router.get("/api/git/diff", async (req, res) => {
 });
 
 // Get diff between two commits
-router.get("/api/git/diff/:commit1/:commit2", async (req, res) => {
+router.get("/diff/:commit1/:commit2", async (req, res) => {
   try {
     const { commit1, commit2 } = req.params;
     const filePath = req.query.file as string | undefined;
@@ -56,7 +56,7 @@ router.get("/api/git/diff/:commit1/:commit2", async (req, res) => {
 });
 
 // Get list of branches
-router.get("/api/git/branches", async (req, res) => {
+router.get("/branches", async (req, res) => {
   try {
     const branches = await platformGitService.getBranches();
     const currentBranch = await platformGitService.getCurrentBranch();
@@ -68,7 +68,7 @@ router.get("/api/git/branches", async (req, res) => {
 });
 
 // Get files changed in a specific commit
-router.get("/api/git/commit/:hash/files", async (req, res) => {
+router.get("/commit/:hash/files", async (req, res) => {
   try {
     const { hash } = req.params;
     const files = await platformGitService.getCommitFiles(hash);
@@ -80,7 +80,7 @@ router.get("/api/git/commit/:hash/files", async (req, res) => {
 });
 
 // Get diff for a specific file in a commit
-router.get("/api/git/commit/:hash/file-diff", async (req, res) => {
+router.get("/commit/:hash/file-diff", async (req, res) => {
   try {
     const { hash } = req.params;
     const filePath = req.query.file as string;
@@ -98,7 +98,7 @@ router.get("/api/git/commit/:hash/file-diff", async (req, res) => {
 });
 
 // Stage files for commit (Admin only)
-router.post("/api/git/stage", isAdmin, async (req, res) => {
+router.post("/stage", isAdmin, async (req, res) => {
   try {
     const { files } = req.body;
     
@@ -116,7 +116,7 @@ router.post("/api/git/stage", isAdmin, async (req, res) => {
 });
 
 // Commit staged changes (Admin only)
-router.post("/api/git/commit", isAdmin, async (req, res) => {
+router.post("/commit", isAdmin, async (req, res) => {
   try {
     const { message, author } = req.body;
     
@@ -144,7 +144,7 @@ router.post("/api/git/commit", isAdmin, async (req, res) => {
 });
 
 // Create a new branch (Admin only)
-router.post("/api/git/branch", isAdmin, async (req, res) => {
+router.post("/branch", isAdmin, async (req, res) => {
   try {
     const { name } = req.body;
     
@@ -168,7 +168,7 @@ router.post("/api/git/branch", isAdmin, async (req, res) => {
 });
 
 // Checkout a branch (Admin only)
-router.post("/api/git/checkout", isAdmin, async (req, res) => {
+router.post("/checkout", isAdmin, async (req, res) => {
   try {
     const { branch } = req.body;
     
@@ -190,7 +190,7 @@ router.post("/api/git/checkout", isAdmin, async (req, res) => {
 });
 
 // Stage all changes and commit (Admin only - convenience endpoint for Scout)
-router.post("/api/git/stage-and-commit", isAdmin, async (req, res) => {
+router.post("/stage-and-commit", isAdmin, async (req, res) => {
   try {
     const { message, author, files } = req.body;
     
