@@ -883,22 +883,25 @@ export function FloatingQueenBee() {
   // TIME REF - Persists across re-renders for smooth animation
   const timeRef = useRef({ t: Math.random() * 100, lastFrame: 0 });
 
-  // PURE PARAMETRIC MOVEMENT - Lissajous curves, no physics, guaranteed bounded
+  // PURE PARAMETRIC MOVEMENT - Lissajous curves, guaranteed bounded
   // This is the ONLY movement system - clean and simple
   useEffect(() => {
     if (!isMounted) return;
     
     const ATTACK_THRESHOLD = 80;
     
-    // MOVEMENT PARAMETERS - Easy to tune
-    const RADIUS_X = 90;            // Horizontal roaming distance
-    const RADIUS_Y = 70;            // Vertical roaming distance  
-    const FREQ_X = 0.4;             // Horizontal oscillation speed
-    const FREQ_Y = 0.5;             // Vertical oscillation speed (different = organic path)
-    const FREQ_X2 = 0.17;           // Secondary X wave (adds complexity)
-    const FREQ_Y2 = 0.23;           // Secondary Y wave
+    // MOVEMENT PARAMETERS - Larger movement for visibility
+    const RADIUS_X = 120;           // Horizontal roaming distance (bigger = more visible movement)
+    const RADIUS_Y = 80;            // Vertical roaming distance  
+    const FREQ_X = 0.5;             // Horizontal oscillation speed (slightly faster)
+    const FREQ_Y = 0.6;             // Vertical oscillation speed (different = organic path)
+    const FREQ_X2 = 0.2;            // Secondary X wave (adds complexity)
+    const FREQ_Y2 = 0.27;           // Secondary Y wave
     const WING_BOB_FREQ = 12;       // Wing beat bob frequency
     const WING_BOB_AMP = 2;         // Wing beat amplitude
+    
+    // Safe zone boundaries - keep queen well inside viewport
+    const SAFE_PADDING = 100;       // Minimum distance from edges
     
     const time = timeRef.current;
     
@@ -914,9 +917,13 @@ export function FloatingQueenBee() {
       const halfDim = dimension / 2;
       const now = Date.now();
       
-      // Screen center (live values)
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
+      // Calculate safe center zone (viewport center, clamped to safe bounds)
+      const viewW = window.innerWidth;
+      const viewH = window.innerHeight;
+      
+      // The safe zone center - where queen orbits around
+      const safeCenterX = viewW / 2;
+      const safeCenterY = viewH / 2;
       
       // LISSAJOUS POSITION - Pure math, guaranteed within radius
       // Primary figure-8 like pattern
@@ -927,9 +934,19 @@ export function FloatingQueenBee() {
       const px2 = Math.sin(time.t * FREQ_X2 + 1.5) * RADIUS_X * 0.3;
       const py2 = Math.cos(time.t * FREQ_Y2 + 2.1) * RADIUS_Y * 0.3;
       
-      // Combined position (center-based) - UNCLAMPED for physics/worker orbits
-      const queenX = centerX + px1 + px2;
-      const queenY = centerY + py1 + py2;
+      // Combined position (center-based)
+      let queenX = safeCenterX + px1 + px2;
+      let queenY = safeCenterY + py1 + py2;
+      
+      // HARD CLAMP: Keep queen center inside safe viewport zone
+      // This ensures queen NEVER escapes, even on window resize
+      const minX = SAFE_PADDING + halfDim;
+      const maxX = viewW - SAFE_PADDING - halfDim;
+      const minY = SAFE_PADDING + halfDim;
+      const maxY = viewH - SAFE_PADDING - halfDim;
+      
+      queenX = Math.max(minX, Math.min(maxX, queenX));
+      queenY = Math.max(minY, Math.min(maxY, queenY));
       
       // Calculate velocity from position derivatives (for facing direction)
       const vx = Math.cos(time.t * FREQ_X) * FREQ_X * RADIUS_X +
@@ -955,20 +972,13 @@ export function FloatingQueenBee() {
       // Update body dynamics
       setBodyDynamics(beeController.bodyDynamics.update(deltaMs, vx, vy));
       
-      // Update shared queen state for workers to orbit (using physics position)
+      // Update shared queen state for workers to orbit (clamped position)
+      // Workers will orbit around this position, which is guaranteed to be in-bounds
       beeController.setQueenState(queenX, finalY, vx, vy);
       
-      // Convert center to top-left for rendering, with safety clamp for display only
-      let renderX = queenX - halfDim;
-      let renderY = finalY - halfDim;
-      
-      // Safety clamp on RENDER position only - doesn't affect physics/workers
-      // Uses generous padding to allow full Lissajous movement while catching edge cases
-      if (typeof window !== 'undefined') {
-        const safetyPadding = 20;
-        renderX = Math.max(safetyPadding, Math.min(renderX, window.innerWidth - dimension - safetyPadding));
-        renderY = Math.max(safetyPadding, Math.min(renderY, window.innerHeight - dimension - safetyPadding));
-      }
+      // Convert center to top-left for rendering (already clamped above)
+      const renderX = queenX - halfDim;
+      const renderY = finalY - halfDim;
       
       updatePosition(renderX, renderY);
       
