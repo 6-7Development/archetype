@@ -869,11 +869,10 @@ export function FloatingQueenBee() {
       const hatHeight = dimension * 0.6; // Hat extends above head by ~60% of dimension
       const spriteTopPadding = hatHeight + 10; // Total top clearance needed
       
-      // EMOTE-SAFE PADDING: During emotes (CELEBRATE), body dynamics cause lean/stretch
-      // that can push the visual sprite outside bounds. Add extra margin for safety.
-      // 50px accounts for body dynamics + hat + safety margin to prevent any escape
-      const isEmoteMode = result.state === 'CELEBRATE';
-      const emotePadding = isEmoteMode ? 50 : 0; // Extra padding during celebrations
+      // HIGH-ENERGY SAFE PADDING: During intense states, body dynamics + speed cause escape
+      // CELEBRATE, EVADE (FRENZY/SWARM) - add extra margin to keep queen visible
+      const isHighEnergy = result.state === 'CELEBRATE' || result.state === 'EVADE';
+      const emotePadding = isHighEnergy ? 50 : 0; // Extra padding during intense modes
       const uniformPadding = Math.max(spriteTopPadding, 50) + emotePadding;
       
       const minX = halfDim + uniformPadding;
@@ -897,9 +896,9 @@ export function FloatingQueenBee() {
       // SINGLE SOURCE OF TRUTH: Update the shared queen state for workers
       beeController.setQueenState(clampedX, clampedY, effectiveVelocity.x, effectiveVelocity.y);
       
-      // EMOTE VELOCITY DAMPING: During emotes, sync position every frame
-      // to prevent oscillation overshoot from sinusoidal steering forces
-      if (wasClamped || isEmoteMode) {
+      // HIGH-ENERGY VELOCITY DAMPING: During intense states, sync position every frame
+      // to prevent momentum overshoot from high-speed steering forces
+      if (wasClamped || isHighEnergy) {
         beeController.syncMovementPosition(clampedX, clampedY);
         if (wasClamped) {
           // Update direction with zero velocity to reset facing to FRONT

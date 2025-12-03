@@ -979,9 +979,10 @@ export class MovementController {
     const halfDim = this.dimension / 2;
     // Match React layer's padding exactly: hatHeight = dim * 0.6, uniformPadding = max(hatHeight+10, 50)
     const hatHeight = this.dimension * 0.6;
-    // EMOTE-SAFE: Add extra padding during CELEBRATE to match React layer
-    // 50px accounts for body dynamics (lean/stretch) + hat + safety margin
-    const emotePadding = this.state === 'CELEBRATE' ? 50 : 0;
+    // HIGH-ENERGY SAFE: Add extra padding during intense states to prevent escape
+    // CELEBRATE, EVADE (FRENZY) - body dynamics + high speeds can breach normal bounds
+    const isHighEnergy = this.state === 'CELEBRATE' || this.state === 'EVADE';
+    const emotePadding = isHighEnergy ? 50 : 0;
     const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;
     
     // Calculate safe bounds (matching hard clamp in React layer)
@@ -1120,9 +1121,10 @@ export class MovementController {
     // Calculate bounds FIRST for predictive clamping
     const halfDim = this.dimension / 2;
     const hatHeight = this.dimension * 0.6;
-    // EMOTE-SAFE: Add extra padding during CELEBRATE for body dynamics
-    // 50px accounts for lean/stretch visuals + hat + safety margin
-    const emotePadding = this.state === 'CELEBRATE' ? 50 : 0;
+    // HIGH-ENERGY SAFE: Add extra padding during intense states for body dynamics
+    // CELEBRATE, EVADE (FRENZY) - body dynamics + high speeds can breach normal bounds
+    const isHighEnergy = this.state === 'CELEBRATE' || this.state === 'EVADE';
+    const emotePadding = isHighEnergy ? 50 : 0;
     const uniformPadding = Math.max(hatHeight + 10, 50) + emotePadding;
     const minX = halfDim + uniformPadding;
     const maxX = this.viewportSize.x - halfDim - uniformPadding;
@@ -1175,7 +1177,7 @@ export class MovementController {
     
     // 6. LIMIT VELOCITY - gentler max speeds
     const velMag = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-    const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 1.2
+    const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 0.8  // Reduced from 1.2 to prevent escape
                            : this.state === 'REST' ? this.config.maxSpeed * 0.15
                            : this.state === 'CELEBRATE' ? this.config.maxSpeed * 0.5
                            : this.config.maxSpeed * 0.9;
