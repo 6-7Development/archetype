@@ -37,9 +37,9 @@ const ARTIFACT_ICONS = {
 };
 
 const ARTIFACT_COLORS = {
-  file: 'text-blue-600
-  url: 'text-purple-600
-  report: 'text-green-600
+  file: 'text-blue-600',
+  url: 'text-purple-600',
+  report: 'text-green-600'
 };
 
 function ArtifactCard({ artifact }: { artifact: Artifact }) {

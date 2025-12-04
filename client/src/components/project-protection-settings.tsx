@@ -82,7 +82,7 @@ export function ProjectProtectionSettings({ projectId }: ProjectProtectionSettin
               <Badge variant="destructive">Protected</Badge>
             </div>
 
-            <Alert className="bg-red-50
+            <Alert className="bg-red-50">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 Critical files cannot be modified without admin intervention
@@ -132,7 +132,7 @@ export function ProjectProtectionSettings({ projectId }: ProjectProtectionSettin
           <div className="space-y-3 p-4 rounded-lg bg-green-50/50 border border-green-200/30">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold">Editable Files</h3>
-              <Badge variant="outline" className="border-green-500 text-green-700
+              <Badge variant="outline" className="border-green-500 text-green-700">
                 Allowed
               </Badge>
             </div>

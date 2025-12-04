@@ -57,11 +57,11 @@ export function ChangesPanel({ changes, onClose }: ChangesPanelProps) {
                   className="flex items-start gap-2 text-sm p-2 rounded-md hover-elevate"
                   data-testid={`change-created-${filename}`}
                 >
-                  <FilePlus className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 />
+                  <FilePlus className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600" />
                   <span className="flex-1 font-mono text-xs break-all">{filename}</span>
                   <Badge
                     variant="outline"
-                    className="flex-shrink-0 text-xs border-green-500/30 text-green-600
+                    className="flex-shrink-0 text-xs border-green-500/30 text-green-600"
                   >
                     NEW
                   </Badge>
@@ -75,11 +75,11 @@ export function ChangesPanel({ changes, onClose }: ChangesPanelProps) {
                   className="flex items-start gap-2 text-sm p-2 rounded-md hover-elevate"
                   data-testid={`change-modified-${filename}`}
                 >
-                  <FileEdit className="w-4 h-4 mt-0.5 flex-shrink-0 text-yellow-600 />
+                  <FileEdit className="w-4 h-4 mt-0.5 flex-shrink-0 text-yellow-600" />
                   <span className="flex-1 font-mono text-xs break-all">{filename}</span>
                   <Badge
                     variant="outline"
-                    className="flex-shrink-0 text-xs border-yellow-500/30 text-yellow-600
+                    className="flex-shrink-0 text-xs border-yellow-500/30 text-yellow-600"
                   >
                     MODIFIED
                   </Badge>
@@ -93,13 +93,13 @@ export function ChangesPanel({ changes, onClose }: ChangesPanelProps) {
                   className="flex items-start gap-2 text-sm p-2 rounded-md hover-elevate"
                   data-testid={`change-deleted-${filename}`}
                 >
-                  <FileX className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-600 />
+                  <FileX className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-600" />
                   <span className="flex-1 font-mono text-xs break-all line-through opacity-70">
                     {filename}
                   </span>
                   <Badge
                     variant="outline"
-                    className="flex-shrink-0 text-xs border-red-500/30 text-red-600
+                    className="flex-shrink-0 text-xs border-red-500/30 text-red-600"
                   >
                     DELETED
                   </Badge>

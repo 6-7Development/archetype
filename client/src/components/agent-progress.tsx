@@ -212,9 +212,9 @@ export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = f
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Lines Changed:</span>
                       <span className="font-medium">
-                        <span className="text-green-600 || 0}</span>
+                        <span className="text-green-600">+{metrics.linesAdded || 0}</span>
                         {" / "}
-                        <span className="text-red-600 || 0}</span>
+                        <span className="text-red-600">-{metrics.linesRemoved || 0}</span>
                       </span>
                     </div>
                   )}
@@ -272,9 +272,9 @@ export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = f
                 )}
                 {((metrics.linesAdded || 0) + (metrics.linesRemoved || 0) > 0) && (
                   <div>
-                    <span className="text-green-600 || 0}</span>
+                    <span className="text-green-600">+{metrics.linesAdded || 0}</span>
                     {" / "}
-                    <span className="text-red-600 || 0}</span>
+                    <span className="text-red-600">-{metrics.linesRemoved || 0}</span>
                     {" lines"}
                   </div>
                 )}

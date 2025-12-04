@@ -27,27 +27,27 @@ const STATUS_CONFIG: Record<TaskStatus, {
   backlog: {
     label: 'Backlog',
     icon: <Circle className="h-3.5 w-3.5" />,
-    color: 'text-gray-500
+    color: 'text-gray-500'
   },
   in_progress: {
     label: 'In Progress',
     icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
-    color: 'text-blue-600
+    color: 'text-blue-600'
   },
   verifying: {
     label: 'Verifying',
     icon: <Clock className="h-3.5 w-3.5" />,
-    color: 'text-yellow-600
+    color: 'text-yellow-600'
   },
   done: {
     label: 'Done',
     icon: <CheckCircle2 className="h-3.5 w-3.5" />,
-    color: 'text-green-600
+    color: 'text-green-600'
   },
   blocked: {
     label: 'Blocked',
     icon: <AlertCircle className="h-3.5 w-3.5" />,
-    color: 'text-red-600
+    color: 'text-red-600'
   }
 };
 
