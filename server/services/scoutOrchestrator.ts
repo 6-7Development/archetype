@@ -395,7 +395,28 @@ class ScoutOrchestrator {
         case 'commit_to_github':
           await loadExtendedHandlers();
           if (commitToGitHub) {
-            rawResult = await commitToGitHub({ message: args.commitMessage || args.message });
+            // Build files array from args - support multiple formats
+            let filesToCommit: Array<{ path: string; content?: string; operation?: 'create' | 'modify' | 'delete' }> = [];
+            
+            if (args.files && Array.isArray(args.files)) {
+              // Files can be strings or objects
+              filesToCommit = args.files.map((f: any) => {
+                if (typeof f === 'string') {
+                  return { path: f, operation: 'modify' as const };
+                }
+                return { path: f.path || f, content: f.content, operation: f.operation || 'modify' };
+              });
+            } else if (args.filePaths && Array.isArray(args.filePaths)) {
+              filesToCommit = args.filePaths.map((p: string) => ({ path: p, operation: 'modify' as const }));
+            } else if (session.modifiedFiles && session.modifiedFiles.size > 0) {
+              // Use session's tracked modified files as fallback
+              filesToCommit = Array.from(session.modifiedFiles).map(p => ({ path: p, operation: 'modify' as const }));
+            }
+            
+            rawResult = await commitToGitHub({ 
+              message: args.commitMessage || args.message || 'Scout: automated commit',
+              files: filesToCommit
+            });
           } else {
             rawResult = '❌ GitHub tools not available';
           }
