@@ -116,7 +116,10 @@ export const terminalHistory = pgTable("terminal_history", {
   output: text("output"),
   exitCode: integer("exit_code"),
   executedAt: timestamp("executed_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_terminal_history_project_id").on(table.projectId),
+  index("idx_terminal_history_user_id").on(table.userId),
+]);
 
 export const insertTerminalHistorySchema = createInsertSchema(terminalHistory).omit({
   id: true,
@@ -505,7 +508,11 @@ export const files = pgTable("files", {
   folderId: varchar("folder_id"), // Parent folder ID (NULL for root)
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_files_project_id").on(table.projectId),
+  index("idx_files_user_id").on(table.userId),
+  index("idx_files_folder_id").on(table.folderId),
+]);
 
 export const insertFileSchema = createInsertSchema(files).omit({
   id: true,
@@ -527,7 +534,11 @@ export const projectFolders = pgTable("project_folders", {
   path: text("path").notNull(), // Full path (e.g., "/src/components")
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_project_folders_project_id").on(table.projectId),
+  index("idx_project_folders_user_id").on(table.userId),
+  index("idx_project_folders_parent_id").on(table.parentId),
+]);
 
 export const insertProjectFolderSchema = createInsertSchema(projectFolders).omit({
   id: true,
@@ -552,7 +563,11 @@ export const fileUploads = pgTable("file_uploads", {
   url: text("url"), // Public URL if hosted
   folderId: varchar("folder_id"), // Optional parent folder
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_file_uploads_project_id").on(table.projectId),
+  index("idx_file_uploads_user_id").on(table.userId),
+  index("idx_file_uploads_folder_id").on(table.folderId),
+]);
 
 export const insertFileUploadSchema = createInsertSchema(fileUploads).omit({
   id: true,
@@ -573,7 +588,11 @@ export const commands = pgTable("commands", {
   platformChanges: jsonb("platform_changes"), // Tracks platform file modifications for BeeHiveAI
   autoCommitted: text("auto_committed").default("false"), // Tracks if platform changes were auto-committed to git
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_commands_project_id").on(table.projectId),
+  index("idx_commands_user_id").on(table.userId),
+  index("idx_commands_status").on(table.status),
+]);
 
 export const insertCommandSchema = createInsertSchema(commands).omit({
   id: true,
@@ -906,7 +925,12 @@ export const usageLogs = pgTable("usage_logs", {
   cost: decimal("cost", { precision: 10, scale: 4 }).notNull().default("0.0000"), // Exact cost in dollars
   metadata: text("metadata"), // JSON string for additional data
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_usage_logs_user_id").on(table.userId),
+  index("idx_usage_logs_project_id").on(table.projectId),
+  index("idx_usage_logs_type").on(table.type),
+  index("idx_usage_logs_created_at").on(table.createdAt),
+]);
 
 export const insertUsageLogSchema = createInsertSchema(usageLogs).omit({
   id: true,
