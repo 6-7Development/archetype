@@ -23,7 +23,7 @@ const EMOTION_MODE_MAP: Record<BeeEmotion, BeeMode> = {
   coding: "CODING",
   testing: "BUILDING",
   success: "IDLE",
-  error: "SWARM",
+  error: "ERROR",
 };
 
 // Size mappings for canvas width/height

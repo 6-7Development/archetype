@@ -7,7 +7,7 @@ import { useEffect, useRef, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import type { FacingState, HeadAimState, BodyDynamicsState } from "@/lib/bee-handlers";
 
-// Core animation modes - SWARM/FRENZY removed for animation stability
+// Core animation modes - aligned with 17 core emotional states
 export type BeeMode = "IDLE" | "LISTENING" | "TYPING" | "THINKING" | "CODING" | "BUILDING" | "SUCCESS" | "ERROR";
 
 interface QueenBeeCanvasProps {
@@ -295,23 +295,6 @@ class AgentBeeAnimation {
         w.currentX += (tx - w.currentX) * 0.1;
         w.currentY += (ty - w.currentY) * 0.1;
         w.angle = Math.atan2(w.currentY, w.currentX);
-      } else if (mode === "SWARM") {
-        w.angle += 0.08;
-        w.radius = 0.35;
-        const wobble = Math.sin(this.state.time * 0.2 + w.id) * (s * 0.05);
-        const bx = Math.cos(w.angle) * (w.radius * s);
-        const by = Math.sin(w.angle) * (w.radius * s);
-        w.currentX = bx + wobble;
-        w.currentY = by + Math.cos(w.angle * 2) * (s * 0.1);
-      } else if (mode === "FRENZY") {
-        // FRENZY: Aggressive chaotic movement with faster speed
-        w.angle += 0.15; // Faster rotation
-        w.radius = 0.3 + Math.sin(this.state.time * 0.3 + w.id * 2) * 0.1; // Pulsing radius
-        const chaos = Math.sin(this.state.time * 0.4 + w.id * 3) * (s * 0.08);
-        const bx = Math.cos(w.angle) * (w.radius * s);
-        const by = Math.sin(w.angle) * (w.radius * s);
-        w.currentX = bx + chaos + Math.random() * 4 - 2; // Add jitter
-        w.currentY = by + Math.sin(w.angle * 3) * (s * 0.12) + Math.random() * 4 - 2;
       }
     });
   }
@@ -373,58 +356,6 @@ class AgentBeeAnimation {
     if (this.state.mode !== "CODING") this.drawParticles(modeColor, false);
     if (this.state.mode === "CODING") this.drawParticles(modeColor, false);
 
-    if (this.state.mode === "SWARM") {
-      this.ctx.strokeStyle = `rgba(${this.hexToRgb(modeColor)}, 0.3)`;
-      this.ctx.lineWidth = 2;
-      this.ctx.beginPath();
-      this.ctx.arc(cx, cy, s * 0.45, 0, Math.PI * 2);
-      this.ctx.stroke();
-      const rot = this.state.time * 0.05;
-      this.ctx.strokeStyle = modeColor;
-      this.ctx.beginPath();
-      this.ctx.arc(cx, cy, s * 0.45, rot, rot + 1);
-      this.ctx.stroke();
-      this.ctx.beginPath();
-      this.ctx.arc(cx, cy, s * 0.45, rot + Math.PI, rot + Math.PI + 1);
-      this.ctx.stroke();
-    }
-    
-    // FRENZY mode: Aggressive red pulsing with chaotic energy
-    if (this.state.mode === "FRENZY") {
-      // Pulsing red ring
-      const pulse = Math.sin(this.state.time * 0.15) * 0.1 + 0.4;
-      this.ctx.strokeStyle = `rgba(255, 50, 50, ${pulse})`;
-      this.ctx.lineWidth = 3;
-      this.ctx.beginPath();
-      this.ctx.arc(cx, cy, s * 0.48, 0, Math.PI * 2);
-      this.ctx.stroke();
-      
-      // Multiple spinning arcs for chaos effect
-      const rot = this.state.time * 0.1;
-      this.ctx.strokeStyle = modeColor;
-      this.ctx.lineWidth = 2;
-      for (let i = 0; i < 4; i++) {
-        const offset = (Math.PI * 2 / 4) * i;
-        this.ctx.beginPath();
-        this.ctx.arc(cx, cy, s * 0.48, rot + offset, rot + offset + 0.8);
-        this.ctx.stroke();
-      }
-      
-      // Random energy sparks
-      if (Math.random() > 0.7) {
-        const sparkAngle = Math.random() * Math.PI * 2;
-        const sparkDist = s * 0.35 + Math.random() * s * 0.1;
-        this.ctx.fillStyle = modeColor;
-        this.ctx.beginPath();
-        this.ctx.arc(
-          cx + Math.cos(sparkAngle) * sparkDist,
-          cy + Math.sin(sparkAngle) * sparkDist,
-          2 + Math.random() * 2,
-          0, Math.PI * 2
-        );
-        this.ctx.fill();
-      }
-    }
   }
 
   drawBlueprintGrid(s: number, color: string) {

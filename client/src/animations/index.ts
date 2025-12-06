@@ -127,13 +127,9 @@ export const MODE_TO_CANVAS_MAP: Record<string, string> = {
   'ERROR': 'ERROR',
   'ALERT': 'ERROR',
   'CONFUSED': 'ERROR',
-  'SWARM': 'SWARM',
-  'FRENZY': 'FRENZY',
-  'HUNTING': 'SWARM',
   'CURIOUS': 'IDLE',
   'HELPFUL': 'IDLE',
   'SLEEPY': 'IDLE',
-  'RESTING': 'IDLE',
 };
 
 /**

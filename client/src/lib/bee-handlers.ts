@@ -640,13 +640,12 @@ export class ThoughtHandler {
 
 export type MovementState = 
   | 'WANDER'        // Gentle autonomous exploration
-  | 'EVADE'         // Fleeing from cursor
+  | 'EVADE'         // Gentle movement away from cursor (not aggressive)
   | 'CHASE'         // Following target (rare)
   | 'REST'          // Stationary hovering
   | 'PATROL'        // Moving between waypoints
   | 'CELEBRATE'     // Happy bouncy movement
-  | 'ALERT'         // Heightened awareness
-  | 'SWARM_ESCORT'; // Following with worker bees
+  | 'ALERT';        // Heightened awareness
 
 export interface Vector2 {
   x: number;
@@ -674,14 +673,14 @@ export interface MovementConfig {
 }
 
 const DEFAULT_MOVEMENT_CONFIG: MovementConfig = {
-  maxSpeed: 4.5,
-  maxAcceleration: 0.15,
-  friction: 0.92,
+  maxSpeed: 3.0,           // Reduced from 4.5 for calmer movement
+  maxAcceleration: 0.10,   // Reduced from 0.15 for gentler motion
+  friction: 0.94,          // Slightly higher friction for smoother stops
   wanderRadius: 40,
   wanderDistance: 80,
-  wanderJitter: 0.4,
-  evadeDistance: 150,
-  obstacleAvoidDistance: 80,
+  wanderJitter: 0.3,       // Reduced jitter for smoother wander
+  evadeDistance: 80,       // Reduced from 150 - less sensitive to cursor
+  obstacleAvoidDistance: 60, // Reduced obstacle avoidance
   boundaryPadding: 60,
 };
 
@@ -849,12 +848,14 @@ export class MovementController {
       }
     }
     
-    // 2. Evade when cursor is close and fast
-    if (distToCursor < this.config.evadeDistance && cursorSpeed > 1) {
+    // 2. Gentle evade when cursor is VERY close and moving fast
+    // Much less aggressive - only triggers at 80px with high cursor speed
+    if (distToCursor < this.config.evadeDistance && cursorSpeed > 5) {
       if (this.state !== 'EVADE') {
         this.transitionTo('EVADE');
       }
-    } else if (this.state === 'EVADE' && distToCursor > this.config.evadeDistance * 1.5) {
+    } else if (this.state === 'EVADE' && (distToCursor > this.config.evadeDistance * 1.3 || cursorSpeed < 2)) {
+      // Exit evade more quickly when cursor slows down or moves away
       this.transitionTo('WANDER');
     }
     

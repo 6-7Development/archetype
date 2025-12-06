@@ -43,29 +43,25 @@ export interface OrbitingWorkerBeeProps {
   velocity?: { x: number; y: number }; // Current velocity for trail direction
 }
 
-// Mode colors matching the original canvas design
+// Mode colors matching 17 core emotional states
 const modeColors: Record<string, string> = {
-  IDLE: "#ffd700",
-  THINKING: "#00f0ff",
-  CODING: "#00ff41",
-  BUILDING: "#ffae00",
-  SWARM: "#ff0055",
-  LISTENING: "#a855f7",
-  TYPING: "#38bdf8",
-  SUCCESS: "#10b981",
-  ERROR: "#ffd700",
-  FRENZY: "#ff1a1a",
-  EXCITED: "#ffd700",
-  CELEBRATING: "#10b981",
-  HELPFUL: "#ffd700",
-  CURIOUS: "#00f0ff",
-  HUNTING: "#ff0055",
-  CONFUSED: "#ffae00",
-  ALERT: "#ff0055",
-  SLEEPY: "#a855f7",
-  RESTING: "#a855f7",
-  LOADING: "#38bdf8",
-  FOCUSED: "#00ff41",
+  IDLE: "#ffd700",      // Honey gold
+  THINKING: "#00f0ff",  // Cyan
+  CODING: "#00ff41",    // Green
+  BUILDING: "#ffae00",  // Orange
+  LISTENING: "#a855f7", // Purple
+  TYPING: "#38bdf8",    // Light blue
+  SUCCESS: "#10b981",   // Emerald
+  ERROR: "#ffd700",     // Honey (attention)
+  EXCITED: "#ffd700",   // Honey (high energy)
+  CELEBRATING: "#10b981", // Emerald
+  HELPFUL: "#ffd700",   // Honey
+  CURIOUS: "#00f0ff",   // Cyan
+  CONFUSED: "#ffae00",  // Orange
+  ALERT: "#ff6b35",     // Softer orange-red
+  SLEEPY: "#a855f7",    // Purple
+  LOADING: "#38bdf8",   // Light blue
+  FOCUSED: "#00ff41",   // Green
 };
 
 export function OrbitingWorkerBee({
@@ -104,9 +100,9 @@ export function OrbitingWorkerBee({
   const baseSize = 35 * clampedSize; // 35-49px range
   const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || isAttacking;
   const isHappy = mode === 'EXCITED' || mode === 'HELPFUL' || mode === 'CELEBRATING';
-  const isSleepy = mode === 'SLEEPY' || mode === 'RESTING';
+  const isSleepy = mode === 'SLEEPY';
   const isThinking = mode === 'THINKING' || mode === 'LOADING';
-  const isEmoting = mode !== 'IDLE' && mode !== 'ROAM';
+  const isEmoting = mode !== 'IDLE';
 
   // Mode-based accent color (matches original canvas design)
   // Use season color for Christmas lights if available

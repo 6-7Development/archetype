@@ -31,9 +31,6 @@ interface WorkerBeeProps {
 // Emoji for different bee modes
 function getBeeEmoji(mode: QueenBeeMode): string {
   switch (mode) {
-    case 'FRENZY':
-    case 'HUNTING':
-      return '🐝'; // Aggressive bee
     case 'CELEBRATING':
     case 'EXCITED':
       return '✨'; // Sparkly bee
@@ -46,8 +43,7 @@ function getBeeEmoji(mode: QueenBeeMode): string {
     case 'THINKING':
     case 'CODING':
       return '🤔'; // Thinking bee
-    case 'SLEEPING':
-    case 'RESTING':
+    case 'SLEEPY':
       return '💤'; // Sleepy bee
     default:
       return '🐝'; // Regular bee
@@ -57,10 +53,6 @@ function getBeeEmoji(mode: QueenBeeMode): string {
 // Get bee color/style based on mode
 function getBeeStyle(mode: QueenBeeMode): { color: string; scale: number; opacity: number } {
   switch (mode) {
-    case 'FRENZY':
-      return { color: 'text-red-500', scale: 1.2, opacity: 1 };
-    case 'HUNTING':
-      return { color: 'text-orange-500', scale: 1.1, opacity: 1 };
     case 'ERROR':
     case 'ALERT':
       return { color: 'text-yellow-500', scale: 0.9, opacity: 0.9 };
@@ -70,7 +62,6 @@ function getBeeStyle(mode: QueenBeeMode): { color: string; scale: number; opacit
     case 'EXCITED':
       return { color: 'text-pink-500', scale: 1.05, opacity: 1 };
     case 'SLEEPY':
-    case 'RESTING':
       return { color: 'text-blue-300', scale: 0.8, opacity: 0.7 };
     default:
       return { color: 'text-amber-500', scale: 1, opacity: 0.9 };

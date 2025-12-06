@@ -1013,23 +1013,30 @@ export function FloatingQueenBee() {
     }, 2000);
   }, [currentHint]);
 
-  // WORKER BEE LIFECYCLE: Smooth summon → orbit → fade
-  // Show workers when user is near queen, bee is evading, or excited
+  // WORKER BEE LIFECYCLE: Workers always visible during active queen states
+  // Workers participate in all active animation sequences with the queen
   useEffect(() => {
     if (workerFadeTimeoutRef.current) {
       clearTimeout(workerFadeTimeoutRef.current);
       workerFadeTimeoutRef.current = null;
     }
     
+    // Active states where workers should be visible and orbiting
+    const ACTIVE_MODES = ['CODING', 'BUILDING', 'THINKING', 'TYPING', 'EXCITED', 
+                          'CELEBRATING', 'SUCCESS', 'LOADING', 'FOCUSED'];
+    const isActiveMode = ACTIVE_MODES.includes(mode);
     const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT';
-    const shouldShowWorkers = isMouseNearBee || isEvading || mode === 'EXCITED';
+    
+    // Workers visible during: active AI modes, user interaction, or queen evading
+    const shouldShowWorkers = isActiveMode || isMouseNearBee || isEvading;
     
     if (shouldShowWorkers) {
       setWorkersVisible(true);
     } else {
+      // Fade workers after 4 seconds of inactivity (was 2s - more gradual)
       workerFadeTimeoutRef.current = setTimeout(() => {
         setWorkersVisible(false);
-      }, 2000);
+      }, 4000);
     }
     
     return () => {
@@ -1058,8 +1065,11 @@ export function FloatingQueenBee() {
 
   const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT';
   
-  // Determine if workers should show active behavior based on emotional state
-  const shouldWorkersChase = isEvading || isMouseNearBee || mode === 'EXCITED';
+  // Determine if workers should show active orbit behavior based on queen's mode
+  // Workers orbit actively when queen is working, not just when chasing cursor
+  const ACTIVE_WORKER_MODES = ['CODING', 'BUILDING', 'THINKING', 'TYPING', 'EXCITED', 
+                               'CELEBRATING', 'SUCCESS', 'LOADING', 'FOCUSED'];
+  const shouldWorkersChase = isEvading || isMouseNearBee || ACTIVE_WORKER_MODES.includes(mode);
 
   return (
     <>
