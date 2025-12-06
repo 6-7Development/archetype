@@ -48,7 +48,6 @@ export {
 export type { 
   QueenBeeMode, 
   QueenBeeConfig,
-  SwarmState,
   ErrorState,
   InteractiveHint,
   AutonomousVelocity,
