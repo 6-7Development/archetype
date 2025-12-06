@@ -12,10 +12,17 @@
  * - BeeAnimations: Framer Motion utilities (fade, slide, pulse)
  * - BeeConfig: Centralized configuration (sizes, colors, behavior)
  * 
+ * Z-INDEX HIERARCHY (low to high):
+ * - z-30: Christmas decorations container
+ * - z-35: Individual decorations (bulbs, wreaths, ornaments)
+ * - z-40-50: Main content and UI elements
+ * - z-95-102: Queen Bee animations and thought bubbles
+ * 
  * AI BRAIN CONNECTION:
  * - setMode() from QueenBeeContext triggers emotional state changes
  * - Mode changes propagate to canvas via mapToCanvasMode() in FloatingQueenBee
  * - ThoughtHandler generates context-aware messages based on project activity
+ * - useQueenBeeAI hook provides: onUserTyping, onAIThinking, onAICoding, etc.
  */
 
 // Core Queen Bee Components
@@ -35,6 +42,7 @@ export type { OrbitingWorkerBeeProps } from '@/components/orbiting-worker-bee';
 export { 
   QueenBeeProvider, 
   useQueenBee,
+  useQueenBeeAI,
   SIZE_DIMENSIONS,
 } from '@/contexts/queen-bee-context';
 export type { 
