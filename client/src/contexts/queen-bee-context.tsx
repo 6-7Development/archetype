@@ -635,7 +635,7 @@ export function QueenBeeProvider({
       } else if (status === 'error' || status === 'failed') {
         newMode = 'ERROR';
       } else if (status === 'running' || status === 'active') {
-        newMode = 'SWARM';
+        newMode = 'EXCITED';
       }
       
       if (newMode !== 'IDLE') {

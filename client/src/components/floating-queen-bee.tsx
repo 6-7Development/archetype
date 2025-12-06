@@ -926,7 +926,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, updatePosition, updateAutonomousVelocity, triggerSwarm, setMode, beeController]);
+  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, updatePosition, updateAutonomousVelocity, setMode, beeController]);
 
   // Clean up old woosh particles
   useEffect(() => {
