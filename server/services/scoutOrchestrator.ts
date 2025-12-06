@@ -39,6 +39,38 @@ async function loadExtendedHandlers() {
       executeWebSearch = search.executeWebSearch;
     } catch (e) { console.warn('[SCOUT-ORCHESTRATOR] Web search not available'); }
   }
+  if (!dispatchSubagent) {
+    try {
+      const subagent = await import('../subagentOrchestration');
+      dispatchSubagent = subagent.startSubagent;
+    } catch (e) { console.warn('[SCOUT-ORCHESTRATOR] Subagent orchestration not available'); }
+  }
+}
+
+/**
+ * Pre-flight health check for critical integrations
+ */
+export async function checkIntegrationHealth(): Promise<{
+  gemini: boolean;
+  github: boolean;
+  database: boolean;
+  errors: string[];
+}> {
+  const errors: string[] = [];
+  
+  // Check Gemini API key
+  const geminiOk = !!process.env.GEMINI_API_KEY;
+  if (!geminiOk) errors.push('GEMINI_API_KEY not configured');
+  
+  // Check GitHub
+  const githubOk = !!(process.env.GITHUB_TOKEN && process.env.GITHUB_REPO);
+  if (!githubOk) errors.push('GitHub not configured (GITHUB_TOKEN or GITHUB_REPO missing)');
+  
+  // Check database
+  const dbOk = !!process.env.DATABASE_URL;
+  if (!dbOk) errors.push('DATABASE_URL not configured');
+  
+  return { gemini: geminiOk, github: githubOk, database: dbOk, errors };
 }
 
 /**
@@ -455,7 +487,26 @@ class ScoutOrchestrator {
           
         case 'dispatchsubagent':
         case 'dispatch_subagent':
-          rawResult = `✅ Subagent dispatched: ${args.agentType} - ${args.task}`;
+          await loadExtendedHandlers();
+          if (dispatchSubagent) {
+            try {
+              const subagentResult = await dispatchSubagent({
+                task: args.task,
+                relevantFiles: args.relevantFiles || args.relevant_files || [],
+                userId: session.userId,
+                sendEvent: (type: string, data: any) => {
+                  console.log(`[SUBAGENT-${type}]`, data.message || JSON.stringify(data));
+                },
+              });
+              rawResult = subagentResult.success 
+                ? `✅ Subagent completed: ${subagentResult.summary}\nModified: ${subagentResult.filesModified.join(', ') || 'none'}`
+                : `❌ Subagent failed: ${subagentResult.error || 'Unknown error'}`;
+            } catch (e: any) {
+              rawResult = `❌ Subagent error: ${e.message}`;
+            }
+          } else {
+            rawResult = '❌ Subagent orchestration not available';
+          }
           break;
           
         default:
