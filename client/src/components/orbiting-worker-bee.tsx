@@ -105,11 +105,18 @@ export function OrbitingWorkerBee({
   const isEmoting = mode !== 'IDLE';
 
   // Mode-based accent color (matches original canvas design)
-  // Use season color for Christmas lights if available
-  const modeColor = seasonColor || modeColors[mode] || modeColors.IDLE;
+  // ONLY use season color during Christmas - otherwise use mode-based colors
+  // This ensures workers visually participate in queen's emotional states
+  const modeColor = (isChristmas && seasonColor) ? seasonColor : (modeColors[mode] || modeColors.IDLE);
   
-  // Body colors - golden yellow with black stripes
-  const bodyColor = isAngry ? (isAttacking ? '#FF3333' : '#eab308') : isHappy ? '#FFD700' : '#eab308';
+  // Body colors - reflect queen's emotional state visually
+  // Workers change their body color to participate in queen's emotions
+  const bodyColor = isAttacking ? '#FF3333'  // Red when attacking
+    : isAngry ? '#ff6b35'    // Orange-red for angry/error states
+    : isHappy ? '#FFD700'    // Bright gold for happy states  
+    : isSleepy ? '#c4a574'   // Muted tan for sleepy
+    : isThinking ? '#d4af37' // Darker gold for thinking
+    : '#eab308';             // Default yellow
   // Wing opacity changes based on emotional state - more active wings during excited/angry modes
   const emotionWingBoost = isHappy ? 0.1 : isAngry ? 0.12 : isThinking ? -0.05 : isSleepy ? -0.1 : 0;
   const wingOpacity = 0.2 + wingFlutter * 0.3 + (isAttacking ? 0.15 : 0) + emotionWingBoost;
