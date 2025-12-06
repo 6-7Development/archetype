@@ -50,6 +50,7 @@ const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
   'SUCCESS': 'Gift wrapped!',
   'ERROR': 'Uh oh, coal!',
   'SWARM': 'Elf swarm activated!',
+  'FRENZY': 'Swarm attack!',
   'LOADING': 'Loading the sleigh...',
   'CURIOUS': 'Peeking at presents?',
   'ALERT': 'Jingle alert!',
@@ -452,7 +453,7 @@ export function FloatingQueenBee() {
       const hasTouch = () => {
         return (('ontouchstart' in window) ||
                 (navigator.maxTouchPoints > 0) ||
-                (navigator.msMaxTouchPoints > 0));
+                ((navigator as any).msMaxTouchPoints > 0));
       };
       setIsTouchDevice(hasTouch());
     };
@@ -561,6 +562,7 @@ export function FloatingQueenBee() {
       'SLEEPY': 'REST',
       'RESTING': 'REST',
       'SWARM': 'SWARM_ESCORT',
+      'FRENZY': 'SWARM_ESCORT',
       'HUNTING': 'CHASE',
       'CURIOUS': 'WANDER',
       'HELPFUL': 'WANDER',
@@ -593,6 +595,7 @@ export function FloatingQueenBee() {
       'SLEEPY': { recentActivity: 'idle', hasActiveErrors: false },
       'RESTING': { recentActivity: 'idle', hasActiveErrors: false },
       'SWARM': { recentActivity: 'swarming', buildStatus: 'running', hasActiveErrors: false },
+      'FRENZY': { recentActivity: 'attacking', buildStatus: 'running', hasActiveErrors: false },
       'HUNTING': { recentActivity: 'hunting', hasActiveErrors: false },
       'CURIOUS': { recentActivity: 'exploring', hasActiveErrors: false },
       'HELPFUL': { recentActivity: 'helping', hasActiveErrors: false },
