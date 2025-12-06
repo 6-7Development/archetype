@@ -1,10 +1,18 @@
 /**
- * Worker Bee - Individual bee that buzzes around queen, reacts to emotions, and attacks
- * Features:
- * - Orbits around queen bee with buzzing behavior
- * - Reacts to queen's emotional state
- * - Can attack/chase cursor when summoned
- * - Color/animation reflects queen's mood
+ * Worker Bee - DEPRECATED - Use OrbitingWorkerBee instead
+ * =========================================================
+ * This emoji-based worker bee is deprecated. Use OrbitingWorkerBee from
+ * '@/components/orbiting-worker-bee' for proper SVG rendering with:
+ * - Detailed body, legs, and wings
+ * - Mode-colored eyes and wing glow
+ * - Attack animations with speed trails
+ * - Christmas decorations support
+ * - Formation animations with queen
+ * 
+ * This component is kept for backwards compatibility only.
+ * 
+ * @deprecated Use OrbitingWorkerBee instead
+ * @see client/src/components/orbiting-worker-bee.tsx
  */
 
 import { useEffect, useRef, useMemo } from 'react';

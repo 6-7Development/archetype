@@ -33,6 +33,7 @@ interface ChristmasDecorationsProps {
 }
 
 // Minimal Christmas Bulb - Pure CSS animation
+// Z-INDEX FIX: Use z-35 (below content z-40+) to prevent covering hero text
 function ChristmasBulb({ bulb }: { bulb: ChristmasBulb }) {
   return (
     <div
@@ -45,7 +46,7 @@ function ChristmasBulb({ bulb }: { bulb: ChristmasBulb }) {
         width: '6px',
         height: '6px',
         background: bulb.color,
-        zIndex: 85,
+        zIndex: 35,
         animation: `bulb-flash-${bulb.id} 2s infinite ease-in-out`,
         boxShadow: `0 0 8px ${bulb.color}`,
       }}
@@ -62,10 +63,11 @@ function CornerWreath({ corner }: { corner: 'tl' | 'tr' | 'bl' | 'br' }) {
     br: { bottom: 0, right: 0 },
   };
 
+  // Z-INDEX FIX: Use z-35 (below content z-40+) to prevent covering hero text
   const svgStyle: React.CSSProperties = {
     position: 'fixed',
     pointerEvents: 'none',
-    zIndex: 85,
+    zIndex: 35,
     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
     animation: 'wreath-sway 6s infinite ease-in-out',
     transformOrigin: corner.includes('tl') || corner.includes('bl') ? 'top left' : 'top right',
@@ -110,12 +112,13 @@ function FloatingOrnament({ index }: { index: number }) {
   const pos = positions[index];
   const color = colors[index % colors.length];
 
+  // Z-INDEX FIX: Use z-35 (below content z-40+) to prevent covering hero text
   const ornamentStyle: React.CSSProperties = {
     position: 'fixed',
     pointerEvents: 'none',
     left: pos.x,
     top: pos.y,
-    zIndex: 85,
+    zIndex: 35,
     animation: `ornament-bob-${index} 4s infinite reverse`,
   };
 
@@ -249,7 +252,7 @@ export function ChristmasDecorations({
         @keyframes ornament-bob-3 { 0%, 100% { transform: translateY(0px) rotateZ(0deg); } 50% { transform: translateY(-8px) rotateZ(180deg); } }
       `}</style>
 
-      <div className={`fixed inset-0 pointer-events-none z-[50] ${className}`}>
+      <div className={`fixed inset-0 pointer-events-none z-[30] ${className}`}>
         <CornerWreath corner="tl" />
         <CornerWreath corner="tr" />
         <CornerWreath corner="bl" />
