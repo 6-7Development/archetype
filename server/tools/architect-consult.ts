@@ -38,6 +38,23 @@ export interface ArchitectConsultResult {
 export async function consultArchitect(params: ArchitectConsultParams): Promise<ArchitectConsultResult> {
   console.log('[ARCHITECT-CONSULT] Invoking I AM (Architect Agent) with autonomous analysis...');
   
+  // Pre-flight check for required API key
+  if (!process.env.GEMINI_API_KEY) {
+    console.warn('[ARCHITECT-CONSULT] GEMINI_API_KEY not configured - returning graceful error');
+    return {
+      success: false,
+      guidance: 'Architect consultation unavailable - AI service not configured',
+      recommendations: [
+        'Configure GEMINI_API_KEY in environment secrets',
+        'Proceed with manual code review as fallback'
+      ],
+      confidence: 0,
+      confidenceReasoning: 'Cannot provide guidance without AI service access',
+      risk: 'medium',
+      error: 'GEMINI_API_KEY not configured',
+    };
+  }
+  
   try {
     // Run the new architect agent with read-only tools
     const result = await runArchitectAgent({
