@@ -172,40 +172,39 @@ export function OrbitingWorkerBee({
     : rotation;
     
   // Formation-synced animations - all workers pulse/animate in unison
-  // Only apply formation animations when actually using formation (not attacking)
-  const formationPulse = useFormation ? Math.sin(emotePhase * Math.PI * 2) * 0.15 : 0;
+  // Uses RAF-timed emotePhase (0-1) from unity controller for smooth animation
+  // Small amplitude (±3%) prevents violent shaking while remaining visible
+  const formationPulse = useFormation ? Math.sin(emotePhase * Math.PI * 2) * 0.03 : 0;
   const formationScale = useFormation ? 1 + formationPulse * transitionProgress : 1;
   
   // Opacity boost when in formation (workers "light up" when emoting with queen)
   // Attacking workers maintain their normal opacity
-  const formationOpacity = useFormation ? Math.min(1, baseOpacity + 0.3 * transitionProgress) : baseOpacity;
+  const formationOpacity = useFormation ? Math.min(1, baseOpacity + 0.2 * transitionProgress) : baseOpacity;
   
-  // EMOTION-BASED WING SPEED - Always applies based on queen's mode
-  // Workers ALWAYS reflect queen's emotional state - this is their participation in queen's animations
-  // Stronger effect makes workers visibly "join" the queen's mood
-  const baseEmotionWingSpeed = isAttacking ? 2.5  // Very fast angry wings when attacking
-    : isHappy ? 2.0    // Very excited fast fluttering
-    : isAngry ? 1.8    // Agitated wings
-    : isThinking ? 0.7 // Slower contemplative wings
-    : isSleepy ? 0.3   // Very slow sleepy wings
+  // EMOTION-BASED WING SPEED - Moderate values for visible but smooth wing animation
+  // Workers reflect queen's emotional state through wing speed, not violent shaking
+  const baseEmotionWingSpeed = isAttacking ? 1.8  // Fast wings when attacking
+    : isHappy ? 1.4    // Excited fast fluttering
+    : isAngry ? 1.3    // Agitated wings
+    : isThinking ? 0.8 // Slower contemplative wings
+    : isSleepy ? 0.5   // Slow sleepy wings
     : 1.0;             // Normal speed
   
-  // Synchronized wing speed - always strong so workers visibly participate
+  // Synchronized wing speed - modest enhancement for smooth animation
   const syncedWingSpeed = useFormation 
-    ? baseEmotionWingSpeed * 1.2  // Extra enhanced in formation
-    : baseEmotionWingSpeed;        // Strong emotion speed always applies
+    ? baseEmotionWingSpeed * 1.1  // Slight enhancement in formation
+    : baseEmotionWingSpeed;
   
-  // EMOTION-BASED GLOW PULSE - Workers pulse visibly with queen's emotions
-  // Creates visible breathing/pulsing effect that syncs across all workers
-  // Faster and more pronounced for noticeable participation
-  const emotionPulseRate = isHappy ? 0.006 : isAngry ? 0.008 : isThinking ? 0.003 : isSleepy ? 0.0015 : 0.004;
-  const emotionPulse = Math.sin(Date.now() * emotionPulseRate) * 0.25;
+  // EMOTION-BASED GLOW/SCALE - Use RAF-timed emotePhase instead of Date.now()
+  // emotePhase (0-1 cycling) provides smooth, synchronized animation without jitter
+  // Small amplitude (±3-5%) creates visible but smooth breathing effect
+  const emotionPulse = Math.sin(emotePhase * Math.PI * 2) * 0.04;
   
-  // EMOTION-BASED SCALE ANIMATION - visible size oscillation based on mode
-  // Workers grow/shrink noticeably to participate in queen's emotional animations
+  // EMOTION-BASED SCALE ANIMATION - subtle, smooth size oscillation
+  // Uses emotePhase for RAF-timed smoothness, small amplitude to prevent shaking
   const emotionScale = isEmoting 
-    ? 1 + emotionPulse * (isHappy ? 0.15 : isAngry ? 0.12 : isSleepy ? 0.08 : 0.06)
-    : 1 + Math.sin(Date.now() * 0.002) * 0.03; // Gentle idle breathing even when not emoting
+    ? 1 + emotionPulse * (isHappy ? 1.2 : isAngry ? 1.0 : isSleepy ? 0.6 : 0.8)
+    : 1 + Math.sin(emotePhase * Math.PI * 2) * 0.02; // Gentle idle breathing using emotePhase
 
   // Attack trail color - matches mode but more saturated
   const trailColor = isAttacking ? '#FF4444' : modeColor;
