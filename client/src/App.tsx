@@ -132,17 +132,18 @@ function Router() {
         <Builder />
       </Route>
       <Route path="/workspace" component={Workspace} />
+      {/* Legacy workspace routes - redirect to primary routes */}
       <Route path="/workspace/dashboard">
-        <AppLayout>
-          <Dashboard />
-        </AppLayout>
+        {() => {
+          window.location.href = '/dashboard';
+          return null;
+        }}
       </Route>
       <Route path="/workspace/admin">
-        <AppLayout>
-          <AdminGuard>
-            <Admin />
-          </AdminGuard>
-        </AppLayout>
+        {() => {
+          window.location.href = '/admin';
+          return null;
+        }}
       </Route>
       <Route path="/marketplace">
         <AppLayout>
@@ -176,7 +177,9 @@ function Router() {
       </Route>
       <Route path="/admin">
         <AppLayout>
-          <Admin />
+          <AdminGuard>
+            <Admin />
+          </AdminGuard>
         </AppLayout>
       </Route>
       {/* Platform Healing - Redirects to unified /beehive with RBAC context switching */}

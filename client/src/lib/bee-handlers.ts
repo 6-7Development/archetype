@@ -848,14 +848,11 @@ export class MovementController {
       }
     }
     
-    // 2. Gentle evade when cursor is VERY close and moving fast
-    // Much less aggressive - only triggers at 80px with high cursor speed
-    if (distToCursor < this.config.evadeDistance && cursorSpeed > 5) {
-      if (this.state !== 'EVADE') {
-        this.transitionTo('EVADE');
-      }
-    } else if (this.state === 'EVADE' && (distToCursor > this.config.evadeDistance * 1.3 || cursorSpeed < 2)) {
-      // Exit evade more quickly when cursor slows down or moves away
+    // 2. EVADE DISABLED - Queen bee should be calm and not flee from cursor
+    // The queen follows and interacts gently, never runs away frantically
+    // Previous evade logic caused boundary escape issues and erratic behavior
+    // If EVADE state somehow got set, immediately transition out
+    if (this.state === 'EVADE') {
       this.transitionTo('WANDER');
     }
     
@@ -1037,36 +1034,12 @@ export class MovementController {
         break;
         
       case 'EVADE':
-        // SMART EVADE: Move away from cursor BUT stay in safe bounds
-        // Calculate escape vector (away from cursor)
-        const escapeDx = this.position.x - this.cursorPosition.x;
-        const escapeDy = this.position.y - this.cursorPosition.y;
-        const escapeDist = Math.sqrt(escapeDx * escapeDx + escapeDy * escapeDy) || 1;
-        
-        // Normalize escape direction
-        let escapeX = (escapeDx / escapeDist);
-        let escapeY = (escapeDy / escapeDist);
-        
-        // Check if escape direction pushes toward boundaries
-        const boundaryMargin = 50; // Danger zone near edges
-        const nearLeftEdge = this.position.x < minX + boundaryMargin;
-        const nearRightEdge = this.position.x > maxX - boundaryMargin;
-        const nearTopEdge = this.position.y < minY + boundaryMargin;
-        const nearBottomEdge = this.position.y > maxY - boundaryMargin;
-        
-        // If escaping toward a boundary, redirect perpendicular or toward center
-        if ((nearLeftEdge && escapeX < 0) || (nearRightEdge && escapeX > 0)) {
-          // Flip X direction to move away from edge, not toward it
-          escapeX = nearLeftEdge ? Math.abs(escapeX) : -Math.abs(escapeX);
-        }
-        if ((nearTopEdge && escapeY < 0) || (nearBottomEdge && escapeY > 0)) {
-          // Flip Y direction to move away from edge, not toward it
-          escapeY = nearTopEdge ? Math.abs(escapeY) : -Math.abs(escapeY);
-        }
-        
-        // Apply gentle evasion (1.5 pixels/frame - slower than before)
-        moveX = escapeX * 1.5;
-        moveY = escapeY * 1.5;
+        // EVADE DISABLED - This case should never be reached
+        // (evaluateStateTransition immediately exits EVADE to WANDER)
+        // Fall through to WANDER behavior as safety net
+        const evadeWander = this.wander();
+        moveX = evadeWander.x;
+        moveY = evadeWander.y;
         break;
         
       case 'REST':
