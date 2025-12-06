@@ -288,3 +288,87 @@ ${recentTools || 'None yet'}
 export function cleanupSessions(): number {
   return scoutOrchestrator.cleanupSessions();
 }
+
+/**
+ * Dispatch tool through orchestrator with optional custom handler fallback
+ * This is the primary entry point for beehiveChat to use the orchestrator
+ */
+export async function dispatchToolViaOrchestrator(
+  sessionId: string,
+  toolName: string,
+  toolArgs: Record<string, any>,
+  customHandler?: (name: string, args: any) => Promise<string | null>
+): Promise<{ success: boolean; result: string; usedOrchestrator: boolean }> {
+  try {
+    // Try custom handler first if provided (for special cases like approval checks)
+    if (customHandler) {
+      const customResult = await customHandler(toolName, toolArgs);
+      if (customResult !== null) {
+        // Track the call even when using custom handler
+        await processToolCallsWithOrchestrator(sessionId, [{ name: toolName, args: toolArgs }]);
+        return {
+          success: !customResult.startsWith('❌'),
+          result: customResult,
+          usedOrchestrator: false,
+        };
+      }
+    }
+    
+    // Dispatch through orchestrator
+    const dispatchResult = await scoutOrchestrator.dispatchToolCall(sessionId, {
+      name: toolName,
+      args: toolArgs,
+    });
+    
+    const resultStr = dispatchResult.success
+      ? (typeof dispatchResult.result.data === 'string' 
+          ? dispatchResult.result.data 
+          : JSON.stringify(dispatchResult.result.data))
+      : `❌ ${dispatchResult.result.error}`;
+    
+    return {
+      success: dispatchResult.success,
+      result: resultStr,
+      usedOrchestrator: true,
+    };
+  } catch (error: any) {
+    console.error(`[SCOUT-INTEGRATION] Dispatch error: ${error.message}`);
+    return {
+      success: false,
+      result: `❌ Error: ${error.message}`,
+      usedOrchestrator: false,
+    };
+  }
+}
+
+/**
+ * Get list of tools that the orchestrator can handle natively
+ */
+export function getOrchestratorNativeTools(): string[] {
+  return [
+    'read', 'readFile', 'readPlatformFile',
+    'write', 'writeFile', 'writePlatformFile',
+    'edit', 'editFile',
+    'ls', 'listDirectory', 'listPlatformFiles',
+    'glob', 'globFiles',
+    'grep', 'search',
+    'bash', 'shell', 'execute',
+    'smartReadFile', 'smartRead',
+    'createTaskList', 'writeTaskList',
+    'updateTask',
+    'readTaskList',
+    'commit_to_github', 'commitToGitHub',
+    'consult_architect', 'consultArchitect',
+    'web_search', 'webSearch',
+    'dispatch_subagent', 'dispatchSubagent',
+  ];
+}
+
+/**
+ * Check if a tool is handled natively by the orchestrator
+ */
+export function isOrchestratorNativeTool(toolName: string): boolean {
+  const normalizedName = toolName.toLowerCase().replace(/_/g, '');
+  const nativeTools = getOrchestratorNativeTools().map(t => t.toLowerCase().replace(/_/g, ''));
+  return nativeTools.includes(normalizedName);
+}

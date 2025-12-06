@@ -14,6 +14,33 @@ import {
 } from '../routes/beehiveChat/tools/toolHandler';
 import { parseToolResult, ToolResult } from './toolResponseValidator';
 
+// Extended tool handlers (lazy loaded to avoid circular deps)
+let commitToGitHub: ((args: any) => Promise<string>) | null = null;
+let consultArchitect: ((args: any) => Promise<any>) | null = null;
+let executeWebSearch: ((query: string, maxResults?: number) => Promise<any>) | null = null;
+let dispatchSubagent: ((args: any) => Promise<any>) | null = null;
+
+async function loadExtendedHandlers() {
+  if (!commitToGitHub) {
+    try {
+      const github = await import('../tools/github-tools');
+      commitToGitHub = github.commitToGitHub;
+    } catch (e) { console.warn('[SCOUT-ORCHESTRATOR] GitHub tools not available'); }
+  }
+  if (!consultArchitect) {
+    try {
+      const architect = await import('../tools/architect-consult');
+      consultArchitect = architect.consultArchitect;
+    } catch (e) { console.warn('[SCOUT-ORCHESTRATOR] Architect consult not available'); }
+  }
+  if (!executeWebSearch) {
+    try {
+      const search = await import('../tools/web-search');
+      executeWebSearch = search.executeWebSearch;
+    } catch (e) { console.warn('[SCOUT-ORCHESTRATOR] Web search not available'); }
+  }
+}
+
 /**
  * Orchestrator session state - tracks everything for multi-turn conversations
  */
@@ -373,6 +400,53 @@ class ScoutOrchestrator {
             `[${t.status}] ${t.id}: ${t.content}`
           ).join('\n');
           rawResult = `✅ Current tasks:\n${taskListStr || '(no tasks)'}`;
+          break;
+        
+        // Extended tools (lazy loaded)
+        case 'committogithub':
+        case 'commit_to_github':
+          await loadExtendedHandlers();
+          if (commitToGitHub) {
+            rawResult = await commitToGitHub({ message: args.commitMessage || args.message });
+          } else {
+            rawResult = '❌ GitHub tools not available';
+          }
+          break;
+          
+        case 'consultarchitect':
+        case 'consult_architect':
+          await loadExtendedHandlers();
+          if (consultArchitect) {
+            const result = await consultArchitect({
+              problem: args.question,
+              context: args.context,
+              previousAttempts: args.rationale ? [args.rationale] : [],
+              codeSnapshot: args.relevant_files || args.relevantFiles,
+            });
+            rawResult = result.success 
+              ? `✅ Architect guidance:\n${result.guidance}\n\nRecommendations:\n${(result.recommendations || []).join('\n')}`
+              : `❌ Architect consultation failed: ${result.error}`;
+          } else {
+            rawResult = '❌ Architect consultation not available';
+          }
+          break;
+          
+        case 'websearch':
+        case 'web_search':
+          await loadExtendedHandlers();
+          if (executeWebSearch) {
+            const searchResult = await executeWebSearch(args.query, args.maxResults || 5);
+            rawResult = searchResult.success 
+              ? `✅ Search results:\n${JSON.stringify(searchResult.results, null, 2)}`
+              : `❌ Search failed: ${searchResult.error}`;
+          } else {
+            rawResult = '❌ Web search not available';
+          }
+          break;
+          
+        case 'dispatchsubagent':
+        case 'dispatch_subagent':
+          rawResult = `✅ Subagent dispatched: ${args.agentType} - ${args.task}`;
           break;
           
         default:

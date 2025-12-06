@@ -26,8 +26,17 @@ import {
   executeToolWithTracking,
   getWorkflowStatePrompt,
   detectPhaseFromContent,
-  getGeminiToolDeclarations
+  getGeminiToolDeclarations,
+  dispatchToolViaOrchestrator,
+  isOrchestratorNativeTool
 } from './services/scoutOrchestratorIntegration.js';
+
+// Centralized tool registry
+import {
+  getBasicToolSchemas,
+  getAllToolSchemasForChat,
+  GeminiToolSchema
+} from './services/geminiToolSchemas.js';
 
 // ✅ GAP RE-INTEGRATION - Lazy loading with error boundaries
 // Services will be loaded on-demand inside router handlers to avoid async issues at module level
@@ -280,160 +289,23 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
       ? `${baseSystemPrompt}\n\n${workflowState}`
       : baseSystemPrompt;
 
-    // TOKEN EFFICIENCY: Build smart tools array based on task complexity
-    const basicTools = [
-      {
-        name: 'readPlatformFile',
-        description: 'Read a platform source file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path relative to project root' },
-          },
-          required: ['path'],
-        },
-      },
-      {
-        name: 'writePlatformFile',
-        description: 'Write content to a platform file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path relative to project root' },
-            content: { type: 'string' as const, description: 'New file content' },
-          },
-          required: ['path', 'content'],
-        },
-      },
-      {
-        name: 'commit_to_github',
-        description: 'CRITICAL: Commit all platform changes to GitHub and trigger production deployment. Use this after making and verifying platform fixes. This pushes changes to GitHub which auto-deploys to Render.',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            commitMessage: { type: 'string' as const, description: 'Detailed commit message explaining what was fixed' },
-          },
-          required: ['commitMessage'],
-        },
-      },
-    ];
+    // TOKEN EFFICIENCY: Use centralized tool registry instead of inline definitions
+    // Convert registry format (parameters) to Gemini format for chat
+    const convertSchemaToGeminiFormat = (schema: GeminiToolSchema) => ({
+      name: schema.name,
+      description: schema.description,
+      parameters: schema.parameters,
+    });
 
-    const allTools = [
-      {
-        name: 'createTaskList',
-        description: '**OPTIONAL** - Create a task list for complex work (5+ steps). Skip for quick fixes and simple requests.',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            title: { type: 'string' as const, description: 'Brief title for this task list (e.g., "Fix chat scrolling")' },
-            description: { type: 'string' as const, description: 'Detailed description of what you will do' },
-            tasks: {
-              type: 'array' as const,
-              items: {
-                type: 'object' as const,
-                properties: {
-                  title: { type: 'string' as const, description: 'Task description' },
-                  description: { type: 'string' as const, description: 'Optional task details' },
-                  status: { type: 'string' as const, description: 'Status: "pending" or "in_progress"' },
-                },
-                required: ['title'],
-              },
-              description: 'Array of tasks to complete',
-            },
-          },
-          required: ['title', 'tasks'],
-        },
-      },
-      {
-        name: 'updateTask',
-        description: 'Update task status as you work to show live progress. Call this when starting/completing tasks.',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            taskId: { type: 'string' as const, description: 'Task ID to update' },
-            status: { type: 'string' as const, description: 'New status: "pending", "in_progress", "completed", or "cancelled"' },
-            result: { type: 'string' as const, description: 'Optional result description when completing' },
-          },
-          required: ['taskId', 'status'],
-        },
-      },
-      {
-        name: 'readTaskList',
-        description: 'Read your current task list to see task IDs and statuses',
-        input_schema: {
-          type: 'object' as const,
-          properties: {},
-          required: [],
-        },
-      },
-      ...basicTools,
-      {
-        name: 'listPlatformFiles',
-        description: 'List files in a directory',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            directory: { type: 'string' as const, description: 'Directory path' },
-          },
-          required: ['directory'],
-        },
-      },
-      {
-        name: 'consult_architect',
-        description: 'Consult I AM Architect for high-level guidance on complex architectural decisions, after documenting at least one failed approach. Use sparingly - only when truly stuck or facing platform-wide architectural risk. Requires rationale.',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            question: { 
-              type: 'string' as const, 
-              description: 'Specific architectural question or problem statement' 
-            },
-            context: { 
-              type: 'string' as const, 
-              description: 'Detailed context including failed approaches, constraints, and scope' 
-            },
-            relevant_files: { 
-              type: 'string' as const,
-              description: 'Comma-separated file paths relevant to the question (e.g., "server/index.ts,client/src/App.tsx")' 
-            },
-            rationale: { 
-              type: 'string' as const, 
-              description: "Why I AM Architect guidance is needed (e.g., 'Tried X and Y, both failed because...')" 
-            },
-          },
-          required: ['question', 'context', 'rationale'],
-        },
-      },
-      {
-        name: 'web_search',
-        description: 'Search the web for documentation, best practices, and solutions. Use this to look up proper implementations.',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            query: { type: 'string' as const, description: 'Search query for documentation or solutions' },
-            maxResults: { type: 'number' as const, description: 'Maximum number of results (default: 5)' },
-          },
-          required: ['query'],
-        },
-      },
-      {
-        name: 'dispatch_subagent',
-        description: 'FAST MODE: Spawn a specialized sub-agent to work on independent tasks in parallel. Sub-agents run concurrently with main execution for code analysis, testing, linting, documentation.',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            agentType: { type: 'string' as const, enum: ['analyst', 'tester', 'reviewer', 'linter', 'documenter'], description: 'Type of specialized agent' },
-            task: { type: 'string' as const, description: 'Specific task for the sub-agent' },
-            relevantFiles: { type: 'string' as const, description: 'Comma-separated file paths relevant to this task (e.g., "src/index.ts,src/utils.ts")' },
-            priority: { type: 'string' as const, enum: ['high', 'normal', 'low'], description: 'Execution priority' },
-          },
-          required: ['agentType', 'task'],
-        },
-      },
-    ];
-
+    // Get tools from centralized registry
+    const basicToolSchemas = getBasicToolSchemas();
+    const allToolSchemas = getAllToolSchemasForChat();
+    
     // TOKEN EFFICIENCY: Use appropriate tool set based on task complexity
-    const tools = isSimpleTask ? basicTools : allTools;
+    const toolSchemas = isSimpleTask ? basicToolSchemas : allToolSchemas;
+    const tools = toolSchemas.map(convertSchemaToGeminiFormat);
+    
+    console.log(`[SCOUT-TOOLS] Using ${tools.length} tools from registry (${isSimpleTask ? 'basic' : 'full'} set)`);
 
     // Initialize Gemini client
     const genAI = new GoogleGenerativeAI(geminiKey);
@@ -512,12 +384,8 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
 
       let responseContent: any[] = [];
       
-      // Convert tools to Gemini format
-      const geminiTools = tools.map(tool => ({
-        name: tool.name,
-        description: tool.description,
-        parameters: tool.input_schema,
-      }));
+      // Tools are already in Gemini format from registry (using parameters, not input_schema)
+      const geminiTools = tools;
       
       // Build Gemini-format chat
       const geminiChat = geminiModel.startChat({
@@ -650,8 +518,19 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
 
           try {
             let toolResult: any = null;
-
-            if (name === 'createTaskList') {
+            
+            // ORCHESTRATOR INTEGRATION: Track all tool calls through orchestrator
+            // Custom handlers below override for special cases (approvals, DB persistence, etc.)
+            const useOrchestratorDispatch = isOrchestratorNativeTool(name) && 
+              !['createTaskList', 'updateTask', 'readTaskList', 'writePlatformFile', 'consult_architect', 'dispatch_subagent'].includes(name);
+            
+            if (useOrchestratorDispatch) {
+              // Use orchestrator for native tools (read, glob, grep, bash, commit_to_github, web_search, etc.)
+              sendEvent('progress', { message: `Executing ${name}...` });
+              const orchResult = await dispatchToolViaOrchestrator(scoutSessionId, name, input);
+              toolResult = orchResult.result;
+              console.log(`[SCOUT-DISPATCH] ${name} via orchestrator: ${orchResult.success ? '✅' : '❌'} (used: ${orchResult.usedOrchestrator})`);
+            } else if (name === 'createTaskList') {
               const typedInput = input as { title: string; description?: string; tasks: Array<any> };
               sendEvent('progress', { message: `📋 Creating task list: ${typedInput.title}...` });
               

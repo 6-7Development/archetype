@@ -266,8 +266,205 @@ export const SEARCH_TOOLS: GeminiToolSchema[] = [
           type: 'string',
           description: 'Search query (3-10 words)',
         },
+        maxResults: {
+          type: 'number',
+          description: 'Maximum number of results (default: 5)',
+        },
       },
       required: ['query'],
+    },
+  },
+];
+
+/**
+ * Platform-specific tools (aliases for platform context)
+ */
+export const PLATFORM_TOOLS: GeminiToolSchema[] = [
+  {
+    name: 'readPlatformFile',
+    description: 'Read a platform source file',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'File path relative to project root',
+        },
+      },
+      required: ['path'],
+    },
+  },
+  {
+    name: 'writePlatformFile',
+    description: 'Write content to a platform file',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'File path relative to project root',
+        },
+        content: {
+          type: 'string',
+          description: 'New file content',
+        },
+      },
+      required: ['path', 'content'],
+    },
+  },
+  {
+    name: 'listPlatformFiles',
+    description: 'List files in a directory',
+    parameters: {
+      type: 'object',
+      properties: {
+        directory: {
+          type: 'string',
+          description: 'Directory path',
+        },
+      },
+      required: ['directory'],
+    },
+  },
+];
+
+/**
+ * GitHub and deployment tools
+ */
+export const GITHUB_TOOLS: GeminiToolSchema[] = [
+  {
+    name: 'commit_to_github',
+    description: 'CRITICAL: Commit all platform changes to GitHub and trigger production deployment.',
+    parameters: {
+      type: 'object',
+      properties: {
+        commitMessage: {
+          type: 'string',
+          description: 'Detailed commit message explaining what was fixed',
+        },
+      },
+      required: ['commitMessage'],
+    },
+  },
+];
+
+/**
+ * Agent and AI consultation tools
+ */
+export const AGENT_TOOLS: GeminiToolSchema[] = [
+  {
+    name: 'consult_architect',
+    description: 'Consult Scout Advanced for high-level guidance on complex architectural decisions. Use sparingly.',
+    parameters: {
+      type: 'object',
+      properties: {
+        question: {
+          type: 'string',
+          description: 'Specific architectural question or problem statement',
+        },
+        context: {
+          type: 'string',
+          description: 'Detailed context including failed approaches, constraints, and scope',
+        },
+        relevant_files: {
+          type: 'string',
+          description: 'Comma-separated file paths relevant to the question',
+        },
+        rationale: {
+          type: 'string',
+          description: 'Why guidance is needed (e.g., "Tried X and Y, both failed because...")',
+        },
+      },
+      required: ['question', 'context', 'rationale'],
+    },
+  },
+  {
+    name: 'dispatch_subagent',
+    description: 'Spawn a specialized sub-agent for parallel tasks like analysis, testing, or documentation.',
+    parameters: {
+      type: 'object',
+      properties: {
+        agentType: {
+          type: 'string',
+          description: 'Type of specialized agent',
+          enum: ['analyst', 'tester', 'reviewer', 'linter', 'documenter'],
+        },
+        task: {
+          type: 'string',
+          description: 'Specific task for the sub-agent',
+        },
+        relevantFiles: {
+          type: 'string',
+          description: 'Comma-separated file paths relevant to this task',
+        },
+        priority: {
+          type: 'string',
+          description: 'Execution priority',
+          enum: ['high', 'normal', 'low'],
+        },
+      },
+      required: ['agentType', 'task'],
+    },
+  },
+];
+
+/**
+ * Extended task management tools (alternative names)
+ */
+export const EXTENDED_TASK_TOOLS: GeminiToolSchema[] = [
+  {
+    name: 'createTaskList',
+    description: 'Create a task list for complex work (5+ steps). Skip for quick fixes.',
+    parameters: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          description: 'Brief title for this task list',
+        },
+        description: {
+          type: 'string',
+          description: 'Detailed description of what you will do',
+        },
+        tasks: {
+          type: 'array',
+          description: 'Array of tasks to complete',
+          items: { type: 'object' },
+        },
+      },
+      required: ['title', 'tasks'],
+    },
+  },
+  {
+    name: 'updateTask',
+    description: 'Update task status as you work to show live progress.',
+    parameters: {
+      type: 'object',
+      properties: {
+        taskId: {
+          type: 'string',
+          description: 'Task ID to update',
+        },
+        status: {
+          type: 'string',
+          description: 'New status',
+          enum: ['pending', 'in_progress', 'completed', 'cancelled'],
+        },
+        result: {
+          type: 'string',
+          description: 'Optional result description when completing',
+        },
+      },
+      required: ['taskId', 'status'],
+    },
+  },
+  {
+    name: 'readTaskList',
+    description: 'Read your current task list to see task IDs and statuses',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
     },
   },
 ];
@@ -281,7 +478,28 @@ export function getAllToolSchemas(): GeminiToolSchema[] {
     ...SHELL_TOOLS,
     ...TASK_TOOLS,
     ...SEARCH_TOOLS,
+    ...PLATFORM_TOOLS,
+    ...GITHUB_TOOLS,
+    ...AGENT_TOOLS,
+    ...EXTENDED_TASK_TOOLS,
   ];
+}
+
+/**
+ * Get basic tools for simple tasks (faster, fewer tokens)
+ */
+export function getBasicToolSchemas(): GeminiToolSchema[] {
+  return [
+    ...PLATFORM_TOOLS,
+    ...GITHUB_TOOLS,
+  ];
+}
+
+/**
+ * Get all tools for complex tasks
+ */
+export function getAllToolSchemasForChat(): GeminiToolSchema[] {
+  return getAllToolSchemas();
 }
 
 /**
