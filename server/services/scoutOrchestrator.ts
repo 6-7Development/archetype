@@ -115,6 +115,16 @@ export interface OrchestratorSession {
   startTime: number;
   iterationCount: number;
   totalTokensUsed: number;
+  
+  // Rollback capability - tracks file changes for undo
+  rollbackStack?: Array<{
+    operation: 'write' | 'edit';
+    filePath: string;
+    contentBefore: string | null;
+    oldString?: string;
+    newString?: string;
+    timestamp: number;
+  }>;
 }
 
 /**
@@ -352,19 +362,56 @@ class ScoutOrchestrator {
         case 'write':
         case 'writefile':
         case 'writeplatformfile':
-          rawResult = await handleWritePlatformFile(
-            args.file_path || args.filePath || args.path,
-            args.content
-          );
+          {
+            const filePath = args.file_path || args.filePath || args.path;
+            // Capture content before write for rollback capability
+            let contentBefore: string | null = null;
+            try {
+              const fs = await import('fs/promises');
+              contentBefore = await fs.readFile(filePath, 'utf-8');
+            } catch (e) { /* file doesn't exist yet */ }
+            
+            rawResult = await handleWritePlatformFile(filePath, args.content);
+            
+            // Store rollback info in session
+            if (!session.rollbackStack) session.rollbackStack = [];
+            session.rollbackStack.push({
+              operation: 'write',
+              filePath,
+              contentBefore,
+              timestamp: Date.now(),
+            });
+          }
           break;
           
         case 'edit':
         case 'editfile':
-          rawResult = await handleEditFile(
-            args.file_path || args.filePath || args.path,
-            args.old_string || args.oldString,
-            args.new_string || args.newString
-          );
+          {
+            const filePath = args.file_path || args.filePath || args.path;
+            // Capture content before edit for rollback capability
+            let contentBefore: string | null = null;
+            try {
+              const fs = await import('fs/promises');
+              contentBefore = await fs.readFile(filePath, 'utf-8');
+            } catch (e) { /* file doesn't exist */ }
+            
+            rawResult = await handleEditFile(
+              filePath,
+              args.old_string || args.oldString,
+              args.new_string || args.newString
+            );
+            
+            // Store rollback info in session
+            if (!session.rollbackStack) session.rollbackStack = [];
+            session.rollbackStack.push({
+              operation: 'edit',
+              filePath,
+              contentBefore,
+              oldString: args.old_string || args.oldString,
+              newString: args.new_string || args.newString,
+              timestamp: Date.now(),
+            });
+          }
           break;
           
         case 'ls':
