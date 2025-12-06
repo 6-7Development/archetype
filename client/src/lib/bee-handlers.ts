@@ -1383,10 +1383,10 @@ export class IndependentWorkerHandler {
   private activeFormation: FormationType | null = null;
   private formationProgress = 0;
   
-  // Config - expanded boundaries for attack mode
-  private readonly baseOrbitRadius = 55;
-  private readonly orbitBandMin = 35;
-  private readonly orbitBandMax = 120;  // Larger orbit band for non-attack
+  // Config - workers orbit close to queen for visible companionship
+  private readonly baseOrbitRadius = 40;  // Reduced from 55 - workers stay closer to queen
+  private readonly orbitBandMin = 25;     // Reduced from 35
+  private readonly orbitBandMax = 80;     // Reduced from 120 - tighter orbit band
   private readonly attackRangeMax = 400; // Bees can fly 400px away during attack
   private readonly maxSpeed = 4;
   private readonly attackSpeed = 8;      // Faster attack speed

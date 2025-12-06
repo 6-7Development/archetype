@@ -181,29 +181,31 @@ export function OrbitingWorkerBee({
   const formationOpacity = useFormation ? Math.min(1, baseOpacity + 0.3 * transitionProgress) : baseOpacity;
   
   // EMOTION-BASED WING SPEED - Always applies based on queen's mode
-  // Workers reflect queen's emotional state even when orbiting (not just in formation)
-  // Formation mode gets stronger effect, regular orbit gets subtle effect
-  const baseEmotionWingSpeed = isAttacking ? 2.0  // Fast angry wings when attacking
-    : isHappy ? 1.5    // Excited fast fluttering
-    : isAngry ? 1.4    // Agitated wings
-    : isThinking ? 0.8 // Slower contemplative wings
-    : isSleepy ? 0.4   // Very slow relaxed wings
+  // Workers ALWAYS reflect queen's emotional state - this is their participation in queen's animations
+  // Stronger effect makes workers visibly "join" the queen's mood
+  const baseEmotionWingSpeed = isAttacking ? 2.5  // Very fast angry wings when attacking
+    : isHappy ? 2.0    // Very excited fast fluttering
+    : isAngry ? 1.8    // Agitated wings
+    : isThinking ? 0.7 // Slower contemplative wings
+    : isSleepy ? 0.3   // Very slow sleepy wings
     : 1.0;             // Normal speed
   
-  // Synchronized wing speed - formation mode enhances the effect
+  // Synchronized wing speed - always strong so workers visibly participate
   const syncedWingSpeed = useFormation 
-    ? baseEmotionWingSpeed * 1.1  // Enhanced in formation
-    : baseEmotionWingSpeed;        // Base emotion speed always applies
+    ? baseEmotionWingSpeed * 1.2  // Extra enhanced in formation
+    : baseEmotionWingSpeed;        // Strong emotion speed always applies
   
-  // EMOTION-BASED GLOW PULSE - Workers pulse with queen's emotions
+  // EMOTION-BASED GLOW PULSE - Workers pulse visibly with queen's emotions
   // Creates visible breathing/pulsing effect that syncs across all workers
-  const emotionPulseRate = isHappy ? 0.004 : isAngry ? 0.005 : isThinking ? 0.002 : isSleepy ? 0.001 : 0.003;
-  const emotionPulse = Math.sin(Date.now() * emotionPulseRate) * 0.15;
+  // Faster and more pronounced for noticeable participation
+  const emotionPulseRate = isHappy ? 0.006 : isAngry ? 0.008 : isThinking ? 0.003 : isSleepy ? 0.0015 : 0.004;
+  const emotionPulse = Math.sin(Date.now() * emotionPulseRate) * 0.25;
   
-  // EMOTION-BASED SCALE ANIMATION - subtle size oscillation based on mode
-  const emotionScale = isEmoting && !useFormation 
-    ? 1 + emotionPulse * (isHappy ? 0.08 : isAngry ? 0.06 : isSleepy ? 0.04 : 0.03)
-    : 1;
+  // EMOTION-BASED SCALE ANIMATION - visible size oscillation based on mode
+  // Workers grow/shrink noticeably to participate in queen's emotional animations
+  const emotionScale = isEmoting 
+    ? 1 + emotionPulse * (isHappy ? 0.15 : isAngry ? 0.12 : isSleepy ? 0.08 : 0.06)
+    : 1 + Math.sin(Date.now() * 0.002) * 0.03; // Gentle idle breathing even when not emoting
 
   // Attack trail color - matches mode but more saturated
   const trailColor = isAttacking ? '#FF4444' : modeColor;

@@ -1013,38 +1013,20 @@ export function FloatingQueenBee() {
     }, 2000);
   }, [currentHint]);
 
-  // WORKER BEE LIFECYCLE: Workers always visible during active queen states
-  // Workers participate in all active animation sequences with the queen
+  // WORKER BEE LIFECYCLE: Workers ALWAYS visible - they are part of the queen's hive
+  // Workers participate in all animations with the queen, never hidden
+  // When queen emotes, workers join in. When idle, workers drift peacefully with queen.
   useEffect(() => {
+    // Clear any existing timeout
     if (workerFadeTimeoutRef.current) {
       clearTimeout(workerFadeTimeoutRef.current);
       workerFadeTimeoutRef.current = null;
     }
     
-    // Active states where workers should be visible and orbiting
-    const ACTIVE_MODES = ['CODING', 'BUILDING', 'THINKING', 'TYPING', 'EXCITED', 
-                          'CELEBRATING', 'SUCCESS', 'LOADING', 'FOCUSED'];
-    const isActiveMode = ACTIVE_MODES.includes(mode);
-    const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT';
-    
-    // Workers visible during: active AI modes, user interaction, or queen evading
-    const shouldShowWorkers = isActiveMode || isMouseNearBee || isEvading;
-    
-    if (shouldShowWorkers) {
-      setWorkersVisible(true);
-    } else {
-      // Fade workers after 4 seconds of inactivity (was 2s - more gradual)
-      workerFadeTimeoutRef.current = setTimeout(() => {
-        setWorkersVisible(false);
-      }, 4000);
-    }
-    
-    return () => {
-      if (workerFadeTimeoutRef.current) {
-        clearTimeout(workerFadeTimeoutRef.current);
-      }
-    };
-  }, [isMouseNearBee, emotionalState, mode]);
+    // Workers are ALWAYS visible - they move with the queen
+    // No fade timeout - workers are permanent companions
+    setWorkersVisible(true);
+  }, [mode]);
 
   if (!config.isVisible) {
     return (
