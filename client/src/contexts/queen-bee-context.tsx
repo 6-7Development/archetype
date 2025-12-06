@@ -3,7 +3,7 @@
  * ==============================================================
  * Complete emotional AI companion that reacts to all user actions.
  * 
- * EMOTIONS:
+ * EMOTIONS (17 core states):
  * - IDLE: Resting, gentle floating
  * - LISTENING: User is typing
  * - THINKING: Processing/reasoning
@@ -12,11 +12,10 @@
  * - BUILDING: Creating files/structure
  * - SUCCESS: Task completed
  * - ERROR: Something went wrong
- * - SWARM: Multi-agent parallel execution
  * - LOADING: Page loading
  * - CURIOUS: User clicked something
  * - ALERT: Attention needed
- * - EXCITED: Many rapid interactions
+ * - EXCITED: Many rapid interactions (replaces SWARM for high-activity)
  * - HELPFUL: Hovering helpful elements
  * - SLEEPY: User inactive for a while
  * - CELEBRATING: Big achievement
@@ -31,7 +30,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { useLocation } from 'wouter';
 
-// All possible queen bee emotional states (21 total)
+// All possible queen bee emotional states (17 core states - SWARM modes removed for animation stability)
 export type QueenBeeMode = 
   | 'IDLE'        // Default resting state
   | 'LISTENING'   // User is typing/interacting
@@ -41,7 +40,6 @@ export type QueenBeeMode =
   | 'BUILDING'    // AI is creating files/structure
   | 'SUCCESS'     // Task completed successfully
   | 'ERROR'       // Something went wrong
-  | 'SWARM'       // Multi-agent parallel execution
   | 'LOADING'     // Page is loading
   | 'CURIOUS'     // User clicked something
   | 'ALERT'       // Attention needed
@@ -50,10 +48,7 @@ export type QueenBeeMode =
   | 'SLEEPY'      // User inactive
   | 'CELEBRATING' // Big achievement
   | 'CONFUSED'    // Error or issue
-  | 'FOCUSED'     // User working on code
-  | 'FRENZY'      // Red mode - bees attacking/aggressive swarm
-  | 'HUNTING'     // Bees actively chasing user
-  | 'RESTING';    // Calm after activity ends
+  | 'FOCUSED';    // User working on code
 
 // Interactive hint types
 export interface InteractiveHint {
@@ -112,23 +107,6 @@ export interface ErrorState {
   timestamp: number;
 }
 
-// Swarm state for coordinated worker bee behavior
-export interface SwarmState {
-  isActive: boolean;
-  intensity: number; // 0-1 scale of swarm intensity
-  workerCount: number; // How many workers are visible
-  isFrenzy: boolean; // Red/aggressive mode
-  startTime: number;
-}
-
-// Default swarm state
-const DEFAULT_SWARM_STATE: SwarmState = {
-  isActive: false,
-  intensity: 0,
-  workerCount: 0,
-  isFrenzy: false,
-  startTime: 0,
-};
 
 // Autonomous velocity for queen bee movement
 export interface AutonomousVelocity {
@@ -136,7 +114,7 @@ export interface AutonomousVelocity {
   y: number;
 }
 
-// Context state interface
+// Context state interface (SWARM management removed for animation stability)
 interface QueenBeeContextState {
   mode: QueenBeeMode;
   setMode: (mode: QueenBeeMode) => void;
@@ -162,12 +140,6 @@ interface QueenBeeContextState {
   inactivityTime: number;
   // Celebration trigger
   triggerCelebration: () => void;
-  // Swarm management - Worker bee lifecycle
-  swarmState: SwarmState;
-  triggerSwarm: (options?: { frenzy?: boolean; workerCount?: number; duration?: number }) => void;
-  endSwarm: () => void;
-  triggerHunting: () => void;
-  triggerFrenzy: () => void;
   // Autonomous movement velocity
   autonomousVelocity: AutonomousVelocity;
   updateAutonomousVelocity: (velocity: AutonomousVelocity) => void;
@@ -238,10 +210,6 @@ export function QueenBeeProvider({
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastActivityTimeRef = useRef(Date.now());
   const hintClearTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIX: Track hint clearing timeout
-  const swarmTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Swarm auto-end timeout
-  
-  // Swarm state for worker bee lifecycle
-  const [swarmState, setSwarmState] = useState<SwarmState>(DEFAULT_SWARM_STATE);
   
   // Autonomous velocity for queen bee movement
   const [autonomousVelocity, setAutonomousVelocity] = useState<AutonomousVelocity>({ x: 0, y: 0 });
@@ -307,84 +275,6 @@ export function QueenBeeProvider({
       setModeState('IDLE');
     }, 3000);
   }, []);
-
-  // SWARM MANAGEMENT: Trigger swarm with worker bees
-  const triggerSwarm = useCallback((options?: { frenzy?: boolean; workerCount?: number; duration?: number }) => {
-    const { frenzy = false, workerCount = 8, duration = 5000 } = options || {};
-    
-    // Clear any existing swarm timeout
-    if (swarmTimeoutRef.current) {
-      clearTimeout(swarmTimeoutRef.current);
-    }
-    
-    // Activate swarm
-    setSwarmState({
-      isActive: true,
-      intensity: frenzy ? 1 : 0.7,
-      workerCount,
-      isFrenzy: frenzy,
-      startTime: Date.now(),
-    });
-    
-    // Set appropriate mode
-    setModeState(frenzy ? 'FRENZY' : 'SWARM');
-    lastActivityTimeRef.current = Date.now();
-    
-    // Auto-end swarm after duration
-    swarmTimeoutRef.current = setTimeout(() => {
-      setSwarmState(prev => ({
-        ...prev,
-        isActive: false,
-        intensity: 0,
-        isFrenzy: false,
-      }));
-      setModeState('RESTING');
-      
-      // Transition to idle after brief rest
-      setTimeout(() => {
-        setModeState('IDLE');
-      }, 1500);
-    }, duration);
-  }, []);
-
-  // End swarm immediately
-  const endSwarm = useCallback(() => {
-    if (swarmTimeoutRef.current) {
-      clearTimeout(swarmTimeoutRef.current);
-    }
-    
-    // Smooth transition: active → resting → idle
-    setSwarmState(prev => ({
-      ...prev,
-      isActive: false,
-      intensity: 0,
-      isFrenzy: false,
-    }));
-    setModeState('RESTING');
-    
-    setTimeout(() => {
-      setModeState('IDLE');
-    }, 1000);
-  }, []);
-
-  // Trigger hunting mode (bees actively chasing)
-  const triggerHunting = useCallback(() => {
-    setSwarmState(prev => ({
-      ...prev,
-      isActive: true,
-      intensity: 0.5,
-      workerCount: 6,
-      isFrenzy: false,
-      startTime: Date.now(),
-    }));
-    setModeState('HUNTING');
-    lastActivityTimeRef.current = Date.now();
-  }, []);
-
-  // Trigger frenzy mode (aggressive red swarm)
-  const triggerFrenzy = useCallback(() => {
-    triggerSwarm({ frenzy: true, workerCount: 8, duration: 4000 });
-  }, [triggerSwarm]);
 
   // Update autonomous velocity (used by the queen bee for ragdoll physics)
   const updateAutonomousVelocity = useCallback((velocity: AutonomousVelocity) => {
@@ -838,11 +728,6 @@ export function QueenBeeProvider({
         setCurrentHint,
         inactivityTime,
         triggerCelebration,
-        swarmState,
-        triggerSwarm,
-        endSwarm,
-        triggerHunting,
-        triggerFrenzy,
         autonomousVelocity,
         updateAutonomousVelocity,
       }}
@@ -907,9 +792,10 @@ export function useQueenBeeAI() {
     triggerError(message || 'AI encountered an error');
   }, [triggerError]);
 
+  // SWARM mode removed - map to EXCITED for similar high-activity visual
   const onSwarmMode = useCallback(() => {
     setIsAIActive(true);
-    setMode('SWARM');
+    setMode('EXCITED');
   }, [setMode, setIsAIActive]);
 
   const onIdle = useCallback(() => {

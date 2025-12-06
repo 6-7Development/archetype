@@ -7,7 +7,8 @@ import { useEffect, useRef, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import type { FacingState, HeadAimState, BodyDynamicsState } from "@/lib/bee-handlers";
 
-export type BeeMode = "IDLE" | "LISTENING" | "TYPING" | "THINKING" | "CODING" | "BUILDING" | "SUCCESS" | "ERROR" | "SWARM" | "FRENZY";
+// Core animation modes - SWARM/FRENZY removed for animation stability
+export type BeeMode = "IDLE" | "LISTENING" | "TYPING" | "THINKING" | "CODING" | "BUILDING" | "SUCCESS" | "ERROR";
 
 interface QueenBeeCanvasProps {
   mode?: BeeMode;
@@ -37,17 +38,16 @@ class AgentBeeAnimation {
     this.ctx = canvas.getContext("2d")!;
 
     this.config = {
+      // State→Color mapping (single source of truth for animation colors)
       colors: {
-        IDLE: "#ffd700",
-        THINKING: "#00f0ff",
-        CODING: "#00ff41",
-        BUILDING: "#ffae00",
-        SWARM: "#ff0055",
-        LISTENING: "#a855f7",
-        TYPING: "#38bdf8",
-        SUCCESS: "#10b981",
-        ERROR: "#ffd700",
-        FRENZY: "#ff1a1a",
+        IDLE: "#ffd700",      // Golden honey - resting state
+        LISTENING: "#a855f7", // Purple - attentive
+        TYPING: "#38bdf8",    // Sky blue - generating
+        THINKING: "#00f0ff",  // Cyan - processing
+        CODING: "#00ff41",    // Green - writing code
+        BUILDING: "#ffae00",  // Orange - creating structure
+        SUCCESS: "#10b981",   // Mint green - completed
+        ERROR: "#ffd700",     // Golden - attention (warm, not alarming)
       },
       // Canvas workers DISABLED - using OrbitingWorkerBee React components instead
       workerCount: 0,

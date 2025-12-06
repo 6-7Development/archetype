@@ -4,7 +4,7 @@
  * An autonomous queen bee that intelligently evades the user's cursor.
  * - No longer draggable - moves on its own using steering behaviors
  * - Predictive evasion: tracks cursor velocity to anticipate user movement
- * - Emotional state machine: IDLE, CURIOUS, ALERT, EVADING, CELEBRATING, RESTING
+ * - Emotional state machine: IDLE, CURIOUS, ALERT, EVADING, CELEBRATING
  * - Worker bees that orbit around queen
  * - Woosh trail effects during fast movement
  * - Seasonal themes (Christmas decorations!)
@@ -39,7 +39,7 @@ function isChristmasSeason(): boolean {
   return false; // Dynamic date-based detection
 }
 
-// Christmas-themed messages for all 21 modes
+// Christmas-themed messages for 17 core modes
 const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
   'IDLE': 'Ho ho ho! Merry coding!',
   'LISTENING': 'Santa Bee is listening...',
@@ -49,8 +49,6 @@ const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
   'BUILDING': 'Building a toy factory!',
   'SUCCESS': 'Gift wrapped!',
   'ERROR': 'Uh oh, coal!',
-  'SWARM': 'Elf swarm activated!',
-  'FRENZY': 'Swarm attack!',
   'LOADING': 'Loading the sleigh...',
   'CURIOUS': 'Peeking at presents?',
   'ALERT': 'Jingle alert!',
@@ -60,8 +58,6 @@ const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
   'CELEBRATING': 'Merry celebration!',
   'CONFUSED': 'Tangled lights?',
   'FOCUSED': 'Wrapping focus!',
-  'HUNTING': 'Hunting for presents!',
-  'RESTING': 'Warm by the fire...',
 };
 
 // Snowflake particle component - client-safe with mounted state
@@ -105,45 +101,49 @@ function FallingSnowflake({ id, startX, delay, windowHeight }: SnowflakeProps) {
   );
 }
 
-// Map QueenBeeMode to canvas BeeMode
-// Important: ERROR/ALERT/CONFUSED should map to ERROR (defensive visual)
-// SWARM/EXCITED/HUNTING map to SWARM (active multi-agent visual)
+// Map QueenBeeMode to canvas BeeMode (17 states → 8 canvas modes)
+// State hierarchy: 
+//   IDLE group: gentle floating animations
+//   THINKING group: processing visual with cyan glow
+//   CODING group: active green glow with code particles
+//   SUCCESS group: celebration with mint glow
+//   ERROR group: attention-getting warm glow
 function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
   switch (mode) {
+    // THINKING group - processing/loading states
     case 'LOADING':
     case 'THINKING':
+    case 'TYPING':
       return 'THINKING';
+    // IDLE group - resting/passive states  
     case 'LISTENING':
     case 'CURIOUS':
     case 'HELPFUL':
-    case 'RESTING':
+    case 'SLEEPY':
       return 'IDLE';
-    case 'TYPING':
-      return 'THINKING';
+    // CODING group - active work states
     case 'CODING':
     case 'FOCUSED':
       return 'CODING';
+    // BUILDING group - creation states
     case 'BUILDING':
       return 'BUILDING';
+    // SUCCESS group - completion/celebration states
     case 'SUCCESS':
     case 'CELEBRATING':
+    case 'EXCITED':  // High-activity maps to success celebration
       return 'SUCCESS';
+    // ERROR group - attention states
     case 'ERROR':
     case 'ALERT':
     case 'CONFUSED':
       return 'ERROR';
-    case 'SWARM':
-    case 'EXCITED':
-    case 'HUNTING':
-      return 'SWARM';
-    case 'SLEEPY':
-      return 'IDLE';
     default:
       return 'IDLE';
   }
 }
 
-// Get mode indicator color
+// Get mode indicator color (unified color palette)
 function getModeColor(mode: QueenBeeMode): string {
   switch (mode) {
     case 'LISTENING': return 'bg-blue-400';
@@ -154,7 +154,6 @@ function getModeColor(mode: QueenBeeMode): string {
     case 'SUCCESS': return 'bg-mint animate-bounce';
     case 'ERROR': return 'bg-honey animate-pulse';
     case 'ALERT': return 'bg-yellow-500 animate-pulse';
-    case 'SWARM': return 'bg-honey animate-pulse';
     case 'LOADING': return 'bg-blue-400';
     case 'CURIOUS': return 'bg-purple-300';
     case 'EXCITED': return 'bg-pink-400 animate-bounce';
@@ -163,13 +162,11 @@ function getModeColor(mode: QueenBeeMode): string {
     case 'CELEBRATING': return 'bg-gradient-to-r from-pink-400 to-yellow-400';
     case 'CONFUSED': return 'bg-orange-500 animate-pulse';
     case 'FOCUSED': return 'bg-blue-500';
-    case 'HUNTING': return 'bg-orange-400 animate-pulse';
-    case 'RESTING': return 'bg-green-300';
     default: return 'bg-gray-400';
   }
 }
 
-// Get mode label text
+// Get mode label text (17 core states)
 function getModeLabel(mode: QueenBeeMode): string {
   switch (mode) {
     case 'LISTENING': return 'Listening...';
@@ -180,7 +177,6 @@ function getModeLabel(mode: QueenBeeMode): string {
     case 'SUCCESS': return 'Done!';
     case 'ERROR': return 'Oops!';
     case 'ALERT': return 'Hey!';
-    case 'SWARM': return 'SWARM!';
     case 'LOADING': return 'Loading...';
     case 'CURIOUS': return 'Hmm?';
     case 'EXCITED': return 'Woohoo!';
@@ -189,13 +185,11 @@ function getModeLabel(mode: QueenBeeMode): string {
     case 'CELEBRATING': return 'Amazing!';
     case 'CONFUSED': return 'Hmm...';
     case 'FOCUSED': return 'Focused';
-    case 'HUNTING': return 'Hunting...';
-    case 'RESTING': return 'Resting...';
     default: return 'Hi!';
   }
 }
 
-// Get mode icon component
+// Get mode icon component (17 core states)
 function getModeIcon(mode: QueenBeeMode): React.ReactNode {
   const iconClass = "w-3 h-3";
   switch (mode) {
@@ -207,7 +201,6 @@ function getModeIcon(mode: QueenBeeMode): React.ReactNode {
     case 'SUCCESS': return <CheckCircle className={iconClass} />;
     case 'ERROR': return null;
     case 'ALERT': return <Bell className={iconClass} />;
-    case 'SWARM': return <Bug className={iconClass} />;
     case 'LOADING': return <RefreshCw className={`${iconClass} animate-spin`} />;
     case 'CURIOUS': return <HelpCircle className={iconClass} />;
     case 'EXCITED': return <PartyPopper className={iconClass} />;
@@ -216,13 +209,11 @@ function getModeIcon(mode: QueenBeeMode): React.ReactNode {
     case 'CELEBRATING': return <PartyPopper className={iconClass} />;
     case 'CONFUSED': return null;
     case 'FOCUSED': return <Target className={iconClass} />;
-    case 'HUNTING': return <Target className={`${iconClass} animate-pulse`} />;
-    case 'RESTING': return <Coffee className={iconClass} />;
     default: return <Hand className={iconClass} />;
   }
 }
 
-// Get glow effect
+// Get glow effect (17 core states)
 function getModeGlow(mode: QueenBeeMode): string {
   switch (mode) {
     case 'ERROR':
@@ -232,19 +223,14 @@ function getModeGlow(mode: QueenBeeMode): string {
       return 'ring-2 ring-yellow-500/50 ring-offset-1 ring-offset-background';
     case 'SUCCESS':
     case 'CELEBRATING':
-      return 'ring-2 ring-green-500/30 ring-offset-1 ring-offset-background';
-    case 'SWARM':
     case 'EXCITED':
-    case 'HUNTING':
-      return 'ring-2 ring-honey/40 ring-offset-1 ring-offset-background';
+      return 'ring-2 ring-green-500/30 ring-offset-1 ring-offset-background';
     case 'LOADING':
       return 'ring-1 ring-blue-400/30';
     case 'HELPFUL':
       return 'ring-2 ring-teal-400/40';
     case 'SLEEPY':
       return 'ring-1 ring-indigo-300/30';
-    case 'RESTING':
-      return 'ring-1 ring-green-300/30';
     default:
       return '';
   }
@@ -261,8 +247,8 @@ interface WooshParticle {
   timestamp: number;
 }
 
-// Emotional state for autonomous movement
-type EmotionalState = 'IDLE' | 'CURIOUS' | 'ALERT' | 'EVADING' | 'CELEBRATING' | 'RESTING';
+// Emotional state for autonomous movement (internal movement state machine)
+type EmotionalState = 'IDLE' | 'CURIOUS' | 'ALERT' | 'EVADING' | 'CELEBRATING';
 
 export function FloatingQueenBee() {
   const { 
@@ -279,9 +265,6 @@ export function FloatingQueenBee() {
     recentClicks,
     currentHint,
     inactivityTime,
-    swarmState,
-    triggerSwarm,
-    endSwarm,
     autonomousVelocity,
     updateAutonomousVelocity,
   } = useQueenBee();
@@ -360,7 +343,7 @@ export function FloatingQueenBee() {
   }
   const beeController = beeControllerRef.current;
   
-  const NUM_WORKERS = swarmState.workerCount || 8;
+  const NUM_WORKERS = 8; // Fixed worker count for consistent animations
   
   // SEASONAL: Christmas theme detection
   const isChristmas = useMemo(() => isChristmasSeason(), []);
@@ -529,9 +512,9 @@ export function FloatingQueenBee() {
       return;
     }
     
-    // HIGH-ENERGY MODE EXIT: Reset velocity when transitioning from aggressive modes
-    // This prevents post-SWARM/HUNTING erratic boundary oscillation
-    const HIGH_ENERGY_MODES = ['SWARM', 'HUNTING'];
+    // HIGH-ENERGY MODE EXIT: Reset velocity when transitioning from active modes
+    // This prevents erratic boundary oscillation after celebrations
+    const HIGH_ENERGY_MODES = ['EXCITED', 'CELEBRATING'];
     const wasHighEnergy = HIGH_ENERGY_MODES.includes(lastProcessedModeRef.current.mode);
     const isHighEnergy = HIGH_ENERGY_MODES.includes(mode);
     
@@ -545,6 +528,7 @@ export function FloatingQueenBee() {
     lastProcessedModeRef.current = { mode, timestamp: now };
     
     // Map QueenBeeMode to MovementState - strictly one-way, no setMode calls
+    // 17 core states mapped to 6 movement behaviors
     const modeToMovementState: Record<QueenBeeMode, MovementState> = {
       'ERROR': 'ALERT',
       'CONFUSED': 'ALERT',
@@ -560,10 +544,6 @@ export function FloatingQueenBee() {
       'LOADING': 'REST',
       'LISTENING': 'REST',
       'SLEEPY': 'REST',
-      'RESTING': 'REST',
-      'SWARM': 'SWARM_ESCORT',
-      'FRENZY': 'SWARM_ESCORT',
-      'HUNTING': 'CHASE',
       'CURIOUS': 'WANDER',
       'HELPFUL': 'WANDER',
       'IDLE': 'WANDER',
@@ -576,7 +556,7 @@ export function FloatingQueenBee() {
       beeController.movement.forceState(targetState);
     }
     
-    // Comprehensive thought context updates for ALL modes (keeps AI brain in sync)
+    // Comprehensive thought context updates for 17 core modes (keeps AI brain in sync)
     type ThoughtContext = { recentActivity?: string; buildStatus?: string; hasActiveErrors?: boolean };
     const contextUpdates: Record<QueenBeeMode, ThoughtContext> = {
       'ERROR': { buildStatus: 'error', hasActiveErrors: true, recentActivity: 'error' },
@@ -593,10 +573,6 @@ export function FloatingQueenBee() {
       'LOADING': { recentActivity: 'loading', hasActiveErrors: false },
       'LISTENING': { recentActivity: 'listening', hasActiveErrors: false },
       'SLEEPY': { recentActivity: 'idle', hasActiveErrors: false },
-      'RESTING': { recentActivity: 'idle', hasActiveErrors: false },
-      'SWARM': { recentActivity: 'swarming', buildStatus: 'running', hasActiveErrors: false },
-      'FRENZY': { recentActivity: 'attacking', buildStatus: 'running', hasActiveErrors: false },
-      'HUNTING': { recentActivity: 'hunting', hasActiveErrors: false },
       'CURIOUS': { recentActivity: 'exploring', hasActiveErrors: false },
       'HELPFUL': { recentActivity: 'helping', hasActiveErrors: false },
       'IDLE': { recentActivity: 'idle', hasActiveErrors: false },
@@ -820,12 +796,12 @@ export function FloatingQueenBee() {
     
     let lastTime = performance.now();
     
-    // Map MovementState to EmotionalState
+    // Map MovementState to EmotionalState (5 internal states)
     const mapMovementToEmotional = (movementState: MovementState): EmotionalState => {
       switch (movementState) {
         case 'WANDER': return 'IDLE';
         case 'EVADE': return 'EVADING';
-        case 'REST': return 'RESTING';
+        case 'REST': return 'IDLE';
         case 'CELEBRATE': return 'CELEBRATING';
         case 'ALERT': return 'ALERT';
         case 'PATROL': return 'CURIOUS';
@@ -1037,8 +1013,8 @@ export function FloatingQueenBee() {
     }, 2000);
   }, [currentHint]);
 
-  // WORKER BEE LIFECYCLE: Smooth summon → chase → disappear
-  // Show workers when swarm is active OR when user is near queen OR bee is evading
+  // WORKER BEE LIFECYCLE: Smooth summon → orbit → fade
+  // Show workers when user is near queen, bee is evading, or excited
   useEffect(() => {
     if (workerFadeTimeoutRef.current) {
       clearTimeout(workerFadeTimeoutRef.current);
@@ -1046,8 +1022,7 @@ export function FloatingQueenBee() {
     }
     
     const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT';
-    const shouldShowWorkers = swarmState.isActive || isMouseNearBee || isEvading || 
-      mode === 'SWARM' || mode === 'HUNTING' || mode === 'EXCITED';
+    const shouldShowWorkers = isMouseNearBee || isEvading || mode === 'EXCITED';
     
     if (shouldShowWorkers) {
       setWorkersVisible(true);
@@ -1062,14 +1037,7 @@ export function FloatingQueenBee() {
         clearTimeout(workerFadeTimeoutRef.current);
       }
     };
-  }, [swarmState.isActive, swarmState.isFrenzy, isMouseNearBee, emotionalState, mode]);
-
-  // Auto-trigger hunting/swarm when user moves near queen
-  useEffect(() => {
-    if (isMouseNearBee && !swarmState.isActive && mode !== 'SLEEPY' && mode !== 'RESTING') {
-      triggerSwarm({ frenzy: false, workerCount: 6, duration: 4000 });
-    }
-  }, [isMouseNearBee, swarmState.isActive, mode, triggerSwarm]);
+  }, [isMouseNearBee, emotionalState, mode]);
 
   if (!config.isVisible) {
     return (
@@ -1090,9 +1058,8 @@ export function FloatingQueenBee() {
 
   const isEvading = emotionalState === 'EVADING' || emotionalState === 'ALERT';
   
-  // Determine if workers should show active behavior based on swarm state and emotional state
-  const shouldWorkersChase = swarmState.isActive || isEvading || isMouseNearBee || 
-    mode === 'EXCITED' || mode === 'SWARM' || mode === 'HUNTING';
+  // Determine if workers should show active behavior based on emotional state
+  const shouldWorkersChase = isEvading || isMouseNearBee || mode === 'EXCITED';
 
   return (
     <>
@@ -1553,9 +1520,9 @@ export function FloatingQueenBee() {
             )}
           </AnimatePresence>
 
-          {/* SWARM Mode orbiting particles */}
+          {/* EXCITED Mode orbiting particles (high-activity visual) */}
           <AnimatePresence>
-            {mode === 'SWARM' && (
+            {mode === 'EXCITED' && (
               <>
                 {[...Array(8)].map((_, i) => (
                   <motion.div
@@ -1647,7 +1614,7 @@ export function FloatingQueenBee() {
                   isChristmas ? 'border-red-500/30 bg-gradient-to-r from-red-500/10 to-green-500/10' :
                   mode === 'SUCCESS' || mode === 'CELEBRATING' ? 'border-green-500/30 bg-green-500/10 text-green-600' :
                   mode === 'ERROR' || mode === 'CONFUSED' ? 'border-honey/30 bg-honey/10 text-honey' :
-                  mode === 'SWARM' || mode === 'EXCITED' ? 'border-honey/30 bg-honey/10 text-honey' :
+                  mode === 'EXCITED' ? 'border-honey/30 bg-honey/10 text-honey' :
                   mode === 'HELPFUL' ? 'border-teal-500/30 bg-teal-500/10 text-teal-600' :
                   mode === 'SLEEPY' ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-600' :
                   'border-border/50'
