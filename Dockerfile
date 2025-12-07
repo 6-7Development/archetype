@@ -35,14 +35,15 @@ COPY package*.json ./
 RUN npm ci
 RUN npm install drizzle-kit@^0.31.4
 
-# Copy built frontend from builder stage to server/public (where vite.ts expects it)
-COPY --from=frontend-builder /app/dist/public ./server/public
-
-# Copy server code (TypeScript)
+# Copy server code (TypeScript) FIRST
 COPY server ./server
 COPY shared ./shared
 COPY tsconfig.json ./
 COPY drizzle.config.ts ./
+
+# Copy built frontend from builder stage to server/public AFTER server code
+# (so it doesn't get overwritten by COPY server)
+COPY --from=frontend-builder /app/dist/public ./server/public
 
 # Copy database migrations (REQUIRED for Railway deployment)
 COPY migrations ./migrations
