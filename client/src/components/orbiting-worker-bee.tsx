@@ -360,9 +360,9 @@ export function OrbitingWorkerBee({
           <line x1="26" y1="30" x2="34" y2="38" />
         </g>
 
-        {/* === WINGS (larger, mode-colored glow like original) === */}
-        {/* Left Wing */}
-        <ellipse
+        {/* === WINGS with Framer Motion for smooth fluttering === */}
+        {/* Left Wing - motion.ellipse with continuous rotation animation */}
+        <motion.ellipse
           cx="8"
           cy="18"
           rx="10"
@@ -371,13 +371,16 @@ export function OrbitingWorkerBee({
           stroke="rgba(0,0,0,0.15)"
           strokeWidth="0.5"
           opacity={wingOpacity}
-          style={{
-            transformOrigin: '16px 22px',
-            transform: `rotate(${-20 + wingAngle * 40}deg)`,
+          style={{ transformOrigin: '16px 22px' }}
+          animate={{ rotate: [-30, 10, -30] }}
+          transition={{
+            duration: 0.15 / syncedWingSpeed,
+            repeat: Infinity,
+            ease: 'easeInOut',
           }}
         />
-        {/* Right Wing */}
-        <ellipse
+        {/* Right Wing - motion.ellipse with continuous rotation animation */}
+        <motion.ellipse
           cx="32"
           cy="18"
           rx="10"
@@ -386,9 +389,12 @@ export function OrbitingWorkerBee({
           stroke="rgba(0,0,0,0.15)"
           strokeWidth="0.5"
           opacity={wingOpacity}
-          style={{
-            transformOrigin: '24px 22px',
-            transform: `rotate(${20 - wingAngle * 40}deg)`,
+          style={{ transformOrigin: '24px 22px' }}
+          animate={{ rotate: [30, -10, 30] }}
+          transition={{
+            duration: 0.15 / syncedWingSpeed,
+            repeat: Infinity,
+            ease: 'easeInOut',
           }}
         />
 
