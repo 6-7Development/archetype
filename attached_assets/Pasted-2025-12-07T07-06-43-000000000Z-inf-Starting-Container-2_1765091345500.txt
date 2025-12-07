@@ -1,0 +1,210 @@
+2025-12-07T07:06:43.000000000Z [inf]  Starting Container
+2025-12-07T07:06:44.280136704Z [inf]  ======================================
+2025-12-07T07:06:44.280144203Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-12-07T07:06:44.280150854Z [inf]  ======================================
+2025-12-07T07:06:44.280157521Z [inf]  Time: Sun Dec  7 07:06:43 UTC 2025
+2025-12-07T07:06:44.280164477Z [inf]  Node version: v20.19.6
+2025-12-07T07:06:44.659476671Z [inf]  NPM version: 10.8.2
+2025-12-07T07:06:44.659485290Z [inf]  
+2025-12-07T07:06:44.659493585Z [inf]  📁 Current directory: /app
+2025-12-07T07:06:44.659501756Z [inf]  📂 Listing root files:
+2025-12-07T07:06:44.659508398Z [inf]  total 468
+2025-12-07T07:06:44.659515511Z [inf]  drwxr-xr-x    1 root     root          4096 Dec  7 07:06 .
+2025-12-07T07:06:44.659522205Z [inf]  dr-xr-xr-x    1 root     root          4096 Dec  7 07:06 ..
+2025-12-07T07:06:44.659529453Z [inf]  -rwxr-xr-x    1 root     root          1990 Dec  7 07:04 debug-start.sh
+2025-12-07T07:06:44.659536045Z [inf]  -rw-rw-r--    1 root     root           325 Dec  7 07:04 drizzle.config.ts
+2025-12-07T07:06:44.659543154Z [inf]  drwxr-xr-x    3 root     root          4096 Dec  7 07:04 migrations
+2025-12-07T07:06:44.659550649Z [inf]  drwxr-xr-x    1 root     root          4096 Dec  7 06:59 node_modules
+2025-12-07T07:06:44.659557278Z [inf]  -rw-rw-r--    1 root     root        413404 Dec  7 06:59 package-lock.json
+2025-12-07T07:06:44.659564441Z [inf]  -rw-rw-r--    1 root     root          4989 Dec  7 06:59 package.json
+2025-12-07T07:06:44.659571465Z [inf]  -rw-rw-r--    1 root     root          1387 Dec  7 07:04 railway-db-setup.cjs
+2025-12-07T07:06:44.659578267Z [inf]  -rwxrwxr-x    1 root     root          2893 Dec  7 07:04 railway-start.sh
+2025-12-07T07:06:44.659585151Z [inf]  -rw-rw-r--    1 root     root          8791 Dec  7 07:04 replit.md
+2025-12-07T07:06:44.659592238Z [inf]  drwxr-xr-x    1 root     root          4096 Dec  7 07:04 server
+2025-12-07T07:06:44.659599312Z [inf]  drwxr-xr-x    3 root     root          4096 Dec  7 07:04 shared
+2025-12-07T07:06:44.659606058Z [inf]  -rw-rw-r--    1 root     root           845 Dec  7 07:04 tsconfig.json
+2025-12-07T07:06:44.659613184Z [inf]  
+2025-12-07T07:06:44.659620604Z [inf]  🔍 Checking for server/public directory (frontend)...
+2025-12-07T07:06:44.659627595Z [inf]  ✅ server/public directory exists (frontend build)
+2025-12-07T07:06:44.659634958Z [inf]  
+2025-12-07T07:06:44.659642498Z [inf]  🔧 Running database migration and drift repair...
+2025-12-07T07:06:44.771954828Z [inf]  🔧 Railway Database Setup
+2025-12-07T07:06:44.772579005Z [inf]  ========================
+2025-12-07T07:06:44.772588397Z [inf]  ✅ DATABASE_URL is configured
+2025-12-07T07:06:44.773191702Z [inf]  🔌 Testing database connection...
+2025-12-07T07:06:44.957636057Z [inf]  ✅ Database connected at: 2025-12-07T07:06:44.948Z
+2025-12-07T07:06:44.957645060Z [inf]  ✅ Database setup complete
+2025-12-07T07:06:45.048168046Z [inf]  
+2025-12-07T07:06:45.048175287Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-12-07T07:06:45.048183212Z [inf]  ✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-12-07T07:06:45.048194762Z [inf]  ⚠️ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-12-07T07:06:45.048206153Z [inf]  ✅ Database schema ready!
+2025-12-07T07:06:45.048206157Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-12-07T07:06:45.048216472Z [inf]  
+2025-12-07T07:06:45.048227339Z [inf]  GEMINI_API_KEY: ✓ SET
+2025-12-07T07:06:45.048228663Z [inf]  
+2025-12-07T07:06:45.048231184Z [inf]  🔍 Environment Check:
+2025-12-07T07:06:45.048245269Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-12-07T07:06:45.048245589Z [inf]  NODE_ENV: production
+2025-12-07T07:06:45.048246932Z [inf]  📋 Step 2: Verify server/index.ts exists...
+2025-12-07T07:06:45.048258992Z [inf]  PORT: 8080
+2025-12-07T07:06:45.048261895Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-12-07T07:06:45.048262114Z [inf]  ✅ server/index.ts exists
+2025-12-07T07:06:45.048276282Z [inf]  
+2025-12-07T07:06:45.048277121Z [inf]  SESSION_SECRET: ✓ SET
+2025-12-07T07:06:45.048282586Z [inf]  🔍 DEBUG MODE - VERBOSE ERROR CAPTURE
+2025-12-07T07:06:45.048293157Z [inf]  📋 Step 3: Check Node.js and tsx availability...
+2025-12-07T07:06:45.048293528Z [inf]  
+2025-12-07T07:06:45.048296310Z [inf]  ==========================================
+2025-12-07T07:06:45.048306462Z [inf]  Node version: v20.19.6
+2025-12-07T07:06:45.048310483Z [inf]  ✅ All required environment variables are set
+2025-12-07T07:06:45.048311318Z [inf]  
+2025-12-07T07:06:45.048325847Z [inf]  
+2025-12-07T07:06:45.048326210Z [inf]  📋 Step 1: Verify server directory exists...
+2025-12-07T07:06:45.048341029Z [inf]  ✅ server/ directory exists
+2025-12-07T07:06:45.048341597Z [inf]  📄 Ensuring replit.md is available...
+2025-12-07T07:06:45.048353304Z [inf]  ✅ replit.md already present
+2025-12-07T07:06:45.048361066Z [inf]  
+2025-12-07T07:06:45.048369143Z [inf]  🚀 Starting Node.js application with debug wrapper...
+2025-12-07T07:06:45.048379663Z [inf]  Command: sh debug-start.sh
+2025-12-07T07:06:45.048390110Z [inf]  
+2025-12-07T07:06:45.048400045Z [inf]  ==========================================
+2025-12-07T07:06:45.220290902Z [inf]  NPM version: 10.8.2
+2025-12-07T07:06:45.220727226Z [inf]  tsx location: /usr/local/bin/npx
+2025-12-07T07:06:45.220736986Z [inf]  
+2025-12-07T07:06:45.220744514Z [inf]  📋 Step 4: Verify environment variables...
+2025-12-07T07:06:45.220752196Z [inf]  NODE_ENV: production
+2025-12-07T07:06:45.220759814Z [inf]  PORT: 8080
+2025-12-07T07:06:45.220767298Z [inf]  DATABASE_URL: ✓ SET
+2025-12-07T07:06:45.220775584Z [inf]  
+2025-12-07T07:06:45.220782522Z [inf]  📋 Step 5: Test tsx can load...
+2025-12-07T07:06:46.454783966Z [inf]  tsx v4.20.5
+2025-12-07T07:06:46.473325050Z [inf]  node v20.19.6
+2025-12-07T07:06:46.509453819Z [inf]  ✅ tsx is available
+2025-12-07T07:06:46.509462719Z [inf]  
+2025-12-07T07:06:46.509470972Z [inf]  📋 Step 6: Starting server with tsx...
+2025-12-07T07:06:46.509479700Z [inf]  Command: npx tsx server/index.ts
+2025-12-07T07:06:46.509486561Z [inf]  ==========================================
+2025-12-07T07:06:46.509493217Z [inf]  
+2025-12-07T07:06:51.215019422Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-12-07T07:06:51.215027975Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-12-07T07:06:51.215034815Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-12-07T07:06:51.215043157Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-12-07T07:06:51.215049901Z [inf]  [db] Connection string includes SSL params: true
+2025-12-07T07:06:51.923823626Z [inf]  [RATE-LIMITER-INIT] Token Bucket initialized: 900,000 tokens/min
+2025-12-07T07:06:51.923832830Z [inf]  [RATE-LIMITER-INIT] Refill rate: 15.00 tokens/ms
+2025-12-07T07:06:51.923841782Z [inf]  [TELEMETRY] Auto-logging started (5-minute intervals)
+2025-12-07T07:06:51.923849067Z [inf]  [GEMINI-INIT] ✅ API key loaded: AIzaSy...
+2025-12-07T07:06:51.923855648Z [inf]  [GEMINI-INIT] ✅ Default model: gemini-2.5-flash
+2025-12-07T07:06:52.474032818Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-12-07T07:06:54.519837252Z [inf]  [PERFORMANCE] System prompt base cached (2462 chars) - saves ~4KB per request
+2025-12-07T07:06:54.519844071Z [inf]  [AI-HEALING] Gemini initialized for I AM Architect (advanced healing)
+2025-12-07T07:06:54.592116279Z [inf]  [BRAIN] ✅ BeeHiveAI Brain initialized - Universal session management active
+2025-12-07T07:06:54.592122444Z [inf]  [SCOUT-TOOLS] Tool Registry initialized with 25 tools
+2025-12-07T07:06:54.592129622Z [inf]  [SCOUT-TOOLS] Validating tool availability...
+2025-12-07T07:06:54.592136768Z [inf]  [SCOUT-TOOLS] Read File: ✅ OK
+2025-12-07T07:06:54.592145072Z [inf]  [SCOUT-TOOLS] Write File: ✅ OK
+2025-12-07T07:06:54.592151979Z [inf]  [SCOUT-TOOLS] Glob Files: ✅ OK
+2025-12-07T07:06:54.592159087Z [inf]  [SCOUT-TOOLS] List Directory: ✅ OK
+2025-12-07T07:06:54.592166396Z [inf]  [SCOUT-TOOLS] Get File Map: ✅ OK
+2025-12-07T07:06:54.592173425Z [inf]  [SCOUT-TOOLS] Search Files: ✅ OK
+2025-12-07T07:06:54.592183922Z [inf]  [SCOUT-TOOLS] Refresh Logs: ✅ OK
+2025-12-07T07:06:54.592190805Z [inf]  [SCOUT-TOOLS] Smart Read File: ✅ OK
+2025-12-07T07:06:54.592197210Z [inf]  [SCOUT-TOOLS] Extract Function: ✅ OK
+2025-12-07T07:06:54.592204188Z [inf]  [SCOUT-TOOLS] Get Related Files: ✅ OK
+2025-12-07T07:06:54.592210595Z [inf]  [SCOUT-TOOLS] Get Auto Context: ✅ OK
+2025-12-07T07:06:54.592217446Z [inf]  [SCOUT-TOOLS] Code Search: ✅ OK
+2025-12-07T07:06:54.592224639Z [inf]  [SCOUT-TOOLS] Check Database Status: ✅ OK
+2025-12-07T07:06:54.592231604Z [inf]  [SCOUT-TOOLS] Execute SQL: ✅ OK
+2025-12-07T07:06:54.592240654Z [inf]  [SCOUT-TOOLS] Create PostgreSQL Database: ✅ OK
+2025-12-07T07:06:54.592247357Z [inf]  [SCOUT-TOOLS] Install Programming Language: ✅ OK
+2025-12-07T07:06:54.592254057Z [inf]  [SCOUT-TOOLS] View Environment Variables: ✅ OK
+2025-12-07T07:06:54.592260884Z [inf]  [SCOUT-TOOLS] Set Environment Variables: ✅ OK
+2025-12-07T07:06:54.592269247Z [inf]  [SCOUT-TOOLS] Request Environment Variables: ✅ OK
+2025-12-07T07:06:54.592275848Z [inf]  [SCOUT-TOOLS] Web Search: ✅ OK
+2025-12-07T07:06:54.592283055Z [inf]  [SCOUT-TOOLS] Vision Analysis: ✅ OK
+2025-12-07T07:06:54.592629610Z [inf]  [SCOUT-TOOLS] Search Codebase: ✅ OK
+2025-12-07T07:06:54.592637723Z [inf]  [SCOUT-TOOLS] Suggest Deploy: ✅ OK
+2025-12-07T07:06:54.592646036Z [inf]  [SCOUT-TOOLS] Suggest Rollback: ✅ OK
+2025-12-07T07:06:54.592653181Z [inf]  [SCOUT-TOOLS] Browser Test: ✅ OK
+2025-12-07T07:06:54.696286528Z [inf]  ✅ Environment variables validated:
+2025-12-07T07:06:54.696293765Z [inf]     DATABASE_URL: ✓ SET
+2025-12-07T07:06:54.696301280Z [inf]     SESSION_SECRET: ✓ SET
+2025-12-07T07:06:54.696308080Z [inf]     GEMINI_API_KEY: ✓ SET
+2025-12-07T07:06:54.696316526Z [inf]     ANTHROPIC_API_KEY: ✓ SET
+2025-12-07T07:06:54.696325455Z [inf]     GITHUB_TOKEN: ✓ SET
+2025-12-07T07:06:54.696332431Z [inf]     GITHUB_REPO: 6-7Development/archetype
+2025-12-07T07:06:54.696341148Z [inf]  
+2025-12-07T07:06:54.696348298Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-12-07T07:06:54.696355159Z [inf]  ✅ Health endpoint active
+2025-12-07T07:06:54.718758777Z [inf]  [RLS] Starting RLS policy initialization...
+2025-12-07T07:06:54.756202984Z [inf]  
+2025-12-07T07:06:54.756212126Z [inf]  ============================================================
+2025-12-07T07:06:54.756219561Z [inf]  🚀 SCOUT AGENT DEPLOYMENT VALIDATION
+2025-12-07T07:06:54.756226626Z [inf]  ============================================================
+2025-12-07T07:06:54.756233424Z [inf]  
+2025-12-07T07:06:54.756240472Z [inf]  🌍 Environment: RAILWAY
+2025-12-07T07:06:54.756247224Z [inf]  ⏰ Timestamp: 2025-12-07T07:06:54.751Z
+2025-12-07T07:06:54.756253968Z [inf]  
+2025-12-07T07:06:54.756262637Z [inf]  📦 AI SERVICES (GPS):
+2025-12-07T07:06:54.756269618Z [inf]    • Gemini 2.5 Flash: ✅
+2025-12-07T07:06:54.756276490Z [inf]  
+2025-12-07T07:06:54.756283522Z [inf]  🔧 ENVIRONMENT VARIABLES:
+2025-12-07T07:06:54.756290396Z [inf]    ✅ Configured: 5
+2025-12-07T07:06:54.756297402Z [inf]       • GEMINI_API_KEY
+2025-12-07T07:06:54.756304205Z [inf]       • DATABASE_URL
+2025-12-07T07:06:54.756310726Z [inf]       • SESSION_SECRET
+2025-12-07T07:06:54.756317390Z [inf]       • NODE_ENV
+2025-12-07T07:06:54.756324058Z [inf]       • PORT
+2025-12-07T07:06:54.756331102Z [inf]  
+2025-12-07T07:06:54.756337852Z [inf]  🛠️  TOOLS REGISTRY:
+2025-12-07T07:06:54.756344563Z [inf]    • Available: 25/25
+2025-12-07T07:06:54.756351291Z [inf]    • Total Calls: 0
+2025-12-07T07:06:54.756358123Z [inf]    • Success Rate: 0.0%
+2025-12-07T07:06:54.756365140Z [inf]  
+2025-12-07T07:06:54.756372473Z [inf]  💡 RECOMMENDATIONS:
+2025-12-07T07:06:54.756379272Z [inf]    • Enable Railway health checks for graceful shutdown
+2025-12-07T07:06:54.756386835Z [inf]  
+2025-12-07T07:06:54.756393637Z [inf]  ============================================================
+2025-12-07T07:06:54.756401385Z [inf]  ✅ DEPLOYMENT READY: YES
+2025-12-07T07:06:54.756408219Z [inf]  🔒 VALID CONFIGURATION: YES
+2025-12-07T07:06:54.756414886Z [inf]  ============================================================
+2025-12-07T07:06:54.756739350Z [inf]  
+2025-12-07T07:06:54.756746691Z [inf]  ✅ Scout Agent initialized with all tools
+2025-12-07T07:06:54.764333494Z [inf]  [REPLIT_AUTH] Setting up Replit OAuth...
+2025-12-07T07:06:54.993560241Z [inf]  [31merror[39m: Unhandled Rejection at: {"timestamp":"2025-12-07T07:06:54.927Z"}
+2025-12-07T07:06:55.084537696Z [inf]  [RLS] Policy error: relation "audit_logs" does not exist
+2025-12-07T07:06:55.120928153Z [inf]  [RLS] Policy error: relation "audit_logs" does not exist
+2025-12-07T07:06:55.152644625Z [inf]  [RLS] Policy error: relation "audit_logs" does not exist
+2025-12-07T07:06:55.193796067Z [inf]  [RLS] Policy error: relation "audit_logs" does not exist
+2025-12-07T07:06:55.226778081Z [inf]  [RLS] Policy error: relation "enterprise_workspace_settings" does not exist
+2025-12-07T07:06:55.263489265Z [inf]  [RLS] Policy error: relation "enterprise_workspace_settings" does not exist
+2025-12-07T07:06:55.300443636Z [inf]  [RLS] Policy error: relation "enterprise_workspace_settings" does not exist
+2025-12-07T07:06:55.342734010Z [inf]  [RLS] Policy error: relation "enterprise_workspace_settings" does not exist
+2025-12-07T07:06:55.443617625Z [inf]  [RLS] Policy error: relation "billing_analytics" does not exist
+2025-12-07T07:06:55.443625265Z [inf]  [RLS] Policy error: relation "billing_analytics" does not exist
+2025-12-07T07:06:55.443632303Z [inf]  [RLS] Policy error: relation "billing_analytics" does not exist
+2025-12-07T07:06:55.485450689Z [inf]  [RLS] Policy error: relation "billing_analytics" does not exist
+2025-12-07T07:06:55.523386199Z [inf]  [RLS] Policy error: relation "usage_metrics" does not exist
+2025-12-07T07:06:55.586067270Z [inf]  [RLS] Policy error: relation "usage_metrics" does not exist
+2025-12-07T07:06:55.608735997Z [inf]  [RLS] Policy error: relation "usage_metrics" does not exist
+2025-12-07T07:06:55.637897116Z [inf]  [RLS] Policy error: relation "usage_metrics" does not exist
+2025-12-07T07:06:55.720031283Z [inf]  [RLS] ✅ Successfully initialized RLS policies
+2025-12-07T07:06:55.720038558Z [inf]  [RLS] Active policies: 20
+2025-12-07T07:06:55.720045340Z [inf]  [RLS] Policy summary by table:
+2025-12-07T07:06:55.720052110Z [inf]    - chat_messages: 4 policies
+2025-12-07T07:06:55.720059515Z [inf]    - files: 4 policies
+2025-12-07T07:06:55.720066564Z [inf]    - projects: 4 policies
+2025-12-07T07:06:55.720073396Z [inf]    - team_members: 4 policies
+2025-12-07T07:06:55.720080274Z [inf]    - team_workspaces: 4 policies
+2025-12-07T07:06:55.720086933Z [inf]  [db] RLS policies initialized: {
+2025-12-07T07:06:55.720094653Z [inf]    success: true,
+2025-12-07T07:06:55.720102426Z [inf]    totalPolicies: 20,
+2025-12-07T07:06:55.720109566Z [inf]    policiesByTable: [
+2025-12-07T07:06:55.720117777Z [inf]      { table: 'chat_messages', count: 1 },
+2025-12-07T07:06:55.720124387Z [inf]      { table: 'files', count: 1 },
+2025-12-07T07:06:55.720131466Z [inf]      { table: 'projects', count: 1 },
+2025-12-07T07:06:55.720138768Z [inf]      { table: 'team_members', count: 1 },
+2025-12-07T07:06:55.720145744Z [inf]      { table: 'team_workspaces', count: 1 }
+2025-12-07T07:06:55.720152458Z [inf]    ]
+2025-12-07T07:06:55.720159708Z [inf]  }

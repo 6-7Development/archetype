@@ -1,0 +1,126 @@
+2025-12-07T07:05:34.394617024Z [inf]  
+2025-12-07T07:05:38.171111781Z [inf]  [35m[Region: us-east4][0m
+2025-12-07T07:05:38.181402091Z [inf]  [35m=========================
+2025-12-07T07:05:38.181448043Z [inf]  Using Detected Dockerfile
+2025-12-07T07:05:38.181453914Z [inf]  =========================
+2025-12-07T07:05:38.181458355Z [inf]  [0m
+2025-12-07T07:05:38.181477070Z [inf]  context: fzsn-W6GH
+2025-12-07T07:05:38.436741153Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T07:05:38.436811058Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T07:05:38.436835533Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T07:05:38.453796494Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T07:05:38.456983532Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-12-07T07:05:38.462314598Z [inf]  [auth] library/node:pull token for registry-1.docker.io
+2025-12-07T07:05:38.462378327Z [inf]  [auth] library/node:pull token for registry-1.docker.io
+2025-12-07T07:05:38.570347430Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-12-07T07:05:38.571299708Z [inf]  [internal] load .dockerignore
+2025-12-07T07:05:38.571371440Z [inf]  [internal] load .dockerignore
+2025-12-07T07:05:38.572372312Z [inf]  [internal] load .dockerignore
+2025-12-07T07:05:38.587105212Z [inf]  [internal] load .dockerignore
+2025-12-07T07:05:38.596500744Z [inf]  [production  7/17] COPY server ./server
+2025-12-07T07:05:38.596552655Z [inf]  [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-12-07T07:05:38.596567013Z [inf]  [production  5/17] RUN npm ci
+2025-12-07T07:05:38.596586038Z [inf]  [production  4/17] COPY package*.json ./
+2025-12-07T07:05:38.596599587Z [inf]  [internal] load build context
+2025-12-07T07:05:38.596610173Z [inf]  [production  3/17] RUN apk add --no-cache git
+2025-12-07T07:05:38.596618227Z [inf]  [frontend-builder  2/12] WORKDIR /app
+2025-12-07T07:05:38.596625494Z [inf]  [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T07:05:38.596664104Z [inf]  [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-12-07T07:05:38.596690427Z [inf]  [frontend-builder  6/12] COPY shared ./shared
+2025-12-07T07:05:38.596699589Z [inf]  [frontend-builder  5/12] COPY client ./client
+2025-12-07T07:05:38.596706837Z [inf]  [frontend-builder  4/12] RUN npm ci
+2025-12-07T07:05:38.596714644Z [inf]  [frontend-builder  3/12] COPY package*.json ./
+2025-12-07T07:05:38.596728986Z [inf]  [production 10/17] COPY drizzle.config.ts ./
+2025-12-07T07:05:38.596740034Z [inf]  [production  9/17] COPY tsconfig.json ./
+2025-12-07T07:05:38.596748011Z [inf]  [production  8/17] COPY shared ./shared
+2025-12-07T07:05:38.596775389Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T07:05:38.596783003Z [inf]  [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-12-07T07:05:38.596790810Z [inf]  [frontend-builder 10/12] COPY postcss.config.js ./
+2025-12-07T07:05:38.596798456Z [inf]  [frontend-builder  9/12] COPY tsconfig.json ./
+2025-12-07T07:05:38.596805793Z [inf]  [frontend-builder  8/12] COPY vite.config.ts ./
+2025-12-07T07:05:38.596855748Z [inf]  [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T07:05:38.596881957Z [inf]  [production 16/17] COPY debug-start.sh ./
+2025-12-07T07:05:38.596891411Z [inf]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T07:05:38.596898493Z [inf]  [production 14/17] COPY railway-start.sh ./
+2025-12-07T07:05:38.596905131Z [inf]  [production 13/17] COPY replit.md ./
+2025-12-07T07:05:38.596912234Z [inf]  [production 12/17] COPY migrations ./migrations
+2025-12-07T07:05:38.596920027Z [inf]  [production 11/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-12-07T07:05:38.596932082Z [inf]  [internal] load build context
+2025-12-07T07:05:38.598304981Z [inf]  [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T07:05:38.606483634Z [inf]  [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T07:05:38.607249670Z [inf]  [internal] load build context
+2025-12-07T07:05:39.353811401Z [inf]  [internal] load build context
+2025-12-07T07:05:39.367356161Z [inf]  [frontend-builder  2/12] WORKDIR /app
+2025-12-07T07:05:39.367426511Z [inf]  [production  3/17] RUN apk add --no-cache git
+2025-12-07T07:05:39.367442839Z [inf]  [production  4/17] COPY package*.json ./
+2025-12-07T07:05:39.367452889Z [inf]  [production  5/17] RUN npm ci
+2025-12-07T07:05:39.367460880Z [inf]  [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-12-07T07:05:39.369699302Z [inf]  [frontend-builder  3/12] COPY package*.json ./
+2025-12-07T07:05:39.369820189Z [inf]  [frontend-builder  4/12] RUN npm ci
+2025-12-07T07:05:39.369837426Z [inf]  [frontend-builder  5/12] COPY client ./client
+2025-12-07T07:05:39.369863566Z [inf]  [frontend-builder  6/12] COPY shared ./shared
+2025-12-07T07:05:39.369882608Z [inf]  [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-12-07T07:05:39.371151892Z [inf]  [production  7/17] COPY server ./server
+2025-12-07T07:05:39.677347367Z [inf]  [production  7/17] COPY server ./server
+2025-12-07T07:05:39.678260808Z [inf]  [production  8/17] COPY shared ./shared
+2025-12-07T07:05:39.681138239Z [inf]  [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-12-07T07:05:39.682164253Z [inf]  [frontend-builder  8/12] COPY vite.config.ts ./
+2025-12-07T07:05:39.716510611Z [inf]  [frontend-builder  8/12] COPY vite.config.ts ./
+2025-12-07T07:05:39.717678474Z [inf]  [production  8/17] COPY shared ./shared
+2025-12-07T07:05:39.719804409Z [inf]  [frontend-builder  9/12] COPY tsconfig.json ./
+2025-12-07T07:05:39.720966131Z [inf]  [production  9/17] COPY tsconfig.json ./
+2025-12-07T07:05:39.745653075Z [inf]  [frontend-builder  9/12] COPY tsconfig.json ./
+2025-12-07T07:05:39.747342663Z [inf]  [frontend-builder 10/12] COPY postcss.config.js ./
+2025-12-07T07:05:39.751250949Z [inf]  [production  9/17] COPY tsconfig.json ./
+2025-12-07T07:05:39.752843183Z [inf]  [production 10/17] COPY drizzle.config.ts ./
+2025-12-07T07:05:39.781501991Z [inf]  [production 10/17] COPY drizzle.config.ts ./
+2025-12-07T07:05:39.784761041Z [inf]  [frontend-builder 10/12] COPY postcss.config.js ./
+2025-12-07T07:05:39.785609929Z [inf]  [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-12-07T07:05:39.810470780Z [inf]  [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-12-07T07:05:39.812429178Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T07:05:40.868783927Z [inf]  vite v5.4.20 building for production...
+
+2025-12-07T07:05:40.950390276Z [inf]  transforming...
+
+2025-12-07T07:05:44.881582946Z [inf]  
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+
+2025-12-07T07:05:57.450786195Z [inf]  ✓ 4909 modules transformed.
+
+2025-12-07T07:05:59.545991241Z [inf]  rendering chunks...
+
+2025-12-07T07:05:59.595764661Z [inf]  computing gzip size...
+
+2025-12-07T07:05:59.71061262Z [inf]  ../dist/public/index.html                     1.65 kB │ gzip:   0.77 kB
+
+2025-12-07T07:05:59.710646166Z [inf]  ../dist/public/assets/index-g_D51_VM.css    184.30 kB │ gzip:  28.37 kB
+
+2025-12-07T07:05:59.710795893Z [inf]  ../dist/public/assets/index-ekZci5xL.js   3,176.83 kB │ gzip: 940.15 kB
+
+2025-12-07T07:05:59.710884723Z [inf]  
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+2025-12-07T07:05:59.711579059Z [inf]  ✓ built in 18.80s
+
+2025-12-07T07:06:00.007362508Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T07:06:00.027208424Z [inf]  [production 11/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-12-07T07:06:00.067823401Z [inf]  [production 11/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-12-07T07:06:00.069520888Z [inf]  [production 12/17] COPY migrations ./migrations
+2025-12-07T07:06:00.093851221Z [inf]  [production 12/17] COPY migrations ./migrations
+2025-12-07T07:06:00.099029173Z [inf]  [production 13/17] COPY replit.md ./
+2025-12-07T07:06:00.123307734Z [inf]  [production 13/17] COPY replit.md ./
+2025-12-07T07:06:00.126415670Z [inf]  [production 14/17] COPY railway-start.sh ./
+2025-12-07T07:06:00.155261705Z [inf]  [production 14/17] COPY railway-start.sh ./
+2025-12-07T07:06:00.158129524Z [inf]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T07:06:00.187465732Z [inf]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T07:06:00.191869218Z [inf]  [production 16/17] COPY debug-start.sh ./
+2025-12-07T07:06:00.221238347Z [inf]  [production 16/17] COPY debug-start.sh ./
+2025-12-07T07:06:00.224774963Z [inf]  [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T07:06:00.355043771Z [inf]  [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T07:06:00.357646927Z [inf]  exporting to image
+2025-12-07T07:06:00.922792269Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-12-07T07:06:00.922887006Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-12-07T07:06:20.006938926Z [inf]  [92mBuild time: 41.82 seconds[0m
