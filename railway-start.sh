@@ -38,10 +38,13 @@ echo "🔄 Running database migrations with drizzle-kit..."
 
 # Add SSL params to DATABASE_URL for drizzle-kit (production needs sslmode=no-verify)
 if [ "$NODE_ENV" = "production" ]; then
-  if [[ ! "$DATABASE_URL" =~ sslmode ]]; then
-    export DATABASE_URL="${DATABASE_URL}?sslmode=no-verify"
-    echo "✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit"
-  fi
+  case "$DATABASE_URL" in
+    *sslmode*) ;;
+    *) 
+      export DATABASE_URL="${DATABASE_URL}?sslmode=no-verify"
+      echo "✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit"
+      ;;
+  esac
 fi
 
 # Skip drizzle-kit push on Railway (causes interactive prompts that block deployment)
