@@ -1704,22 +1704,18 @@ export class IndependentWorkerHandler {
           break;
           
         case 'FORMATION':
-          // Move toward formation slot
+          // Move toward formation slot (from SwarmUnityController's complex shapes)
           if (w.formationSlot) {
             const targetX = this.queenX + w.formationSlot.x;
             const targetY = this.queenY + w.formationSlot.y;
             const formationResult = this.calculateArrivalSteering(w, targetX, targetY, 30);
-            steerX = formationResult.x * (0.5 + this.formationProgress * 0.5);
-            steerY = formationResult.y * (0.5 + this.formationProgress * 0.5);
+            // Smooth acceleration into formation
+            const formationStrength = Math.min(1, w.behaviorTimer / 300);
+            steerX = formationResult.x * formationStrength;
+            steerY = formationResult.y * formationStrength;
           }
-          
-          // Exit formation after 4 seconds
-          if (w.behaviorTimer > 4000) {
-            w.behavior = 'RETURN';
-            w.formationSlot = null;
-            w.behaviorTimer = 0;
-            this.activeFormation = null;
-          }
+          // NOTE: Formation exit is now controlled by syncFormationFromUnity()
+          // No auto-exit timer - SwarmUnityController decides when to disperse
           break;
           
         case 'RETURN':
@@ -1975,6 +1971,44 @@ export class IndependentWorkerHandler {
       w.isAttacking = false;
       w.attackTarget = null;
       w.behaviorTimer = 0;
+    });
+  }
+  
+  // SYNC WITH SWARM UNITY CONTROLLER - Use complex formation shapes
+  // This connects IndependentWorkerHandler to SwarmUnityController's formations
+  // IMPORTANT: Call this BEFORE workers.update() so steering uses latest formation targets
+  syncFormationFromUnity(
+    isInFormation: boolean, 
+    getFormationTarget: (id: number) => { x: number; y: number; angle: number; scale: number } | null
+  ): void {
+    this.workers.forEach((w, i) => {
+      // Skip workers that are attacking
+      if (w.isAttacking) return;
+      
+      if (isInFormation) {
+        const target = getFormationTarget(i);
+        if (target) {
+          // Put worker in FORMATION behavior and set the target from SwarmUnityController
+          if (w.behavior !== 'FORMATION') {
+            w.behavior = 'FORMATION';
+            w.behaviorTimer = 0;
+          }
+          // FIX: SwarmUnityController returns world-space positions (already includes queen offset)
+          // Store directly - the FORMATION behavior uses queenX + formationSlot, so we need relative offsets
+          // target.x/y are ABSOLUTE world positions, convert to relative offsets from queen
+          w.formationSlot = {
+            x: target.x - this.queenX,
+            y: target.y - this.queenY,
+          };
+        }
+      } else {
+        // Exit formation mode - return to orbit
+        if (w.behavior === 'FORMATION') {
+          w.behavior = 'RETURN';
+          w.formationSlot = null;
+          w.behaviorTimer = 0;
+        }
+      }
     });
   }
   

@@ -606,11 +606,19 @@ export function FloatingQueenBee() {
       const queenState = beeController.getQueenState();
       beeController.unity.updateFormation(queenState.x, queenState.y, deltaTime);
       
-      // Update seasonal light patterns (Christmas light chase/wave/twinkle effects)
-      beeController.season.updatePatterns(deltaTime);
+      // SYNC FORMATIONS: Connect SwarmUnityController's complex shapes to IndependentWorkerHandler
+      // MUST happen BEFORE workers.update() so steering uses latest formation targets
+      beeController.workers.syncFormationFromUnity(
+        beeController.unity.isInFormation(),
+        (id) => beeController.unity.getFormationTarget(id)
+      );
       
       // Run independent physics update for each worker bee
+      // Happens AFTER syncFormationFromUnity so workers move toward correct formation positions
       beeController.workers.update(deltaTime);
+      
+      // Update seasonal light patterns (Christmas light chase/wave/twinkle effects)
+      beeController.season.updatePatterns(deltaTime);
       
       // Update emote workers physics (position already set in main loop)
       beeController.emoteWorkers.update(deltaTime);
