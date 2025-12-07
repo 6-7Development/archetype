@@ -276,16 +276,21 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
   
+  // Setup static file serving BEFORE server starts listening (production only)
+  // This prevents 502 errors from requests hitting the server before routes are ready
+  if (app.get("env") !== "development") {
+    serveStatic(app);
+    console.log('✅ Static file serving initialized (production mode)');
+  }
+  
   // START SERVER IMMEDIATELY - Don't wait for database!
   server.listen(port, '0.0.0.0', async () => {
     log(`BeeHive serving on port ${port}`);
     console.log(`🚀 BeeHive Server is live on http://0.0.0.0:${port}`);
     
-    // Setup Vite AFTER server is listening
+    // Setup Vite AFTER server is listening (development only - needs HMR on server)
     if (app.get("env") === "development") {
       await setupVite(app, server);
-    } else {
-      serveStatic(app);
     }
   });
 
