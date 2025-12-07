@@ -1,0 +1,142 @@
+2025-12-07T07:17:50.528860195Z [inf]  
+2025-12-07T07:17:52.729506699Z [inf]  [35m[Region: us-east4][0m
+2025-12-07T07:17:52.739501942Z [inf]  [35m=========================
+2025-12-07T07:17:52.739540221Z [inf]  Using Detected Dockerfile
+2025-12-07T07:17:52.739545786Z [inf]  =========================
+2025-12-07T07:17:52.739550021Z [inf]  [0m
+2025-12-07T07:17:52.739566744Z [inf]  context: fzsn-W6GH
+2025-12-07T07:17:52.940631202Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T07:17:52.940710092Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T07:17:52.940737904Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T07:17:52.953083730Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T07:17:52.955892557Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-12-07T07:17:52.959921990Z [inf]  [auth] library/node:pull token for registry-1.docker.io
+2025-12-07T07:17:52.959968716Z [inf]  [auth] library/node:pull token for registry-1.docker.io
+2025-12-07T07:17:53.078272497Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-12-07T07:17:53.078600562Z [inf]  [internal] load .dockerignore
+2025-12-07T07:17:53.078634915Z [inf]  [internal] load .dockerignore
+2025-12-07T07:17:53.078749147Z [inf]  [internal] load .dockerignore
+2025-12-07T07:17:53.092366622Z [inf]  [internal] load .dockerignore
+2025-12-07T07:17:53.099768359Z [inf]  [production 10/17] COPY drizzle.config.ts ./
+2025-12-07T07:17:53.099816922Z [inf]  [production  9/17] COPY tsconfig.json ./
+2025-12-07T07:17:53.099835854Z [inf]  [production  8/17] COPY shared ./shared
+2025-12-07T07:17:53.099858592Z [inf]  [production  7/17] COPY server ./server
+2025-12-07T07:17:53.099879557Z [inf]  [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-12-07T07:17:53.099895357Z [inf]  [production  5/17] RUN npm ci
+2025-12-07T07:17:53.099910571Z [inf]  [production  4/17] COPY package*.json ./
+2025-12-07T07:17:53.099926251Z [inf]  [internal] load build context
+2025-12-07T07:17:53.099943780Z [inf]  [production  3/17] RUN apk add --no-cache git
+2025-12-07T07:17:53.099960751Z [inf]  [frontend-builder  2/12] WORKDIR /app
+2025-12-07T07:17:53.099985004Z [inf]  [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T07:17:53.100023604Z [inf]  [frontend-builder  4/12] RUN npm ci
+2025-12-07T07:17:53.100037474Z [inf]  [frontend-builder  3/12] COPY package*.json ./
+2025-12-07T07:17:53.100064177Z [inf]  [frontend-builder  6/12] COPY shared ./shared
+2025-12-07T07:17:53.100084248Z [inf]  [frontend-builder  5/12] COPY client ./client
+2025-12-07T07:17:53.100106082Z [inf]  [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-12-07T07:17:53.100141097Z [inf]  [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-12-07T07:17:53.100162430Z [inf]  [frontend-builder 10/12] COPY postcss.config.js ./
+2025-12-07T07:17:53.100175843Z [inf]  [frontend-builder  9/12] COPY tsconfig.json ./
+2025-12-07T07:17:53.100187832Z [inf]  [frontend-builder  8/12] COPY vite.config.ts ./
+2025-12-07T07:17:53.100239663Z [inf]  [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T07:17:53.100258557Z [inf]  [production 16/17] COPY debug-start.sh ./
+2025-12-07T07:17:53.100270544Z [inf]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T07:17:53.100281527Z [inf]  [production 14/17] COPY railway-start.sh ./
+2025-12-07T07:17:53.100289674Z [inf]  [production 13/17] COPY replit.md ./
+2025-12-07T07:17:53.100298578Z [inf]  [production 12/17] COPY migrations ./migrations
+2025-12-07T07:17:53.100310992Z [inf]  [production 11/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-12-07T07:17:53.100326910Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T07:17:53.100359751Z [inf]  [internal] load build context
+2025-12-07T07:17:53.100380265Z [inf]  [internal] load build context
+2025-12-07T07:17:53.100404087Z [inf]  [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T07:17:53.107216740Z [inf]  [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T07:17:53.107871554Z [inf]  [internal] load build context
+2025-12-07T07:17:53.755642277Z [inf]  [internal] load build context
+2025-12-07T07:17:53.768896646Z [inf]  [frontend-builder  2/12] WORKDIR /app
+2025-12-07T07:17:53.768964478Z [inf]  [frontend-builder  3/12] COPY package*.json ./
+2025-12-07T07:17:53.768982244Z [inf]  [frontend-builder  4/12] RUN npm ci
+2025-12-07T07:17:53.768999045Z [inf]  [frontend-builder  5/12] COPY client ./client
+2025-12-07T07:17:53.769010987Z [inf]  [frontend-builder  6/12] COPY shared ./shared
+2025-12-07T07:17:53.769035018Z [inf]  [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-12-07T07:17:53.910218994Z [inf]  [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-12-07T07:17:53.913186307Z [inf]  [frontend-builder  8/12] COPY vite.config.ts ./
+2025-12-07T07:17:53.931713980Z [inf]  [frontend-builder  8/12] COPY vite.config.ts ./
+2025-12-07T07:17:53.933260678Z [inf]  [frontend-builder  9/12] COPY tsconfig.json ./
+2025-12-07T07:17:53.963189238Z [inf]  [frontend-builder  9/12] COPY tsconfig.json ./
+2025-12-07T07:17:53.964330073Z [inf]  [frontend-builder 10/12] COPY postcss.config.js ./
+2025-12-07T07:17:53.981250719Z [inf]  [frontend-builder 10/12] COPY postcss.config.js ./
+2025-12-07T07:17:53.982903427Z [inf]  [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-12-07T07:17:54.000791969Z [inf]  [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-12-07T07:17:54.003022527Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T07:17:54.875318358Z [inf]  vite v5.4.20 building for production...
+
+2025-12-07T07:17:54.951626608Z [inf]  transforming...
+
+2025-12-07T07:17:59.741616353Z [inf]  
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+
+2025-12-07T07:18:09.858470657Z [inf]  ✓ 4909 modules transformed.
+
+2025-12-07T07:18:11.82269775Z [inf]  rendering chunks...
+
+2025-12-07T07:18:11.86867038Z [inf]  computing gzip size...
+
+2025-12-07T07:18:11.959523867Z [inf]  ../dist/public/index.html                     1.65 kB │ gzip:   0.77 kB
+
+2025-12-07T07:18:11.959551999Z [inf]  ../dist/public/assets/index-g_D51_VM.css    184.30 kB │ gzip:  28.37 kB
+../dist/public/assets/index-ekZci5xL.js   3,176.83 kB │ gzip: 940.15 kB
+
+2025-12-07T07:18:11.959708482Z [inf]  
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+2025-12-07T07:18:11.960046577Z [inf]  ✓ built in 17.05s
+
+2025-12-07T07:18:12.452511156Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T07:18:12.513249333Z [inf]  [production  3/17] RUN apk add --no-cache git
+2025-12-07T07:18:12.513318937Z [inf]  [production  4/17] COPY package*.json ./
+2025-12-07T07:18:12.513332689Z [inf]  [production  5/17] RUN npm ci
+2025-12-07T07:18:12.513342130Z [inf]  [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-12-07T07:18:12.513351242Z [inf]  [production  7/17] COPY server ./server
+2025-12-07T07:18:12.513360871Z [inf]  [production  8/17] COPY shared ./shared
+2025-12-07T07:18:12.513369910Z [inf]  [production  9/17] COPY tsconfig.json ./
+2025-12-07T07:18:12.513383657Z [inf]  [production 10/17] COPY drizzle.config.ts ./
+2025-12-07T07:18:12.513394371Z [inf]  [production 11/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-12-07T07:18:12.513403385Z [inf]  [production 12/17] COPY migrations ./migrations
+2025-12-07T07:18:12.513417518Z [inf]  [production 13/17] COPY replit.md ./
+2025-12-07T07:18:12.513426596Z [inf]  [production 14/17] COPY railway-start.sh ./
+2025-12-07T07:18:12.513442476Z [inf]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T07:18:12.540409053Z [inf]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T07:18:12.542082802Z [inf]  [production 16/17] COPY debug-start.sh ./
+2025-12-07T07:18:12.565607658Z [inf]  [production 16/17] COPY debug-start.sh ./
+2025-12-07T07:18:12.567401145Z [inf]  [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T07:18:12.718355622Z [inf]  [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T07:18:12.932231614Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-12-07T07:18:12.932303351Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-12-07T07:18:25.096375905Z [inf]  [92mBuild time: 32.36 seconds[0m
+2025-12-07T07:18:49.795533259Z [inf]  
+2025-12-07T07:18:49.795593905Z [inf]  [35m====================
+Starting Healthcheck
+====================
+[0m
+2025-12-07T07:18:49.795595931Z [inf]  [37mPath: /api/health[0m
+2025-12-07T07:18:49.795597001Z [inf]  [37mRetry window: 5m0s[0m
+2025-12-07T07:18:49.795597859Z [inf]  
+2025-12-07T07:18:49.888999491Z [inf]  [93mAttempt #1 failed with service unavailable. Continuing to retry for 4m59s[0m
+2025-12-07T07:19:00.958156941Z [inf]  [93mAttempt #2 failed with service unavailable. Continuing to retry for 4m48s[0m
+2025-12-07T07:19:03.030224078Z [inf]  [93mAttempt #3 failed with service unavailable. Continuing to retry for 4m46s[0m
+2025-12-07T07:19:07.110354616Z [inf]  [93mAttempt #4 failed with service unavailable. Continuing to retry for 4m42s[0m
+2025-12-07T07:19:15.181244615Z [inf]  [93mAttempt #5 failed with service unavailable. Continuing to retry for 4m34s[0m
+2025-12-07T07:19:31.251273786Z [inf]  [93mAttempt #6 failed with service unavailable. Continuing to retry for 4m18s[0m
+2025-12-07T07:20:01.344533567Z [inf]  [93mAttempt #7 failed with service unavailable. Continuing to retry for 3m48s[0m
+2025-12-07T07:20:31.413715562Z [inf]  [93mAttempt #8 failed with service unavailable. Continuing to retry for 3m18s[0m
+2025-12-07T07:21:01.483940530Z [inf]  [93mAttempt #9 failed with service unavailable. Continuing to retry for 2m48s[0m
+2025-12-07T07:21:31.555079350Z [inf]  [93mAttempt #10 failed with service unavailable. Continuing to retry for 2m18s[0m
+2025-12-07T07:22:01.626965587Z [inf]  [93mAttempt #11 failed with service unavailable. Continuing to retry for 1m48s[0m
+2025-12-07T07:22:31.697150521Z [inf]  [93mAttempt #12 failed with service unavailable. Continuing to retry for 1m18s[0m
+2025-12-07T07:23:01.765899374Z [inf]  [93mAttempt #13 failed with service unavailable. Continuing to retry for 48s[0m
+2025-12-07T07:23:31.837243821Z [inf]  [93mAttempt #14 failed with service unavailable. Continuing to retry for 17s[0m
+2025-12-07T07:23:31.870355313Z [inf]  
+2025-12-07T07:23:31.870422838Z [inf]  [91m1/1 replicas never became healthy![0m
+2025-12-07T07:23:31.870426338Z [inf]  [91mHealthcheck failed![0m
