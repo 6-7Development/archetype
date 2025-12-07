@@ -2705,6 +2705,16 @@ export class SwarmUnityController {
     const wasEmote = this.isEmoteMode(this.currentEmoteMode);
     const isEmote = this.isEmoteMode(newMode);
     
+    // DEBUG: Log mode changes
+    console.log('[UNITY-MODE-CHANGE]', {
+      from: this.currentEmoteMode,
+      to: newMode,
+      wasEmote,
+      isEmote,
+      currentPhase: this.phase,
+      queenPos: { x: queenX.toFixed(0), y: queenY.toFixed(0) }
+    });
+    
     if (!wasEmote && isEmote) {
       // Entering emote mode - start unity transit
       this.startUnity(newMode, queenX, queenY);

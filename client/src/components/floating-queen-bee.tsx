@@ -641,7 +641,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(swarmAnimationRef.current);
       }
     };
-  }, [isMobile, config.position, dimension, beeVelocity, mousePos, beeController]);
+  }, [isMobile, beeController]); // Removed mousePos - animation loop uses closure, doesn't need to restart on mouse move
   
   // Sync queen mode to worker behaviors (attack, formation, sleep)
   useEffect(() => {
