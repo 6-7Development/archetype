@@ -1,0 +1,71 @@
+2025-12-07T04:56:41.280900466Z [inf]  
+2025-12-07T04:56:43.237922113Z [inf]  [35m[Region: us-east4][0m
+2025-12-07T04:56:43.245838337Z [inf]  [35m=========================
+2025-12-07T04:56:43.245886227Z [inf]  Using Detected Dockerfile
+2025-12-07T04:56:43.245890372Z [inf]  =========================
+2025-12-07T04:56:43.245893754Z [inf]  [0m
+2025-12-07T04:56:43.245908738Z [inf]  context: cxbr-l7jC
+2025-12-07T04:56:43.376310277Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T04:56:43.376366021Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T04:56:43.376382552Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T04:56:43.376393574Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T04:56:43.384739741Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T04:56:43.386355023Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-12-07T04:56:43.434239302Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-12-07T04:56:43.434613654Z [inf]  [internal] load .dockerignore
+2025-12-07T04:56:43.434629312Z [inf]  [internal] load .dockerignore
+2025-12-07T04:56:43.434741616Z [inf]  [internal] load .dockerignore
+2025-12-07T04:56:43.442484402Z [inf]  [internal] load .dockerignore
+2025-12-07T04:56:43.446493447Z [inf]  [production  9/17] COPY shared ./shared
+2025-12-07T04:56:43.446515372Z [inf]  [production  8/17] COPY server ./server
+2025-12-07T04:56:43.446527109Z [inf]  [production  7/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-12-07T04:56:43.446536944Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T04:56:43.446558292Z [inf]  [production 13/17] COPY replit.md ./
+2025-12-07T04:56:43.446564884Z [inf]  [production 12/17] COPY migrations ./migrations
+2025-12-07T04:56:43.446570724Z [inf]  [production 11/17] COPY drizzle.config.ts ./
+2025-12-07T04:56:43.446576268Z [inf]  [production 10/17] COPY tsconfig.json ./
+2025-12-07T04:56:43.447444746Z [inf]  [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T04:56:43.447493946Z [inf]  [production 16/17] COPY debug-start.sh ./
+2025-12-07T04:56:43.447513124Z [inf]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T04:56:43.447529551Z [inf]  [production 14/17] COPY railway-start.sh ./
+2025-12-07T04:56:43.447787392Z [inf]  [internal] load build context
+2025-12-07T04:56:43.457653438Z [inf]  [ 1/10] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T04:56:43.457689134Z [inf]  [internal] load build context
+2025-12-07T04:56:43.457705602Z [inf]  [ 1/10] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T04:56:43.458243331Z [inf]  [frontend-builder  2/12] WORKDIR /app
+2025-12-07T04:56:43.497233348Z [inf]  [frontend-builder  2/12] WORKDIR /app
+2025-12-07T04:56:43.498147109Z [inf]  [production  3/17] RUN apk add --no-cache git
+2025-12-07T04:56:43.911666623Z [inf]  [internal] load build context
+2025-12-07T04:56:43.913410922Z [inf]  [production  3/17] RUN apk add --no-cache git
+2025-12-07T04:56:43.913444787Z [inf]  [production  4/17] COPY package*.json ./
+2025-12-07T04:56:43.913455626Z [inf]  [production  5/17] RUN npm ci
+2025-12-07T04:56:43.913463388Z [inf]  [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-12-07T04:56:43.913471022Z [inf]  [frontend-builder  3/12] COPY package*.json ./
+2025-12-07T04:56:43.913478891Z [inf]  [frontend-builder  4/12] RUN npm ci
+2025-12-07T04:56:43.913486170Z [inf]  [frontend-builder  5/12] COPY client ./client
+2025-12-07T04:56:43.913496230Z [inf]  [frontend-builder  6/12] COPY shared ./shared
+2025-12-07T04:56:43.913514386Z [inf]  [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-12-07T04:56:43.913521152Z [inf]  [frontend-builder  8/12] COPY vite.config.ts ./
+2025-12-07T04:56:43.913527328Z [inf]  [frontend-builder  9/12] COPY tsconfig.json ./
+2025-12-07T04:56:43.913534061Z [inf]  [frontend-builder 10/12] COPY postcss.config.js ./
+2025-12-07T04:56:43.913540800Z [inf]  [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-12-07T04:56:43.913546865Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T04:56:43.913554889Z [inf]  [production  7/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-12-07T04:56:43.913561458Z [inf]  [production  8/17] COPY server ./server
+2025-12-07T04:56:43.913567702Z [inf]  [production  9/17] COPY shared ./shared
+2025-12-07T04:56:43.913573964Z [inf]  [production 10/17] COPY tsconfig.json ./
+2025-12-07T04:56:43.913586655Z [inf]  [production 11/17] COPY drizzle.config.ts ./
+2025-12-07T04:56:43.913593254Z [inf]  [production 12/17] COPY migrations ./migrations
+2025-12-07T04:56:43.913599504Z [inf]  [production 13/17] COPY replit.md ./
+2025-12-07T04:56:43.913605449Z [inf]  [production 14/17] COPY railway-start.sh ./
+2025-12-07T04:56:43.913618025Z [err]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T04:56:43.980574421Z [err]  [production  3/17] RUN apk add --no-cache git
+2025-12-07T04:56:43.997206384Z [err]  Dockerfile:55
+2025-12-07T04:56:43.997254576Z [err]  -------------------
+2025-12-07T04:56:43.997259982Z [err]  53 |     # Copy startup scripts
+2025-12-07T04:56:43.997263980Z [err]  54 |     COPY railway-start.sh ./
+2025-12-07T04:56:43.997269271Z [err]  55 | >>> COPY railway-db-setup.cjs ./
+2025-12-07T04:56:43.997272633Z [err]  56 |     COPY debug-start.sh ./
+2025-12-07T04:56:43.997276712Z [err]  57 |     RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T04:56:43.997292822Z [err]  -------------------
+2025-12-07T04:56:43.997297233Z [err]  ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref 1ab384hen6vuesiih7ylmktld::vmpeh4pvhohzopv50bxh0xlyd: "/railway-db-setup.cjs": not found
