@@ -1,0 +1,37 @@
+1. Environment Variables
+Several critical vars are required: GEMINI_API_KEY, ANTHROPIC_API_KEY, DATABASE_URL, GITHUB_TOKEN, SESSION_SECRET, and often WEBHOOK_SECRET [ref].
+Missing env vars will cause startup errors – ensure all are set in Railway’s dashboard.
+2. Frontend Build Output
+railway-start.sh checks if server/public (built frontend) exists. If missing, script fails fast:
+"Frontend build is missing - run 'npm run build' first"
+Make sure you’re building the frontend before deploy (either as a Railway build step or pre-built, per your Dockerfile and scripts) [railway-start.sh].
+
+3. Database Migration/Connection
+The startup script runs migrations and drift repair – if DB fails, the script aborts.
+Inspect Railway logs for “Database setup failed” or migration errors.
+4. Build Steps & Entrypoint
+The Dockerfile uses ./railway-start.sh as CMD, not a direct node/tsx entry.
+Be sure Docker is building fresh, not using a cached, stale image.
+If you aren’t using Docker, make sure Railway’s default command is overridden to match this process.
+5. Port Exposure
+The image exposes port 5000, but Railway by default sets $PORT.
+Ensure your server reads process.env.PORT (not hardcoded), or explicitly maps 5000 if needed.
+6. Health Endpoint Exists
+Health check available on /api/health. If Railway is showing “deployment failed,” try:
+Code
+curl https://<your-app>.railway.app/api/health
+If this fails, your server might not be starting, or is listening on the wrong port.
+7. General Checklist
+Run through the Deployment README for each preflight and troubleshooting step.
+Build failures? Make sure npm run build passes and all dependencies are in package.json [dep troubleshooting].
+The repo includes a script (scripts/archive/fix-railway-startup.mjs) for startup issues:
+Ensures your server script is correct, and that the Railway entrypoint runs npx tsx server/index.ts, not a stale JS build.
+Environment-specific warnings/recommendations are generated at runtime (see server/config/deployment-validation.ts).
+If All Else Fails
+Carefully check the deployment logs in Railway:
+Are there missing env vars?
+Is the frontend build missing?
+Is the database connection erroring?
+Does the server log show a port or fatal error?
+If you want an agent to automate these checks and apply known fixes (as per your fix-railway-startup.mjs), let me know!
+If you can paste your Railway deploy log or error message, I can diagnose the issue specifically and provide a code/config fix tailored for you.

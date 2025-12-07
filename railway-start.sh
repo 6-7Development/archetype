@@ -52,12 +52,32 @@ echo "✅ Database schema ready!"
 echo ""
 echo "🔍 Environment Check:"
 echo "NODE_ENV: ${NODE_ENV}"
-echo "PORT: ${PORT}"
+echo "PORT: ${PORT:-8080}"
 echo "DATABASE_URL: ${DATABASE_URL:+✓ SET (hidden for security)}"
+echo "GEMINI_API_KEY: ${GEMINI_API_KEY:+✓ SET}"
 echo "GITHUB_TOKEN: ${GITHUB_TOKEN:+✓ SET}"
 echo "GITHUB_REPO: ${GITHUB_REPO}"
-echo "GITHUB_BRANCH: ${GITHUB_BRANCH}"
-echo "ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:+✓ SET}"
+echo "SESSION_SECRET: ${SESSION_SECRET:+✓ SET}"
+echo ""
+
+# Validate required environment variables
+MISSING_VARS=""
+if [ -z "$DATABASE_URL" ]; then
+  MISSING_VARS="$MISSING_VARS DATABASE_URL"
+fi
+if [ -z "$GEMINI_API_KEY" ]; then
+  MISSING_VARS="$MISSING_VARS GEMINI_API_KEY"
+fi
+if [ -z "$SESSION_SECRET" ]; then
+  MISSING_VARS="$MISSING_VARS SESSION_SECRET"
+fi
+
+if [ -n "$MISSING_VARS" ]; then
+  echo "❌ CRITICAL: Missing required environment variables:$MISSING_VARS"
+  echo "   Set these in Railway dashboard before deploying."
+  exit 1
+fi
+echo "✅ All required environment variables are set"
 echo ""
 
 echo "📄 Ensuring replit.md is available..."
