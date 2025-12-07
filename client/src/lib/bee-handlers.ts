@@ -2742,73 +2742,175 @@ export class SwarmUnityController {
     this.emoteStartTime = Date.now();
   }
   
-  // Generate formation positions around the queen
-  private generateFormation(mode: string, queenX: number, queenY: number): void {
-    this.formationTargets.clear();
-    
-    // Formation shape based on mode
-    let radius = 65;
-    let angleOffset = 0;
-    let scaleVariation = 0.1;
-    
+  // Get formation shape type based on mode
+  private getFormationShape(mode: string): 'CIRCLE' | 'HEART' | 'STAR' | 'SPIRAL' | 'CROWN' | 'DIAMOND' | 'V_FORMATION' | 'HEXAGON' {
     switch (mode) {
       case 'EXCITED':
       case 'CELEBRATING':
+      case 'HELPFUL':
+        return 'HEART';      // Love/celebration = heart shape
       case 'SUCCESS':
-        radius = 55; // Tighter ring for celebration
-        scaleVariation = 0.15;
-        break;
+        return 'STAR';       // Success = star shape
       case 'ERROR':
       case 'CONFUSED':
-        radius = 70; // Protective arc
-        angleOffset = Math.PI * 0.25; // Front-biased
-        break;
+      case 'ALERT':
+        return 'DIAMOND';    // Defensive/protective = diamond
       case 'THINKING':
       case 'LOADING':
+        return 'SPIRAL';     // Thinking = contemplative spiral
       case 'LISTENING':
-        radius = 60;
-        angleOffset = Math.PI * 0.1;
-        break;
+      case 'CURIOUS':
+        return 'HEXAGON';    // Attentive = organized hexagon
       case 'SLEEPY':
       case 'RESTING':
-        radius = 50; // Cozy cluster
-        scaleVariation = 0.2;
-        break;
-      case 'HELPFUL':
-      case 'FOCUSED':
-        radius = 65;
-        break;
-      case 'CURIOUS':
-        radius = 60;
-        angleOffset = Math.PI * 0.15; // Slightly offset, curious look
-        break;
-      case 'ALERT':
-        radius = 68; // Protective spread
-        scaleVariation = 0.12;
-        break;
+        return 'CIRCLE';     // Cozy = simple circle
       case 'TYPING':
       case 'CODING':
       case 'BUILDING':
-        radius = 55; // Work mode - close formation
-        angleOffset = Math.PI * 0.05;
-        scaleVariation = 0.08;
+        return 'V_FORMATION'; // Work = focused V-formation
+      case 'FOCUSED':
+        return 'CROWN';      // Focused = crown (achievement)
+      default:
+        return 'CIRCLE';
+    }
+  }
+  
+  // Generate complex formation slot positions
+  private getFormationSlots(shape: string, count: number, scale: number = 1): Array<{ x: number; y: number }> {
+    const slots: Array<{ x: number; y: number }> = [];
+    const baseRadius = 60 * scale;
+    
+    switch (shape) {
+      case 'CIRCLE':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2;
+          slots.push({
+            x: Math.cos(angle) * baseRadius,
+            y: Math.sin(angle) * baseRadius,
+          });
+        }
         break;
+        
+      case 'HEART':
+        for (let i = 0; i < count; i++) {
+          const t = (i / count) * Math.PI * 2;
+          slots.push({
+            x: 16 * Math.pow(Math.sin(t), 3) * 2.5,
+            y: -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * 2.5,
+          });
+        }
+        break;
+        
+      case 'STAR':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
+          const radius = i % 2 === 0 ? baseRadius : baseRadius * 0.5;
+          slots.push({
+            x: Math.cos(angle) * radius,
+            y: Math.sin(angle) * radius,
+          });
+        }
+        break;
+        
+      case 'SPIRAL':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 3;
+          const radius = 25 + i * 7;
+          slots.push({
+            x: Math.cos(angle) * radius,
+            y: Math.sin(angle) * radius,
+          });
+        }
+        break;
+        
+      case 'CROWN':
+        for (let i = 0; i < count; i++) {
+          const t = (i / count) * Math.PI;
+          const baseY = 30;
+          const peakHeight = (Math.sin(t * 3) + 0.5) * 35;
+          slots.push({
+            x: (t - Math.PI / 2) * 50,
+            y: baseY - peakHeight,
+          });
+        }
+        break;
+        
+      case 'DIAMOND':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2;
+          const absAngle = Math.abs(Math.cos(angle)) + Math.abs(Math.sin(angle));
+          const radius = baseRadius / absAngle;
+          slots.push({
+            x: Math.cos(angle) * radius * 0.8,
+            y: Math.sin(angle) * radius * 0.8,
+          });
+        }
+        break;
+        
+      case 'V_FORMATION':
+        // V-shaped formation pointing forward
+        for (let i = 0; i < count; i++) {
+          const side = i % 2 === 0 ? -1 : 1;
+          const depth = Math.floor(i / 2);
+          slots.push({
+            x: side * (depth + 1) * 25,
+            y: (depth + 1) * 20,
+          });
+        }
+        break;
+        
+      case 'HEXAGON':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2;
+          // Hexagon uses 6-fold symmetry
+          const hexAngle = Math.round(angle / (Math.PI / 3)) * (Math.PI / 3);
+          const radius = baseRadius * 0.9;
+          slots.push({
+            x: Math.cos(hexAngle) * radius + Math.cos(angle) * 10,
+            y: Math.sin(hexAngle) * radius + Math.sin(angle) * 10,
+          });
+        }
+        break;
+        
+      default:
+        // Fallback to circle
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2;
+          slots.push({
+            x: Math.cos(angle) * baseRadius,
+            y: Math.sin(angle) * baseRadius,
+          });
+        }
     }
     
+    return slots;
+  }
+  
+  // Generate formation positions around the queen using complex shapes
+  private generateFormation(mode: string, queenX: number, queenY: number): void {
+    this.formationTargets.clear();
+    
+    // Get the shape type for this mode
+    const shape = this.getFormationShape(mode);
+    const slots = this.getFormationSlots(shape, this.workerCount);
+    
     for (let i = 0; i < this.workerCount; i++) {
-      const angle = (2 * Math.PI * i / this.workerCount) + angleOffset;
-      const personalityScale = 0.9 + (this.personalities.get(i)?.noiseSeed ?? 0) % 1 * scaleVariation;
+      const slot = slots[i % slots.length];
+      const personalityOffset = (this.personalities.get(i)?.noiseSeed ?? 0) % 1 * 8;
+      
+      // Calculate angle from queen to slot for worker facing direction
+      const angle = Math.atan2(slot.y, slot.x);
       
       this.formationTargets.set(i, {
-        x: queenX + Math.cos(angle) * radius * personalityScale,
-        y: queenY + Math.sin(angle) * radius * personalityScale,
-        angle: angle + Math.PI / 2, // Face outward
-        scale: 0.85 + Math.random() * 0.15,
+        x: queenX + slot.x + personalityOffset,
+        y: queenY + slot.y + personalityOffset * 0.5,
+        angle: angle + Math.PI / 2, // Face tangent to formation
+        scale: 0.9 + Math.random() * 0.2,
       });
     }
   }
   
-  // Update formation positions as queen moves
+  // Update formation positions as queen moves - uses shape-based slots with animation
   updateFormation(queenX: number, queenY: number, deltaTime: number): void {
     // Check for phase transitions (replaces setTimeout)
     this.checkPhaseTransition();
@@ -2817,57 +2919,72 @@ export class SwarmUnityController {
     
     this.emoteClock += deltaTime;
     
-    // Update formation targets to follow queen
+    // Get current shape and animated scale factor
     const mode = this.currentEmoteMode;
-    let radius = 65;
-    let angleOffset = 0;
+    const shape = this.getFormationShape(mode);
+    
+    // Animation parameters based on mode
+    let scalePulse = 1;
+    let rotationOffset = 0;
     
     switch (mode) {
       case 'EXCITED':
       case 'CELEBRATING':
       case 'SUCCESS':
-        radius = 55 + Math.sin(this.emoteClock * 0.01) * 5; // Pulsing celebration
+        scalePulse = 1 + Math.sin(this.emoteClock * 0.008) * 0.08; // Pulsing heart/star
+        rotationOffset = Math.sin(this.emoteClock * 0.003) * 0.1; // Gentle sway
         break;
       case 'ERROR':
       case 'CONFUSED':
       case 'ALERT':
-        // PROTECTIVE family - wide arc with oscillating offset
-        radius = mode === 'ALERT' 
-          ? 68 + Math.sin(this.emoteClock * 0.012) * 4  // Quick pulse for alert
-          : 70;
-        angleOffset = Math.PI * 0.25 + Math.sin(this.emoteClock * 0.008) * 0.1;
+        scalePulse = 1 + Math.sin(this.emoteClock * 0.01) * 0.05; // Quick defensive pulse
+        rotationOffset = Math.sin(this.emoteClock * 0.006) * 0.15; // Nervous sway
         break;
       case 'THINKING':
       case 'LOADING':
+        rotationOffset = this.emoteClock * 0.0008; // Continuous slow spiral rotation
+        break;
       case 'LISTENING':
-        angleOffset = this.emoteClock * 0.001; // Slow rotation
+      case 'CURIOUS':
+        rotationOffset = this.emoteClock * 0.0005; // Very slow hexagon rotation
+        scalePulse = 1 + Math.sin(this.emoteClock * 0.004) * 0.03; // Subtle breathing
         break;
       case 'SLEEPY':
       case 'RESTING':
-        radius = 50 + Math.sin(this.emoteClock * 0.003) * 3; // Gentle breathing
-        break;
-      case 'CURIOUS':
-        radius = 60;
-        angleOffset = Math.PI * 0.15 + Math.sin(this.emoteClock * 0.005) * 0.08; // Subtle curiosity shift
+        scalePulse = 1 + Math.sin(this.emoteClock * 0.002) * 0.06; // Slow breathing circle
         break;
       case 'TYPING':
       case 'CODING':
       case 'BUILDING':
-        radius = 55;
-        angleOffset = this.emoteClock * 0.0005; // Very slow rotation during work
+        // V-formation bobs slightly as if working
+        scalePulse = 1 + Math.sin(this.emoteClock * 0.005) * 0.02;
+        break;
+      case 'FOCUSED':
+        // Crown slowly rotates
+        rotationOffset = this.emoteClock * 0.0003;
         break;
     }
     
+    // Get base slots for this shape
+    const slots = this.getFormationSlots(shape, this.workerCount, scalePulse);
+    
     for (let i = 0; i < this.workerCount; i++) {
-      const angle = (2 * Math.PI * i / this.workerCount) + angleOffset;
+      const slot = slots[i % slots.length];
       const existing = this.formationTargets.get(i);
-      const scale = existing?.scale ?? 1;
+      const savedScale = existing?.scale ?? 1;
+      
+      // Apply rotation offset to slot positions
+      const rotatedX = slot.x * Math.cos(rotationOffset) - slot.y * Math.sin(rotationOffset);
+      const rotatedY = slot.x * Math.sin(rotationOffset) + slot.y * Math.cos(rotationOffset);
+      
+      // Calculate facing angle
+      const angle = Math.atan2(rotatedY, rotatedX);
       
       this.formationTargets.set(i, {
-        x: queenX + Math.cos(angle) * radius * scale,
-        y: queenY + Math.sin(angle) * radius * scale,
+        x: queenX + rotatedX,
+        y: queenY + rotatedY,
         angle: angle + Math.PI / 2,
-        scale,
+        scale: savedScale,
       });
     }
   }
