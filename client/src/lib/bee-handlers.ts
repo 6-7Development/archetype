@@ -1713,6 +1713,12 @@ export class IndependentWorkerHandler {
             const formationStrength = Math.min(1, w.behaviorTimer / 300);
             steerX = formationResult.x * formationStrength;
             steerY = formationResult.y * formationStrength;
+          } else {
+            // FALLBACK: If no formation slot assigned, orbit the queen to stay organized
+            // This prevents workers from freezing or drifting randomly
+            const orbitResult = this.calculateOrbitSteering(w);
+            steerX = orbitResult.x * 0.5; // Slower orbit while waiting for slot
+            steerY = orbitResult.y * 0.5;
           }
           // NOTE: Formation exit is now controlled by syncFormationFromUnity()
           // No auto-exit timer - SwarmUnityController decides when to disperse
@@ -1977,9 +1983,13 @@ export class IndependentWorkerHandler {
   // SYNC WITH SWARM UNITY CONTROLLER - Use complex formation shapes
   // This connects IndependentWorkerHandler to SwarmUnityController's formations
   // IMPORTANT: Call this BEFORE workers.update() so steering uses latest formation targets
+  // 
+  // FORMATION PLANNER FIX: Persist formationSlot during transitions to prevent "random gaps"
+  // Only clear formationSlot on explicit PATROL phase, not during UNITY_TRANSIT
   syncFormationFromUnity(
     isInFormation: boolean, 
-    getFormationTarget: (id: number) => { x: number; y: number; angle: number; scale: number } | null
+    getFormationTarget: (id: number) => { x: number; y: number; angle: number; scale: number } | null,
+    isTransitioning: boolean = false // True during UNITY_TRANSIT phase
   ): void {
     this.workers.forEach((w, i) => {
       // Skip workers that are attacking
@@ -2001,14 +2011,19 @@ export class IndependentWorkerHandler {
             y: target.y - this.queenY,
           };
         }
-      } else {
-        // Exit formation mode - return to orbit
+        // FIX: If target is null but we're in formation mode, KEEP the previous slot
+        // Don't reset to null during transitions - this causes the "gaps" issue
+      } else if (!isTransitioning) {
+        // Only exit formation mode when NOT transitioning
+        // During UNITY_TRANSIT, workers should hold their previous formation or move to new one
         if (w.behavior === 'FORMATION') {
           w.behavior = 'RETURN';
           w.formationSlot = null;
           w.behaviorTimer = 0;
         }
       }
+      // If isTransitioning is true and isInFormation is false, workers keep their current behavior
+      // This prevents resetting during phase transitions
     });
   }
   
@@ -2623,6 +2638,13 @@ export class SwarmUnityController {
   private personalities: Map<number, WorkerPersonality> = new Map();
   private workerCount: number;
   
+  // FORMATION PLANNER: Debounce rapid mode changes to prevent chaos
+  private lastModeChangeTime: number = 0;
+  private readonly MIN_DWELL_TIME = 2000; // ms minimum time before accepting new mode change (2 seconds)
+  private pendingMode: string | null = null;
+  private pendingQueenX: number = 0;
+  private pendingQueenY: number = 0;
+  
   // Timing constants
   private readonly TRANSIT_DURATION = 220; // ms to reach formation
   private readonly DISPERSE_DURATION = 280; // ms to return to patrol
@@ -2701,11 +2723,63 @@ export class SwarmUnityController {
   }
   
   // Called when queen mode changes
+  // FORMATION PLANNER: Debounce rapid mode changes to let formations complete
   handleModeChange(newMode: string, queenX: number, queenY: number): void {
+    const now = Date.now();
+    const timeSinceLastChange = now - this.lastModeChangeTime;
+    
+    // DEBOUNCE: If we changed modes too recently while workers are forming/active,
+    // queue the new mode instead of immediately interrupting
+    // Apply during: UNITY_TRANSIT (forming up), UNITY_ACTIVE (holding formation), DISPERSING (returning)
+    const isInFormationPhase = this.phase === 'UNITY_TRANSIT' || 
+                                this.phase === 'UNITY_ACTIVE' || 
+                                this.phase === 'DISPERSING';
+    
+    // Debug: Log debounce decision
+    if (timeSinceLastChange < 5000) { // Only log for rapid changes
+      console.log('[DEBOUNCE]', {
+        timeSince: timeSinceLastChange,
+        minDwell: this.MIN_DWELL_TIME,
+        phase: this.phase,
+        isInFormation: isInFormationPhase,
+        wouldBlock: timeSinceLastChange < this.MIN_DWELL_TIME && isInFormationPhase,
+        newMode
+      });
+    }
+    
+    if (timeSinceLastChange < this.MIN_DWELL_TIME && isInFormationPhase) {
+      // Queue this mode change for later - don't interrupt current formation
+      this.pendingMode = newMode;
+      this.pendingQueenX = queenX;
+      this.pendingQueenY = queenY;
+      console.log('[DEBOUNCE-BLOCKED]', { queued: newMode, pendingMode: this.pendingMode });
+      return; // Skip this change, will be applied when phase completes
+    }
+    
+    // Apply the mode change
+    this.applyModeChange(newMode, queenX, queenY);
+    this.lastModeChangeTime = now;
+    this.pendingMode = null; // Clear any pending mode since we're applying now
+  }
+  
+  // Process any pending mode changes (called from updateFormation when transition completes)
+  private processPendingModeChange(): void {
+    if (this.pendingMode !== null) {
+      const pendingMode = this.pendingMode;
+      const pendingX = this.pendingQueenX;
+      const pendingY = this.pendingQueenY;
+      this.pendingMode = null;
+      this.applyModeChange(pendingMode, pendingX, pendingY);
+      this.lastModeChangeTime = Date.now();
+    }
+  }
+  
+  // Internal method to actually apply mode changes
+  private applyModeChange(newMode: string, queenX: number, queenY: number): void {
     const wasEmote = this.isEmoteMode(this.currentEmoteMode);
     const isEmote = this.isEmoteMode(newMode);
     
-    // DEBUG: Log mode changes
+    // Log mode changes (less verbose now that debouncing filters rapid changes)
     console.log('[UNITY-MODE-CHANGE]', {
       from: this.currentEmoteMode,
       to: newMode,
@@ -2767,9 +2841,13 @@ export class SwarmUnityController {
     
     if (this.phase === 'UNITY_TRANSIT' && elapsed >= this.TRANSIT_DURATION) {
       this.phase = 'UNITY_ACTIVE';
+      // Now that transition is complete, process any queued mode change
+      this.processPendingModeChange();
     } else if (this.phase === 'DISPERSING' && elapsed >= this.DISPERSE_DURATION) {
       // Full reset to ensure workers return to patrol orbit
       this.resetFormation();
+      // Process any queued mode change after disperse
+      this.processPendingModeChange();
     }
   }
   

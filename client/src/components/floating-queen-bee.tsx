@@ -608,9 +608,11 @@ export function FloatingQueenBee() {
       
       // SYNC FORMATIONS: Connect SwarmUnityController's complex shapes to IndependentWorkerHandler
       // MUST happen BEFORE workers.update() so steering uses latest formation targets
+      // Pass isTransitioning to prevent slot resets during phase transitions
       beeController.workers.syncFormationFromUnity(
         beeController.unity.isInFormation(),
-        (id) => beeController.unity.getFormationTarget(id)
+        (id) => beeController.unity.getFormationTarget(id),
+        beeController.unity.isTransitioning()
       );
       
       // Run independent physics update for each worker bee
