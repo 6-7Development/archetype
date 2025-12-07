@@ -1,0 +1,314 @@
+2025-12-07T05:00:07.518562576Z [inf]  
+2025-12-07T05:00:10.192593771Z [inf]  [35m[Region: us-east4][0m
+2025-12-07T05:00:10.204455702Z [inf]  [35m=========================
+2025-12-07T05:00:10.204489907Z [inf]  Using Detected Dockerfile
+2025-12-07T05:00:10.204495319Z [inf]  =========================
+2025-12-07T05:00:10.204499520Z [inf]  [0m
+2025-12-07T05:00:10.204514252Z [inf]  context: 1xs8-qxqp
+2025-12-07T05:00:10.433961547Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T05:00:10.434032250Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T05:00:10.434090636Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T05:00:10.447103778Z [inf]  [internal] load build definition from Dockerfile
+2025-12-07T05:00:10.450153273Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-12-07T05:00:10.511342682Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-12-07T05:00:10.511756033Z [inf]  [internal] load .dockerignore
+2025-12-07T05:00:10.511814994Z [inf]  [internal] load .dockerignore
+2025-12-07T05:00:10.512063306Z [inf]  [internal] load .dockerignore
+2025-12-07T05:00:10.523503245Z [inf]  [internal] load .dockerignore
+2025-12-07T05:00:10.530344019Z [inf]  [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-12-07T05:00:10.530407895Z [inf]  [frontend-builder  6/12] COPY shared ./shared
+2025-12-07T05:00:10.530431842Z [inf]  [production  7/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-12-07T05:00:10.530446904Z [inf]  [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-12-07T05:00:10.530458743Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T05:00:10.530474909Z [inf]  [frontend-builder  9/12] COPY tsconfig.json ./
+2025-12-07T05:00:10.530484199Z [inf]  [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-12-07T05:00:10.530492094Z [inf]  [production  4/17] COPY package*.json ./
+2025-12-07T05:00:10.530501757Z [inf]  [internal] load build context
+2025-12-07T05:00:10.530508806Z [inf]  [production  3/17] RUN apk add --no-cache git
+2025-12-07T05:00:10.530524867Z [inf]  [frontend-builder  2/12] WORKDIR /app
+2025-12-07T05:00:10.530536121Z [inf]  [frontend-builder  8/12] COPY vite.config.ts ./
+2025-12-07T05:00:10.530544665Z [inf]  [frontend-builder 10/12] COPY postcss.config.js ./
+2025-12-07T05:00:10.530552788Z [inf]  [production  5/17] RUN npm ci
+2025-12-07T05:00:10.530560375Z [inf]  [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T05:00:10.530572013Z [inf]  [frontend-builder  3/12] COPY package*.json ./
+2025-12-07T05:00:10.530579930Z [inf]  [frontend-builder  5/12] COPY client ./client
+2025-12-07T05:00:10.530587025Z [inf]  [frontend-builder  4/12] RUN npm ci
+2025-12-07T05:00:10.530632512Z [inf]  [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T05:00:10.530641147Z [inf]  [production 16/17] COPY debug-start.sh ./
+2025-12-07T05:00:10.530648392Z [inf]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T05:00:10.530656272Z [inf]  [production 14/17] COPY railway-start.sh ./
+2025-12-07T05:00:10.530668392Z [inf]  [production 13/17] COPY replit.md ./
+2025-12-07T05:00:10.530684915Z [inf]  [production 12/17] COPY migrations ./migrations
+2025-12-07T05:00:10.530697187Z [inf]  [production 11/17] COPY drizzle.config.ts ./
+2025-12-07T05:00:10.530708079Z [inf]  [production 10/17] COPY tsconfig.json ./
+2025-12-07T05:00:10.530722406Z [inf]  [production  9/17] COPY shared ./shared
+2025-12-07T05:00:10.530736720Z [inf]  [production  8/17] COPY server ./server
+2025-12-07T05:00:10.530760930Z [inf]  [internal] load build context
+2025-12-07T05:00:10.530888290Z [inf]  [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T05:00:10.536893713Z [inf]  [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:643e7036aa985317ebfee460005e322aa550c6b6883000d01daefb58689a58e2
+2025-12-07T05:00:10.537562001Z [inf]  [frontend-builder  2/12] WORKDIR /app
+2025-12-07T05:00:10.537583362Z [inf]  [internal] load build context
+2025-12-07T05:00:10.537605006Z [inf]  [production  3/17] RUN apk add --no-cache git
+2025-12-07T05:00:11.200891062Z [inf]  [internal] load build context
+2025-12-07T05:00:11.213160241Z [inf]  [frontend-builder  3/12] COPY package*.json ./
+2025-12-07T05:00:11.248060744Z [inf]  ( 1/13) Installing brotli-libs (1.2.0-r0)
+
+2025-12-07T05:00:11.263538069Z [inf]  ( 2/13) Installing c-ares (1.34.5-r0)
+
+2025-12-07T05:00:11.269078837Z [inf]  ( 3/13) Installing libunistring (1.4.1-r0)
+
+2025-12-07T05:00:11.286792817Z [inf]  ( 4/13) Installing libidn2 (2.3.8-r0)
+
+2025-12-07T05:00:11.294436009Z [inf]  ( 5/13) Installing nghttp2-libs (1.68.0-r0)
+
+2025-12-07T05:00:11.299064338Z [inf]  ( 6/13) Installing nghttp3 (1.13.1-r0)
+
+2025-12-07T05:00:11.304075334Z [inf]  ( 7/13) Installing libpsl (0.21.5-r3)
+
+2025-12-07T05:00:11.307979264Z [inf]  ( 8/13) Installing zstd-libs (1.5.7-r2)
+
+2025-12-07T05:00:11.318158941Z [inf]  ( 9/13) Installing libcurl (8.17.0-r1)
+
+2025-12-07T05:00:11.330339871Z [inf]  (10/13) Installing libexpat (2.7.3-r0)
+
+2025-12-07T05:00:11.335862275Z [inf]  (11/13) Installing pcre2 (10.47-r0)
+
+2025-12-07T05:00:11.343673382Z [inf]  [frontend-builder  3/12] COPY package*.json ./
+2025-12-07T05:00:11.346044055Z [inf]  (12/13) Installing git (2.52.0-r0)
+
+2025-12-07T05:00:11.347045462Z [inf]  [frontend-builder  4/12] RUN npm ci
+2025-12-07T05:00:11.426910849Z [inf]  (13/13) Installing git-init-template (2.52.0-r0)
+
+2025-12-07T05:00:11.430751264Z [inf]  Executing busybox-1.37.0-r29.trigger
+
+2025-12-07T05:00:11.441281157Z [inf]  OK: 23 MiB in 31 packages
+
+2025-12-07T05:00:11.517633762Z [inf]  [production  3/17] RUN apk add --no-cache git
+2025-12-07T05:00:11.518985016Z [inf]  [production  4/17] COPY package*.json ./
+2025-12-07T05:00:11.548548718Z [inf]  [production  4/17] COPY package*.json ./
+2025-12-07T05:00:11.549842627Z [inf]  [production  5/17] RUN npm ci
+2025-12-07T05:00:12.915552504Z [inf]  npm warn ERESOLVE overriding peer dependency
+
+2025-12-07T05:00:12.91604872Z [inf]  npm warn While resolving: vite@7.2.2
+npm warn Found: @types/node@20.16.11
+npm warn node_modules/@types/node
+npm warn   dev @types/node@"20.16.11" from the root project
+npm warn   16 more (@types/pg, @types/adm-zip, @types/bcrypt, ...)
+npm warn
+npm warn Could not resolve dependency:
+npm warn peerOptional @types/node@"^20.19.0 || >=22.12.0" from vite@7.2.2
+npm warn node_modules/vitest/node_modules/vite
+npm warn   vite@"^6.0.0 || ^7.0.0" from vitest@4.0.9
+npm warn   node_modules/vitest
+npm warn   1 more (@vitest/mocker)
+npm warn
+npm warn Conflicting peer dependency: @types/node@24.10.1
+npm warn node_modules/@types/node
+npm warn   peerOptional @types/node@"^20.19.0 || >=22.12.0" from vite@7.2.2
+npm warn   node_modules/vitest/node_modules/vite
+npm warn     vite@"^6.0.0 || ^7.0.0" from vitest@4.0.9
+npm warn     node_modules/vitest
+npm warn     1 more (@vitest/mocker)
+
+2025-12-07T05:00:13.068398337Z [inf]  npm warn ERESOLVE overriding peer dependency
+
+2025-12-07T05:00:13.068860251Z [inf]  npm warn While resolving: vite@7.2.2
+npm warn Found: @types/node@20.16.11
+npm warn node_modules/@types/node
+npm warn   dev @types/node@"20.16.11" from the root project
+npm warn   16 more (@types/pg, @types/adm-zip, @types/bcrypt, ...)
+npm warn
+npm warn Could not resolve dependency:
+npm warn peerOptional @types/node@"^20.19.0 || >=22.12.0" from vite@7.2.2
+npm warn node_modules/vitest/node_modules/vite
+npm warn   vite@"^6.0.0 || ^7.0.0" from vitest@4.0.9
+npm warn   node_modules/vitest
+npm warn   1 more (@vitest/mocker)
+npm warn
+npm warn Conflicting peer dependency: @types/node@24.10.1
+npm warn node_modules/@types/node
+npm warn   peerOptional @types/node@"^20.19.0 || >=22.12.0" from vite@7.2.2
+npm warn   node_modules/vitest/node_modules/vite
+npm warn     vite@"^6.0.0 || ^7.0.0" from vitest@4.0.9
+npm warn     node_modules/vitest
+npm warn     1 more (@vitest/mocker)
+
+2025-12-07T05:00:19.407149575Z [inf]  npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+2025-12-07T05:00:22.624167351Z [inf]  npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+2025-12-07T05:00:24.801125113Z [inf]  npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+
+2025-12-07T05:00:24.869344564Z [inf]  npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+
+2025-12-07T05:00:24.906638679Z [inf]  npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+
+2025-12-07T05:00:24.978588982Z [inf]  npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+
+2025-12-07T05:00:35.39207734Z [inf]  
+added 808 packages, and audited 809 packages in 24s
+
+2025-12-07T05:00:35.392100809Z [inf]  
+
+2025-12-07T05:00:35.392189809Z [inf]  198 packages are looking for funding
+  run `npm fund` for details
+
+2025-12-07T05:00:35.433638803Z [inf]  
+13 vulnerabilities (3 low, 8 moderate, 2 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+2025-12-07T05:00:35.435487165Z [inf]  npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.4
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.4
+npm notice To update run: npm install -g npm@11.6.4
+npm notice
+
+2025-12-07T05:00:36.028613186Z [inf]  [production  5/17] RUN npm ci
+2025-12-07T05:00:36.032467326Z [inf]  [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-12-07T05:00:36.123357968Z [inf]  
+added 808 packages, and audited 809 packages in 25s
+
+2025-12-07T05:00:36.123465907Z [inf]  
+198 packages are looking for funding
+  run `npm fund` for details
+
+2025-12-07T05:00:36.173961434Z [inf]  
+13 vulnerabilities (3 low, 8 moderate, 2 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+2025-12-07T05:00:36.175545222Z [inf]  npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.4
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.4
+npm notice To update run: npm install -g npm@11.6.4
+npm notice
+
+2025-12-07T05:00:36.394561510Z [inf]  [frontend-builder  4/12] RUN npm ci
+2025-12-07T05:00:36.396310442Z [inf]  [frontend-builder  5/12] COPY client ./client
+2025-12-07T05:00:36.742463317Z [inf]  [frontend-builder  5/12] COPY client ./client
+2025-12-07T05:00:36.744015026Z [inf]  [frontend-builder  6/12] COPY shared ./shared
+2025-12-07T05:00:36.762633965Z [inf]  [frontend-builder  6/12] COPY shared ./shared
+2025-12-07T05:00:36.764422335Z [inf]  [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-12-07T05:00:36.883009849Z [inf]  [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-12-07T05:00:36.884819464Z [inf]  [frontend-builder  8/12] COPY vite.config.ts ./
+2025-12-07T05:00:36.903978654Z [inf]  [frontend-builder  8/12] COPY vite.config.ts ./
+2025-12-07T05:00:36.905307378Z [inf]  [frontend-builder  9/12] COPY tsconfig.json ./
+2025-12-07T05:00:36.918052960Z [inf]  [frontend-builder  9/12] COPY tsconfig.json ./
+2025-12-07T05:00:36.919525320Z [inf]  [frontend-builder 10/12] COPY postcss.config.js ./
+2025-12-07T05:00:36.945962125Z [inf]  [frontend-builder 10/12] COPY postcss.config.js ./
+2025-12-07T05:00:36.947917994Z [inf]  [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-12-07T05:00:36.965547054Z [inf]  [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-12-07T05:00:36.967101256Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T05:00:37.768520237Z [inf]  vite v5.4.20 building for production...
+
+2025-12-07T05:00:37.843659675Z [inf]  transforming...
+
+2025-12-07T05:00:38.022806951Z [inf]  npm warn ERESOLVE overriding peer dependency
+
+2025-12-07T05:00:38.023296019Z [inf]  npm warn While resolving: vite@7.2.2
+npm warn Found: @types/node@20.16.11
+npm warn node_modules/@types/node
+npm warn   @types/node@"*" from @types/pg@8.11.6
+npm warn   node_modules/@neondatabase/serverless/node_modules/@types/pg
+npm warn     @types/pg@"8.11.6" from @neondatabase/serverless@0.10.4
+npm warn     node_modules/@neondatabase/serverless
+npm warn   16 more (@types/adm-zip, @types/bcrypt, @types/body-parser, ...)
+npm warn
+npm warn Could not resolve dependency:
+npm warn peerOptional @types/node@"^20.19.0 || >=22.12.0" from vite@7.2.2
+npm warn node_modules/vitest/node_modules/vite
+npm warn   vite@"^6.0.0 || ^7.0.0" from vitest@4.0.9
+npm warn   node_modules/vitest
+npm warn   1 more (@vitest/mocker)
+npm warn
+npm warn Conflicting peer dependency: @types/node@24.10.1
+npm warn node_modules/@types/node
+npm warn   peerOptional @types/node@"^20.19.0 || >=22.12.0" from vite@7.2.2
+npm warn   node_modules/vitest/node_modules/vite
+npm warn     vite@"^6.0.0 || ^7.0.0" from vitest@4.0.9
+npm warn     node_modules/vitest
+npm warn     1 more (@vitest/mocker)
+
+2025-12-07T05:00:39.01934756Z [inf]  
+changed 1 package, and audited 809 packages in 3s
+
+2025-12-07T05:00:39.019369992Z [inf]  
+
+2025-12-07T05:00:39.019374724Z [inf]  198 packages are looking for funding
+
+2025-12-07T05:00:39.01946236Z [inf]    run `npm fund` for details
+
+2025-12-07T05:00:39.062085278Z [inf]  
+13 vulnerabilities (3 low, 8 moderate, 2 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+2025-12-07T05:00:39.113100090Z [inf]  [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-12-07T05:00:41.82990132Z [inf]  
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+
+2025-12-07T05:00:53.30809296Z [inf]  ✓ 4909 modules transformed.
+
+2025-12-07T05:00:55.285078801Z [inf]  rendering chunks...
+
+2025-12-07T05:00:55.344751645Z [inf]  computing gzip size...
+
+2025-12-07T05:00:55.459451461Z [inf]  ../dist/public/index.html                     1.65 kB │ gzip:   0.77 kB
+
+2025-12-07T05:00:55.459471721Z [inf]  ../dist/public/assets/index-g_D51_VM.css    184.30 kB │ gzip:  28.37 kB
+
+2025-12-07T05:00:55.459546184Z [inf]  ../dist/public/assets/index-ekZci5xL.js   3,176.83 kB │ gzip: 940.15 kB
+
+2025-12-07T05:00:55.459633638Z [inf]  
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+2025-12-07T05:00:55.4600761Z [inf]  ✓ built in 17.65s
+
+2025-12-07T05:00:55.746353607Z [inf]  [frontend-builder 12/12] RUN npx vite build
+2025-12-07T05:00:55.763158516Z [inf]  [production  7/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-12-07T05:00:55.803595496Z [inf]  [production  7/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-12-07T05:00:55.805282406Z [inf]  [production  8/17] COPY server ./server
+2025-12-07T05:00:55.888045376Z [inf]  [production  8/17] COPY server ./server
+2025-12-07T05:00:55.890222431Z [inf]  [production  9/17] COPY shared ./shared
+2025-12-07T05:00:55.914863395Z [inf]  [production  9/17] COPY shared ./shared
+2025-12-07T05:00:55.916782775Z [inf]  [production 10/17] COPY tsconfig.json ./
+2025-12-07T05:00:55.931354046Z [inf]  [production 10/17] COPY tsconfig.json ./
+2025-12-07T05:00:55.932731575Z [inf]  [production 11/17] COPY drizzle.config.ts ./
+2025-12-07T05:00:55.998000368Z [inf]  [production 11/17] COPY drizzle.config.ts ./
+2025-12-07T05:00:56.002812508Z [inf]  [production 12/17] COPY migrations ./migrations
+2025-12-07T05:00:56.032903576Z [inf]  [production 12/17] COPY migrations ./migrations
+2025-12-07T05:00:56.035393981Z [inf]  [production 13/17] COPY replit.md ./
+2025-12-07T05:00:56.056182648Z [inf]  [production 13/17] COPY replit.md ./
+2025-12-07T05:00:56.058629722Z [inf]  [production 14/17] COPY railway-start.sh ./
+2025-12-07T05:00:56.081057321Z [inf]  [production 14/17] COPY railway-start.sh ./
+2025-12-07T05:00:56.083923318Z [inf]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T05:00:56.103383475Z [inf]  [production 15/17] COPY railway-db-setup.cjs ./
+2025-12-07T05:00:56.104969135Z [inf]  [production 16/17] COPY debug-start.sh ./
+2025-12-07T05:00:56.126117270Z [inf]  [production 16/17] COPY debug-start.sh ./
+2025-12-07T05:00:56.127496952Z [inf]  [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T05:00:56.228478559Z [inf]  [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-12-07T05:01:09.508847068Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-12-07T05:01:09.508911800Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-12-07T05:01:47.747056674Z [inf]  [92mBuild time: 97.54 seconds[0m
